@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variadic Functions – Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f1a;
+    --bg3: #141428;
+    --card: #111120;
+    --border: #1e1e3a;
+    --cyan: #00f5ff;
+    --green: #39ff14;
+    --yellow: #ffe600;
+    --pink: #ff2d78;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text: #c8d0e8;
+    --muted: #5a6080;
+    --white: #eef2ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* SCANLINES OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* GRID BG */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(18px, 3vw, 28px);
+    color: var(--white);
+    line-height: 1.5;
+    text-shadow: 0 0 20px rgba(0,245,255,0.5), 0 0 40px rgba(0,245,255,0.2);
+    margin-bottom: 20px;
+  }
+
+  header h1 span { color: var(--cyan); }
+
+  .header-sub {
+    font-size: 18px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .xp-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .xp-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--yellow);
+  }
+  .xp-track {
+    width: 200px;
+    height: 10px;
+    background: var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--yellow);
+  }
+  .xp-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--yellow), var(--orange));
+    border-radius: 5px;
+    animation: fillXP 2s 0.5s ease-out forwards;
+    box-shadow: 0 0 8px var(--yellow);
+  }
+  @keyframes fillXP { to { width: 72%; } }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    margin: 50px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::before {
+    content: '▶';
+    color: var(--pink);
+    font-size: 10px;
+    animation: blink 1s step-end infinite;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+  }
+  .card.pink::before { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--cyan);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card.pink .card-title { color: var(--pink); }
+  .card.green .card-title { color: var(--green); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.orange .card-title { color: var(--orange); }
+
+  .card-icon { font-size: 16px; }
+
+  /* CODE BLOCKS */
+  pre, code {
+    font-family: 'Share Tech Mono', monospace;
+  }
+  pre {
+    background: #080810;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-top: 12px;
+  }
+  code {
+    background: rgba(0,245,255,0.08);
+    color: var(--cyan);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  pre code {
+    background: none;
+    color: var(--text);
+    padding: 0;
+  }
+
+  /* Syntax colors */
+  .kw { color: var(--pink); }
+  .fn { color: var(--cyan); }
+  .type { color: var(--purple); }
+  .str { color: var(--green); }
+  .num { color: var(--orange); }
+  .cmt { color: var(--muted); font-style: italic; }
+  .macro { color: var(--yellow); }
+
+  /* GRID LAYOUTS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ANALOGY BOXES */
+  .analogy {
+    background: linear-gradient(135deg, #0f1020, #0a0f1e);
+    border: 1px solid var(--yellow);
+    border-left: 4px solid var(--yellow);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .analogy-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--yellow);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  /* WARNING / TIP BOXES */
+  .tip {
+    background: rgba(57,255,20,0.05);
+    border: 1px solid rgba(57,255,20,0.3);
+    border-left: 4px solid var(--green);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .warn {
+    background: rgba(255,45,120,0.05);
+    border: 1px solid rgba(255,45,120,0.3);
+    border-left: 4px solid var(--pink);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .tip::before { content: '✅ '; }
+  .warn::before { content: '⚠️ '; }
+
+  /* MACRO TABLE */
+  .macro-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .macro-table th {
+    background: var(--border);
+    color: var(--cyan);
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .macro-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .macro-table tr:hover td { background: rgba(0,245,255,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; }
+  .macro-table .macro-type { color: var(--purple); font-size: 11px; }
+
+  /* LEVEL BADGE */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--border);
+    border: 1px solid var(--purple);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--purple);
+    margin-bottom: 16px;
+  }
+
+  /* STEPS */
+  .steps { counter-reset: step; }
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .step-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--bg);
+    background: var(--cyan);
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .step-content h4 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  /* SKILL TREE */
+  .skill-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 24px;
+  }
+  .skill-tree::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--cyan), var(--purple));
+  }
+  .skill-node {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+  }
+  .skill-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-left: -24px;
+    margin-top: 3px;
+    box-shadow: 0 0 8px var(--cyan);
+  }
+  .skill-dot.done { background: var(--cyan); }
+  .skill-dot.purple { border-color: var(--purple); box-shadow: 0 0 8px var(--purple); background: var(--purple); }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+  }
+  footer span { color: var(--cyan); }
+
+  /* ANIMATIONS */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 0.6s ease forwards;
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    header h1 { font-size: 14px; }
+    .section-title { font-size: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">◦ Holberton School · C Programming ◦</span>
+  <h1>VARIADIC<br><span>FUNCTIONS</span></h1>
+  <p class="header-sub">Le guide ultime du débutant</p>
+  <div class="xp-bar">
+    <span class="xp-label">XP</span>
+    <div class="xp-track"><div class="xp-fill"></div></div>
+    <span class="xp-label">LVL 3</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ─────────────────────── CONCEPT ─────────────────────── -->
+  <div class="section-title">C'EST QUOI UNE VARIADIC FUNCTION ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🎮</span> DÉFINITION</div>
+    <p>Une <strong style="color:var(--cyan)">variadic function</strong> est une fonction qui accepte un <strong style="color:var(--cyan)">nombre variable d'arguments</strong>. Tu ne sais pas à l'avance combien de paramètres elle va recevoir !</p>
+    <p style="margin-top:10px">Tu les reconnais à leurs <code>...</code> dans la déclaration — appelés les <strong style="color:var(--pink)">ellipses</strong>.</p>
+    <pre><code>/* Prototype d'une variadic function */
+int ma_fonction(int count, ...);</code></pre>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Imagine que tu joues à un <strong>RPG</strong> et que tu as un coffre magique (<em>le personnage/la fonction</em>). Ce coffre peut contenir <strong>autant d'items que tu veux</strong> : une épée, 3 potions, 7 flèches... Tu ne sais pas à l'avance ce qu'il va recevoir. C'est exactement ça une variadic function : elle accepte tous les items qu'on lui donne !</p>
+    </div>
+
+    <div class="tip">La variadic function la plus connue en C ? <code>printf()</code> ! Elle accepte une chaîne de format, puis autant d'arguments que tu veux.</div>
+  </div>
+
+  <!-- ─────────────────────── HEADER ─────────────────────── -->
+  <div class="section-title">LE HEADER INDISPENSABLE</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">📦</span> #include &lt;stdarg.h&gt;</div>
+    <p>Tout se passe dans ce header. Il contient toutes les macros dont tu as besoin pour manipuler les arguments variables.</p>
+    <pre><code>#include &lt;stdarg.h&gt;  /* OBLIGATOIRE pour les variadic functions */</code></pre>
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>C'est ton <strong>inventaire</strong>. Sans l'ouvrir (<code>#include</code>), tu ne peux pas accéder aux outils pour fouiller dans les arguments. Ce header est ton <strong>Bag of Holding</strong> de D&D !</p>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── MACROS ─────────────────────── -->
+  <div class="section-title">LES 4 MACROS — TON SKILL TREE</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">🌳</span> SKILL TREE DES MACROS</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:17px;">va_list</strong> — Le sac à dos
+          <p style="font-size:14px;color:var(--muted)">Déclare une variable qui contiendra les arguments variables. C'est ton pointeur vers les args.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--cyan);font-size:17px;">va_start</strong> — Ouvre le sac
+          <p style="font-size:14px;color:var(--muted)">Initialise la va_list. Pointe sur le premier argument variable. Doit être appelé AVANT va_arg.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--green);font-size:17px;">va_arg</strong> — Récupère un item du sac
+          <p style="font-size:14px;color:var(--muted)">Récupère le prochain argument dans la liste. Tu dois lui dire le type attendu.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot purple"></div>
+        <div>
+          <strong style="color:var(--pink);font-size:17px;">va_end</strong> — Ferme le sac
+          <p style="font-size:14px;color:var(--muted)">Nettoie la va_list. TOUJOURS appeler avant de quitter la fonction. C'est ton free() des va_list.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="macro-table">
+    <thead>
+      <tr>
+        <th>MACRO</th>
+        <th>SYNTAXE</th>
+        <th>RÔLE</th>
+        <th>RETOURNE</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="macro-name">va_list</td>
+        <td><code>va_list args;</code></td>
+        <td>Déclare la variable liste d'args</td>
+        <td class="macro-type">type spécial</td>
+      </tr>
+      <tr>
+        <td class="macro-name">va_start</td>
+        <td><code>va_start(args, last_named);</code></td>
+        <td>Initialise args après le dernier param nommé</td>
+        <td class="macro-type">void</td>
+      </tr>
+      <tr>
+        <td class="macro-name">va_arg</td>
+        <td><code>va_arg(args, type);</code></td>
+        <td>Récupère l'arg suivant du type donné</td>
+        <td class="macro-type">valeur du type</td>
+      </tr>
+      <tr>
+        <td class="macro-name">va_end</td>
+        <td><code>va_end(args);</code></td>
+        <td>Libère / nettoie la va_list</td>
+        <td class="macro-type">void</td>
+      </tr>
+      <tr>
+        <td class="macro-name">va_copy</td>
+        <td><code>va_copy(dest, src);</code></td>
+        <td>Copie une va_list dans une autre</td>
+        <td class="macro-type">void</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ─────────────────────── STRUCTURE ─────────────────────── -->
+  <div class="section-title">STRUCTURE D'UNE VARIADIC FUNCTION</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LE SQUELETTE — À MÉMORISER</div>
+    <pre><code>#include &lt;stdarg.h&gt;
+
+type_retour nom_fonction(type param_fixe, ...) /* 1. Déclaration avec ... */
+{
+    va_list args;                        /* 2. Déclare le "sac à dos" */
+    va_start(args, param_fixe);          /* 3. Ouvre le sac après le dernier param fixe */
+
+    /* 4. Boucle pour récupérer chaque argument */
+    while (/* condition d'arrêt */)
+    {
+        int val = va_arg(args, int);     /* 5. Récupère un int du sac */
+    }
+
+    va_end(args);                         /* 6. Ferme le sac — TOUJOURS ! */
+    return (résultat);
+}</code></pre>
+  </div>
+
+  <!-- ─────────────────────── EXEMPLES ─────────────────────── -->
+  <div class="section-title">EXEMPLES CONCRETS — LES BOSS FIGHTS</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> BOSS 1 — SOMME DE N ENTIERS</div>
+    <div class="level-badge">⭐ LVL 1 — Facile</div>
+    <p>Additionne un nombre inconnu d'entiers. Le premier argument dit combien il y en a.</p>
+    <pre><code>#include &lt;stdarg.h&gt;
+#include &lt;stdio.h&gt;
+
+int sum_them_all(int n, ...)
+{
+    va_list args;
+    int     sum = 0;
+    int     i;
+
+    va_start(args, n);
+    i = 0;
+    while (i < n)
+    {
+        sum += va_arg(args, int);   /* Récupère chaque int */
+        i++;
+    }
+    va_end(args);
+    return (sum);
+}
+
+int main(void)
+{
+    printf("%d\n", sum_them_all(4, 10, 20, 30, 40)); /* 100 */
+    printf("%d\n", sum_them_all(2, 5, 5));            /* 10  */
+    return (0);
+}</code></pre>
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>C'est comme ramasser des <strong>pièces dans Mario</strong>. <code>n</code> te dit combien de pièces il y a sur le chemin. Ensuite tu les ramasses une par une avec <code>va_arg</code> et tu les additionnes dans ton compteur <code>sum</code>.</p>
+    </div>
+  </div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🎲</span> BOSS 2 — AFFICHE N STRINGS</div>
+    <div class="level-badge">⭐⭐ LVL 2 — Intermédiaire</div>
+    <p>Affiche un nombre variable de chaînes de caractères.</p>
+    <pre><code>#include &lt;stdarg.h&gt;
+#include &lt;stdio.h&gt;
+
+void print_strings(int count, ...)
+{
+    va_list args;
+    char   *str;
+    int     i;
+
+    va_start(args, count);
+    i = 0;
+    while (i < count)
+    {
+        str = va_arg(args, char *);  /* Type : char * !! */
+        printf("%s\n", str);
+        i++;
+    }
+    va_end(args);
+}
+
+int main(void)
+{
+    print_strings(3, "Zelda", "Link", "Ganon");
+    return (0);
+}</code></pre>
+    <div class="warn">Attention ! Le type passé à <code>va_arg</code> doit correspondre exactement à ce qu'on a envoyé. <code>char *</code> pour une string, <code>int</code> pour un entier, <code>double</code> pour un flottant (jamais <code>float</code> seul !).</div>
+  </div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🏆</span> BOSS FINAL — MINI _PRINTF</div>
+    <div class="level-badge">⭐⭐⭐ LVL 3 — Hard (Holberton style)</div>
+    <p>Gère les specifiers <code>%d</code> et <code>%s</code> comme le vrai <code>printf</code>.</p>
+    <pre><code>#include &lt;stdarg.h&gt;
+#include &lt;stdio.h&gt;
+
+void my_printf(const char *fmt, ...)
+{
+    va_list args;
+    int     i = 0;
+
+    va_start(args, fmt);
+    while (fmt[i])
+    {
+        if (fmt[i] == '%' && fmt[i + 1])
+        {
+            i++;
+            if (fmt[i] == 'd')
+                printf("%d", va_arg(args, int));
+            else if (fmt[i] == 's')
+                printf("%s", va_arg(args, char *));
+        }
+        else
+            putchar(fmt[i]);
+        i++;
+    }
+    va_end(args);
+}
+
+int main(void)
+{
+    my_printf("Joueur: %s, Score: %d\n", "Cloud", 9999);
+    return (0);
+}</code></pre>
+  </div>
+
+  <!-- ─────────────────────── RÈGLES CRITIQUES ─────────────────────── -->
+  <div class="section-title">RÈGLES CRITIQUES — NE MEURS PAS BÊTEMENT</div>
+
+  <div class="grid-2">
+    <div class="card warn" style="border:none; border-left: 4px solid var(--pink); background: rgba(255,45,120,0.05);">
+      <div class="card-title" style="color:var(--pink)"><span class="card-icon">💀</span> LES GAME OVER</div>
+      <ul style="padding-left:18px; font-size:14px; line-height:2.2;">
+        <li>Oublier <code>va_end</code> — fuite mémoire</li>
+        <li>Mauvais type dans <code>va_arg</code> — comportement indéfini</li>
+        <li>Lire trop d'arguments — UB (Undefined Behavior)</li>
+        <li>Passer <code>float</code> à <code>va_arg</code> — toujours utiliser <code>double</code></li>
+        <li>Pas de param fixe avant <code>...</code> — interdit en C</li>
+      </ul>
+    </div>
+    <div class="card tip" style="border:none; border-left: 4px solid var(--green); background: rgba(57,255,20,0.05);">
+      <div class="card-title" style="color:var(--green)"><span class="card-icon">🏅</span> LES SPEEDRUN TIPS</div>
+      <ul style="padding-left:18px; font-size:14px; line-height:2.2;">
+        <li>Toujours passer le nb d'args en 1er param</li>
+        <li>OU utiliser une valeur sentinelle (ex: NULL)</li>
+        <li>Compiler avec <code>-Wall -Wextra</code> toujours</li>
+        <li><code>char</code> et <code>short</code> sont promus en <code>int</code></li>
+        <li><code>float</code> est promu en <code>double</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── PROMOTIONS ─────────────────────── -->
+  <div class="section-title">LES DEFAULT ARGUMENT PROMOTIONS</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">⬆️</span> PROMOTION AUTOMATIQUE DES TYPES</div>
+    <p style="margin-bottom:12px">Quand tu passes des arguments variables, le compilateur <strong style="color:var(--yellow)">upgrade automatiquement</strong> certains types :</p>
+    <div class="grid-3">
+      <div style="text-align:center; padding:14px; background:var(--bg3); border-radius:6px; border:1px solid var(--border);">
+        <div style="font-family:'Share Tech Mono'; color:var(--pink)">char / short</div>
+        <div style="font-size:22px; margin:6px 0;">⬆️</div>
+        <div style="font-family:'Share Tech Mono'; color:var(--cyan)">int</div>
+      </div>
+      <div style="text-align:center; padding:14px; background:var(--bg3); border-radius:6px; border:1px solid var(--border);">
+        <div style="font-family:'Share Tech Mono'; color:var(--pink)">float</div>
+        <div style="font-size:22px; margin:6px 0;">⬆️</div>
+        <div style="font-family:'Share Tech Mono'; color:var(--cyan)">double</div>
+      </div>
+      <div style="text-align:center; padding:14px; background:var(--bg3); border-radius:6px; border:1px solid var(--border);">
+        <div style="font-family:'Share Tech Mono'; color:var(--green)">int / double</div>
+        <div style="font-size:22px; margin:6px 0;">✅</div>
+        <div style="font-family:'Share Tech Mono'; color:var(--cyan)">inchangé</div>
+      </div>
+    </div>
+    <div class="warn" style="margin-top:14px">Ne jamais faire <code>va_arg(args, float)</code> ! Utilise <code>va_arg(args, double)</code> car float est promu en double.</div>
+  </div>
+
+  <!-- ─────────────────────── SENTINELLE ─────────────────────── -->
+  <div class="section-title">TECHNIQUE DE LA SENTINELLE</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🛡️</span> UTILISER NULL COMME FIN DE LISTE</div>
+    <p style="margin-bottom:10px">Plutôt que de passer le nombre d'args, tu peux terminer avec <code>NULL</code> comme sentinelle :</p>
+    <pre><code>#include &lt;stdarg.h&gt;
+#include &lt;stdio.h&gt;
+
+void print_all(const char *first, ...)
+{
+    va_list args;
+    char   *str = (char *)first;
+
+    va_start(args, first);
+    while (str != NULL)
+    {
+        printf("%s\n", str);
+        str = va_arg(args, char *);  /* Récupère jusqu'à NULL */
+    }
+    va_end(args);
+}
+
+int main(void)
+{
+    print_all("Mario", "Luigi", "Bowser", NULL); /* NULL = fin */
+    return (0);
+}</code></pre>
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>C'est comme le <strong>dernier ennemi dans un couloir</strong>. Tu avances (boucle) jusqu'à rencontrer un mur (<code>NULL</code>). Le <code>NULL</code> est ta checkpoint qui dit "stop, le niveau est terminé !"</p>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── VA_COPY ─────────────────────── -->
+  <div class="section-title">VA_COPY — LA TECHNIQUE AVANCÉE</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">📋</span> COPIER UNE VA_LIST</div>
+    <p style="margin-bottom:10px">Si tu dois parcourir les args deux fois, utilise <code>va_copy</code> :</p>
+    <pre><code>void double_parcours(int n, ...)
+{
+    va_list args;
+    va_list args_copy;
+
+    va_start(args, n);
+    va_copy(args_copy, args);   /* Duplique la va_list */
+
+    /* Premier parcours avec args */
+    /* ... */
+
+    /* Deuxième parcours avec args_copy */
+    /* ... */
+
+    va_end(args_copy);          /* va_end sur la copie aussi ! */
+    va_end(args);
+}</code></pre>
+    <div class="tip"><code>va_copy</code> crée une copie indépendante. Il faut appeler <code>va_end</code> sur les deux !</div>
+  </div>
+
+  <!-- ─────────────────────── RECAP ─────────────────────── -->
+  <div class="section-title">RÉCAP RAPIDE — TON CHEAT CODE</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🏁</span> LES 6 ÉTAPES DE VICTOIRE</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Inclure le header</h4>
+          <code>#include &lt;stdarg.h&gt;</code>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Déclarer avec <code>...</code></h4>
+          <code>int func(int n, ...);</code>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Déclarer <code>va_list</code></h4>
+          <code>va_list args;</code>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Initialiser avec <code>va_start</code></h4>
+          <code>va_start(args, n);</code> — le 2e param = dernier param nommé
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Lire avec <code>va_arg</code></h4>
+          <code>int val = va_arg(args, int);</code>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h4>TOUJOURS appeler <code>va_end</code></h4>
+          <code>va_end(args);</code> — sinon : undefined behavior !
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── COMPILATION ─────────────────────── -->
+  <div class="section-title">COMMANDES DE COMPILATION</div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🖥️</span> COMPILER TES FICHIERS</div>
+    <pre><code># Compilation basique
+gcc -Wall -Wextra -Werror -pedantic main.c -o mon_prog
+
+# Compiler plusieurs fichiers
+gcc -Wall -Wextra -Werror main.c variadic.c -o mon_prog
+
+# Avec le flag pedantic (recommandé Holberton)
+gcc -Wall -Wextra -Werror -pedantic -std=c89 main.c -o mon_prog
+
+# Vérifier les warnings
+gcc -Wall -Wextra main.c 2>&1 | head -20</code></pre>
+  </div>
+
+  <!-- ─────────────────────── ERREURS COMMUNES ─────────────────────── -->
+  <div class="section-title">ERREURS FRÉQUENTES — ÉVITE LE GAME OVER</div>
+
+  <div class="grid-2">
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">❌</span> ERREUR CLASSIQUE</div>
+      <pre><code>/* FAUX — float dans va_arg */
+float f = va_arg(args, float);
+/* undefined behavior ! */</code></pre>
+    </div>
+    <div class="card green fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> LA BONNE VERSION</div>
+      <pre><code>/* CORRECT — double dans va_arg */
+double f = va_arg(args, double);
+/* float est promu en double */</code></pre>
+    </div>
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">❌</span> OUBLIER VA_END</div>
+      <pre><code>void bad_func(int n, ...)
+{
+    va_list args;
+    va_start(args, n);
+    /* ... */
+    return;  /* OUBLI de va_end ! */
+}</code></pre>
+    </div>
+    <div class="card green fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> TOUJOURS VA_END</div>
+      <pre><code>void good_func(int n, ...)
+{
+    va_list args;
+    va_start(args, n);
+    /* ... */
+    va_end(args);  /* TOUJOURS ! */
+    return;
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── HOLBERTON TIPS ─────────────────────── -->
+  <div class="section-title">TIPS SPÉCIAL HOLBERTON</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🎓</span> POUR TES PROJETS</div>
+    <ul style="padding-left:18px; font-size:15px; line-height:2.4;">
+      <li>Le projet <strong style="color:var(--yellow)">0x10. C - Variadic functions</strong> demande souvent : <code>va_list</code>, <code>va_start</code>, <code>va_arg</code>, <code>va_end</code></li>
+      <li>Le projet <strong style="color:var(--cyan)">printf</strong> utilise massivement les variadic functions</li>
+      <li>Le <strong>Betty style</strong> s'applique : accolades, longueur des fonctions &lt; 40 lignes</li>
+      <li>Toujours vérifier avec <code>valgrind</code> qu'il n'y a pas de fuite mémoire</li>
+      <li>Toutes les fonctions déclarées dans un <code>.h</code> avec <code>#ifndef</code></li>
+    </ul>
+    <pre><code>/* Exemple de header pour variadic functions */
+#ifndef VARIADIC_H
+#define VARIADIC_H
+
+#include &lt;stdarg.h&gt;
+
+int  sum_them_all(int n, ...);
+void print_numbers(int n, ...);
+void print_strings(int n, ...);
+
+#endif /* VARIADIC_H */</code></pre>
+  </div>
+
+</div>
+
+<footer>
+  <p>HOLBERTON SCHOOL ◦ VARIADIC FUNCTIONS ◦ <span>CHEAT SHEET</span></p>
+  <p style="margin-top:10px; color:var(--green)">[ PRESS START TO BECOME A C MASTER ]</p>
+</footer>
+
+</body>
+</html>
