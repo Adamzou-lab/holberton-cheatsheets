@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>argc & argv — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<style>
+  :root {
+    --neon:       #39ff14;
+    --grid-color: rgba(57, 255, 20, 0.03);
+    --code-bg:    rgba(57, 255, 20, 0.08);
+    --glow-1:     rgba(57, 255, 20, 0.5);
+    --glow-2:     rgba(57, 255, 20, 0.2);
+  }
+
+  .compare-label { font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .compare-label.bad { color: var(--pink); }
+
+  /* MEMORY DIAGRAM */
+  .mem-diagram { background: #060e06; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 12px; }
+  .mem-header { background: var(--border); padding: 8px 14px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--neon); letter-spacing: 1px; }
+  .mem-row { display: flex; border-bottom: 1px solid var(--border); }
+  .mem-row:last-child { border-bottom: none; }
+  .mem-idx { width: 70px; padding: 10px 12px; background: rgba(57,255,20,0.04); color: var(--muted); flex-shrink: 0; border-right: 1px solid var(--border); font-size: 11px; text-align: center; }
+  .mem-val { padding: 10px 14px; flex: 1; color: var(--text); display: flex; align-items: center; gap: 10px; }
+  .mem-tag { font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 3px 7px; border-radius: 3px; flex-shrink: 0; }
+  .mem-tag.argc-t { background: rgba(255,230,0,0.1); color: var(--yellow); border: 1px solid var(--yellow); }
+  .mem-tag.argv-t { background: rgba(57,255,20,0.1);  color: var(--neon);   border: 1px solid var(--neon); }
+  .mem-tag.str-t  { background: rgba(0,245,255,0.1);  color: var(--cyan);   border: 1px solid var(--cyan); }
+  .mem-tag.null-t { background: rgba(255,45,120,0.1); color: var(--pink);   border: 1px solid var(--pink); }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — C Programming ✦</span>
+  <h1>ARGC<br><span>&amp; ARGV</span></h1>
+  <p class="header-sub">Lis ce que l'utilisateur te donne.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ DÉFINITION ══════════════ -->
+  <div class="section-title">C'EST QUOI ARGC ET ARGV ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🎮</span> DÉFINITION</div>
+    <p><code>argc</code> et <code>argv</code> sont les deux paramètres que le système d'exploitation passe à <code>main()</code> quand tu lances un programme depuis le terminal. Ils permettent à ton programme de recevoir des <strong style="color:var(--neon)">arguments en ligne de commande</strong>.</p>
+
+    <pre><code><span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    <span class="cmt">/* argc = argument count  — nombre d'arguments (toujours >= 1)
+       argv = argument vector — tableau de chaînes de caractères */</span>
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Imagine que tu lances un jeu depuis un launcher en ligne de commande : <strong><code>./game --level 5 --player "Link"</code></strong>. Le launcher <strong>compte les mots</strong> que tu as tapés (<code>argc</code>) et te les passe dans un <strong>tableau de chaînes</strong> (<code>argv</code>). Ton programme peut alors lire chaque argument comme s'il ouvrait les cases d'un inventaire.</p>
+    </div>
+
+    <div class="grid-2" style="margin-top:16px;">
+      <div style="background:rgba(255,230,0,0.05); border:1px solid rgba(255,230,0,0.3); border-radius:8px; padding:16px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--yellow); margin-bottom:10px;">ARGC</div>
+        <p style="font-size:14px;"><strong style="color:var(--yellow);">int argc</strong> — <em>argument count</em></p>
+        <p style="font-size:14px; margin-top:8px; color:var(--muted);">Nombre total d'arguments, <strong style="color:var(--text);">incluant le nom du programme</strong>. Toujours <strong style="color:var(--neon);">≥ 1</strong>.</p>
+      </div>
+      <div style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.3); border-radius:8px; padding:16px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--neon); margin-bottom:10px;">ARGV</div>
+        <p style="font-size:14px;"><strong style="color:var(--neon);">char **argv</strong> — <em>argument vector</em></p>
+        <p style="font-size:14px; margin-top:8px; color:var(--muted);">Tableau de pointeurs vers des chaînes. <code>argv[0]</code> = nom du programme. Toujours terminé par <strong style="color:var(--pink);">NULL</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ MÉMOIRE ══════════════ -->
+  <div class="section-title">ARGC &amp; ARGV EN MÉMOIRE</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LAYOUT MÉMOIRE — <code>./prog hello 42</code></div>
+    <p style="margin-bottom:14px;">Commande tapée : <code style="color:var(--neon);">./prog hello 42</code></p>
+
+    <div class="mem-diagram">
+      <div class="mem-header">argc = 3 | argv (char**)</div>
+      <div class="mem-row">
+        <div class="mem-idx">argc</div>
+        <div class="mem-val">
+          <span class="mem-tag argc-t">INT</span>
+          <strong style="color:var(--yellow);">3</strong>
+          <span style="color:var(--muted); font-size:12px;">← toujours au moins 1 (le nom du prog compte !)</span>
+        </div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-idx">argv[0]</div>
+        <div class="mem-val">
+          <span class="mem-tag argv-t">PTR</span>
+          <strong style="color:var(--neon);">"./prog"</strong>
+          <span style="color:var(--muted); font-size:12px;">← nom/chemin du programme</span>
+        </div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-idx">argv[1]</div>
+        <div class="mem-val">
+          <span class="mem-tag str-t">PTR</span>
+          <strong style="color:var(--cyan);">"hello"</strong>
+          <span style="color:var(--muted); font-size:12px;">← 1er argument utilisateur</span>
+        </div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-idx">argv[2]</div>
+        <div class="mem-val">
+          <span class="mem-tag str-t">PTR</span>
+          <strong style="color:var(--cyan);">"42"</strong>
+          <span style="color:var(--muted); font-size:12px;">← 2ème argument (c'est une STRING, pas un int !)</span>
+        </div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-idx">argv[3]</div>
+        <div class="mem-val">
+          <span class="mem-tag null-t">NULL</span>
+          <strong style="color:var(--pink);">NULL</strong>
+          <span style="color:var(--muted); font-size:12px;">← sentinelle — argv[argc] est toujours NULL</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="warn" style="margin-top:14px;"><code>argv[2]</code> vaut <code>"42"</code> — c'est une <strong>chaîne de caractères</strong>, PAS un entier. Pour l'utiliser comme nombre : <code>atoi(argv[2])</code> ou <code>strtol(argv[2], NULL, 10)</code>.</div>
+  </div>
+
+  <!-- ══════════════ LES DEUX FORMES DE MAIN ══════════════ -->
+  <div class="section-title">LES DEUX FORMES DE MAIN</div>
+
+  <div class="grid-2">
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">📦</span> SANS ARGUMENTS</div>
+      <pre><code><span class="cmt">/* Quand tu n'as pas besoin des args */</span>
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    printf(<span class="str">"Hello World\n"</span>);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+      <p style="font-size:14px; color:var(--muted); margin-top:10px;">Utilise cette forme quand ton programme ne lit aucun argument — Betty approuve !</p>
+    </div>
+    <div class="card cyan fade-in">
+      <div class="card-title"><span class="card-icon">📥</span> AVEC ARGUMENTS</div>
+      <pre><code><span class="cmt">/* Quand tu lis des arguments */</span>
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    <span class="cmt">/* ou : char *argv[]  — équivalent */</span>
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+      <p style="font-size:14px; color:var(--muted); margin-top:10px;"><code>char **argv</code> et <code>char *argv[]</code> sont strictement équivalents en paramètre de fonction.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════ ACCÉDER AUX ARGUMENTS ══════════════ -->
+  <div class="section-title">ACCÉDER AUX ARGUMENTS</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🔍</span> LIRE ET ITÉRER SUR ARGV</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    <span class="type">int</span> i;
+
+    <span class="cmt">/* Afficher argc */</span>
+    printf(<span class="str">"Nombre d'arguments : %d\n"</span>, argc);
+
+    <span class="cmt">/* Méthode 1 — boucle avec index (plus lisible) */</span>
+    i = <span class="num">0</span>;
+    <span class="kw">while</span> (i < argc)
+    {
+        printf(<span class="str">"argv[%d] = \"%s\"\n"</span>, i, argv[i]);
+        i++;
+    }
+
+    <span class="cmt">/* Méthode 2 — boucle sur pointeur (sentinelle NULL) */</span>
+    <span class="type">char</span> **ptr = argv;
+    <span class="kw">while</span> (*ptr != <span class="kw">NULL</span>)
+    {
+        printf(<span class="str">"%s\n"</span>, *ptr);
+        ptr++;
+    }
+
+    <span class="cmt">/* Accès direct */</span>
+    printf(<span class="str">"Programme : %s\n"</span>, argv[<span class="num">0</span>]);  <span class="cmt">/* toujours safe */</span>
+    <span class="kw">if</span> (argc > <span class="num">1</span>)
+        printf(<span class="str">"1er arg : %s\n"</span>, argv[<span class="num">1</span>]);  <span class="cmt">/* vérifier avant ! */</span>
+
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+    <div class="tip">Toujours tester <code>argc > N</code> avant d'accéder à <code>argv[N]</code>. Accéder à <code>argv[1]</code> sans vérifier quand l'utilisateur n'a donné aucun argument → <strong>undefined behavior</strong>.</div>
+  </div>
+
+  <!-- ══════════════ CONVERTIR LES ARGUMENTS ══════════════ -->
+  <div class="section-title">CONVERTIR LES ARGUMENTS</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔄</span> STRING → NOMBRE — LES FONCTIONS DE CONVERSION</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>   <span class="cmt">/* atoi, atof, strtol, strtod */</span>
+<span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    <span class="type">int</span>    n;
+    <span class="type">double</span> f;
+    <span class="type">long</span>   l;
+
+    <span class="kw">if</span> (argc < <span class="num">2</span>)
+    {
+        fprintf(stderr, <span class="str">"Usage: %s &lt;nombre&gt;\n"</span>, argv[<span class="num">0</span>]);
+        <span class="kw">return</span> (<span class="num">1</span>);
+    }
+
+    n = <span class="fn">atoi</span>(argv[<span class="num">1</span>]);           <span class="cmt">/* string → int (simple, pas de gestion d'erreur) */</span>
+    f = <span class="fn">atof</span>(argv[<span class="num">1</span>]);           <span class="cmt">/* string → double */</span>
+    l = <span class="fn">strtol</span>(argv[<span class="num">1</span>], <span class="kw">NULL</span>, <span class="num">10</span>); <span class="cmt">/* string → long  (gestion d'erreur possible) */</span>
+
+    printf(<span class="str">"int    : %d\n"</span>, n);
+    printf(<span class="str">"double : %f\n"</span>, f);
+    printf(<span class="str">"long   : %ld\n"</span>, l);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+
+    <table class="macro-table" style="margin-top:14px;">
+      <thead><tr><th>Fonction</th><th>Retourne</th><th>Gestion erreur</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td><span class="macro-name">atoi(str)</span></td><td><code>int</code></td><td>❌ aucune</td><td>Conversion simple, Holberton OK</td></tr>
+        <tr><td><span class="macro-name">atof(str)</span></td><td><code>double</code></td><td>❌ aucune</td><td>Flottants</td></tr>
+        <tr><td><span class="macro-name">atol(str)</span></td><td><code>long</code></td><td>❌ aucune</td><td>Grands entiers</td></tr>
+        <tr><td><span class="macro-name">strtol(str, end, base)</span></td><td><code>long</code></td><td>✅ via errno</td><td>Robuste, base configurable</td></tr>
+        <tr><td><span class="macro-name">strtod(str, end)</span></td><td><code>double</code></td><td>✅ via errno</td><td>Flottants robustes</td></tr>
+      </tbody>
+    </table>
+    <div class="warn"><code>atoi("abc")</code> retourne <strong>0</strong> sans signaler d'erreur. En production utilise <code>strtol</code>. À Holberton, <code>atoi</code> est généralement accepté.</div>
+  </div>
+
+  <!-- ══════════════ VÉRIFICATION DES ARGUMENTS ══════════════ -->
+  <div class="section-title">VÉRIFIER LES ARGUMENTS — PATTERN HOLBERTON</div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🛡️</span> VALIDER AVANT D'UTILISER</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    <span class="cmt">/* ── Vérifier le nombre d'arguments ─────────────── */</span>
+    <span class="kw">if</span> (argc != <span class="num">3</span>)
+    {
+        fprintf(stderr, <span class="str">"Usage: %s &lt;nom&gt; &lt;age&gt;\n"</span>, argv[<span class="num">0</span>]);
+        <span class="kw">return</span> (<span class="num">1</span>);
+    }
+
+    <span class="cmt">/* ── Utiliser les arguments validés ──────────────── */</span>
+    <span class="type">char</span> *name = argv[<span class="num">1</span>];
+    <span class="type">int</span>   age  = <span class="fn">atoi</span>(argv[<span class="num">2</span>]);
+
+    printf(<span class="str">"Nom : %s\n"</span>, name);
+    printf(<span class="str">"Age : %d\n"</span>, age);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}
+
+<span class="cmt">/*
+ *  $ ./prog Alice 25
+ *  Nom : Alice
+ *  Age : 25
+ *
+ *  $ ./prog
+ *  Usage: ./prog &lt;nom&gt; &lt;age&gt;
+ */</span></code></pre>
+    <div class="tip">Toujours afficher le message d'usage sur <code>stderr</code> avec <code>fprintf(stderr, ...)</code>, et retourner <code>1</code> (ou EXIT_FAILURE) en cas d'erreur. C'est la convention Unix.</div>
+  </div>
+
+  <!-- ══════════════ 3 BOSS ══════════════ -->
+  <div class="section-title">LES 3 BOSS — EXEMPLES PROGRESSIFS</div>
+
+  <!-- BOSS 1 -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🐣</span> BOSS 1 — AFFICHER TOUS LES ARGUMENTS</div>
+    <div class="level-badge">⚔️ LVL 1 — FACILE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    <span class="type">int</span> i = <span class="num">1</span>;   <span class="cmt">/* on commence à 1 pour sauter argv[0] */</span>
+
+    <span class="kw">while</span> (i < argc)
+    {
+        printf(<span class="str">"%s\n"</span>, argv[i]);
+        i++;
+    }
+    <span class="kw">return</span> (<span class="num">0</span>);
+}
+
+<span class="cmt">/*
+ *  $ ./prog un deux trois
+ *  un
+ *  deux
+ *  trois
+ */</span></code></pre>
+  </div>
+
+  <!-- BOSS 2 -->
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> BOSS 2 — ADDITIONNER DES NOMBRES PASSÉS EN ARGS</div>
+    <div class="level-badge">🔥 LVL 2 — INTERMÉDIAIRE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    <span class="type">int</span> sum = <span class="num">0</span>;
+    <span class="type">int</span> i   = <span class="num">1</span>;
+
+    <span class="kw">if</span> (argc < <span class="num">2</span>)
+    {
+        fprintf(stderr, <span class="str">"Usage: %s &lt;n1&gt; [n2 ...]\n"</span>, argv[<span class="num">0</span>]);
+        <span class="kw">return</span> (<span class="num">1</span>);
+    }
+    <span class="kw">while</span> (i < argc)
+    {
+        sum += <span class="fn">atoi</span>(argv[i]);
+        i++;
+    }
+    printf(<span class="str">"Somme : %d\n"</span>, sum);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}
+
+<span class="cmt">/*
+ *  $ ./sum 10 20 30 5
+ *  Somme : 65
+ */</span></code></pre>
+  </div>
+
+  <!-- BOSS FINAL -->
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">💀</span> BOSS FINAL — CALCULATRICE EN LIGNE DE COMMANDE</div>
+    <div class="level-badge">💀 LVL 3 — HOLBERTON STYLE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    <span class="type">int</span> a;
+    <span class="type">int</span> b;
+
+    <span class="kw">if</span> (argc != <span class="num">4</span>)
+    {
+        fprintf(stderr, <span class="str">"Usage: %s &lt;n1&gt; &lt;op&gt; &lt;n2&gt;\n"</span>, argv[<span class="num">0</span>]);
+        fprintf(stderr, <span class="str">"  op: + - * /\n"</span>);
+        <span class="kw">return</span> (<span class="num">1</span>);
+    }
+    a = <span class="fn">atoi</span>(argv[<span class="num">1</span>]);
+    b = <span class="fn">atoi</span>(argv[<span class="num">3</span>]);
+
+    <span class="kw">if</span> (<span class="fn">strcmp</span>(argv[<span class="num">2</span>], <span class="str">"+"</span>) == <span class="num">0</span>)
+        printf(<span class="str">"%d\n"</span>, a + b);
+    <span class="kw">else if</span> (<span class="fn">strcmp</span>(argv[<span class="num">2</span>], <span class="str">"-"</span>) == <span class="num">0</span>)
+        printf(<span class="str">"%d\n"</span>, a - b);
+    <span class="kw">else if</span> (<span class="fn">strcmp</span>(argv[<span class="num">2</span>], <span class="str">"*"</span>) == <span class="num">0</span>)
+        printf(<span class="str">"%d\n"</span>, a * b);
+    <span class="kw">else if</span> (<span class="fn">strcmp</span>(argv[<span class="num">2</span>], <span class="str">"/"</span>) == <span class="num">0</span>)
+    {
+        <span class="kw">if</span> (b == <span class="num">0</span>)
+        {
+            fprintf(stderr, <span class="str">"Error: division by zero\n"</span>);
+            <span class="kw">return</span> (<span class="num">1</span>);
+        }
+        printf(<span class="str">"%d\n"</span>, a / b);
+    }
+    <span class="kw">else</span>
+    {
+        fprintf(stderr, <span class="str">"Error: unknown operator '%s'\n"</span>, argv[<span class="num">2</span>]);
+        <span class="kw">return</span> (<span class="num">1</span>);
+    }
+    <span class="kw">return</span> (<span class="num">0</span>);
+}
+
+<span class="cmt">/*
+ *  $ ./calc 10 + 5    →  15
+ *  $ ./calc 10 / 0    →  Error: division by zero
+ *  $ ./calc 7 "*" 6   →  42   (guillemets pour le shell)
+ */</span></code></pre>
+    <div class="warn">Dans le shell, <code>*</code> est un caractère spécial (glob). Passe-le entre guillemets : <code>./calc 7 "*" 6</code> ou échappe-le : <code>./calc 7 \* 6</code>.</div>
+  </div>
+
+  <!-- ══════════════ ERREURS CLASSIQUES ══════════════ -->
+  <div class="section-title">ERREURS CLASSIQUES — ❌ vs ✅</div>
+
+  <div class="grid-2">
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">❌</span> MAUVAIS</div>
+      <pre><code><span class="cmt">/* Accéder sans vérifier */</span>
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    printf(<span class="str">"%s\n"</span>, argv[<span class="num">1</span>]);
+    <span class="cmt">/* ❌ si pas d'arg → segfault */</span>
+}
+
+<span class="cmt">/* Utiliser argv[1] comme int direct */</span>
+<span class="type">int</span> n = argv[<span class="num">1</span>]; <span class="cmt">/* ❌ c'est un char* ! */</span>
+
+<span class="cmt">/* Modifier argv[0] */</span>
+argv[<span class="num">0</span>][<span class="num">0</span>] = <span class="str">'X'</span>;
+<span class="cmt">/* ❌ comportement indéfini */</span>
+
+<span class="cmt">/* Oublier argc dans la signature */</span>
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">char</span> **argv)
+<span class="cmt">/* ❌ signature invalide */</span></code></pre>
+    </div>
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> CORRECT</div>
+      <pre><code><span class="cmt">/* Toujours vérifier argc */</span>
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+{
+    <span class="kw">if</span> (argc < <span class="num">2</span>)
+        <span class="kw">return</span> (<span class="num">1</span>);
+    printf(<span class="str">"%s\n"</span>, argv[<span class="num">1</span>]); <span class="cmt">/* ✅ */</span>
+}
+
+<span class="cmt">/* Convertir avec atoi */</span>
+<span class="type">int</span> n = <span class="fn">atoi</span>(argv[<span class="num">1</span>]); <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* Lire argv[0], pas le modifier */</span>
+printf(<span class="str">"%s\n"</span>, argv[<span class="num">0</span>]); <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* Signatures valides */</span>
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> **argv)
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> argc, <span class="type">char</span> *argv[])
+<span class="cmt">/* ✅ les deux sont équivalents */</span></code></pre>
+    </div>
+  </div>
+
+  <!-- ══════════════ TIPS HOLBERTON ══════════════ -->
+  <div class="section-title">TIPS &amp; RÈGLES CRITIQUES</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">⚡</span> LES RÈGLES À NE JAMAIS OUBLIER</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;"><code>argv[0]</code> = nom du programme — toujours présent</strong>
+          <p style="font-size:14px;color:var(--muted);">Même si tu lances <code>./prog</code> sans rien d'autre, <code>argc = 1</code> et <code>argv[0] = "./prog"</code>. Le compteur part de 1, pas de 0.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;"><code>argv[argc]</code> vaut toujours <code>NULL</code></strong>
+          <p style="font-size:14px;color:var(--muted);">C'est garanti par la norme C. Tu peux itérer avec <code>while (*argv)</code> ou <code>while (argv[i])</code> comme alternative à compter avec argc.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div>
+          <strong style="color:var(--cyan);font-size:16px;">Tous les arguments sont des <code>char *</code> (strings)</strong>
+          <p style="font-size:14px;color:var(--muted);">Même <code>"42"</code> ou <code>"3.14"</code> sont des chaînes. Convertis toujours avec <code>atoi</code>, <code>atof</code> ou <code>strtol</code> avant d'utiliser comme nombre.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot yellow"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:16px;">Message d'erreur sur <code>stderr</code>, retour <code>1</code></strong>
+          <p style="font-size:14px;color:var(--muted);">Convention Unix : les erreurs vont sur <code>stderr</code> avec <code>fprintf(stderr, ...)</code>. Retourne <code>1</code> ou <code>EXIT_FAILURE</code> en cas d'erreur, <code>0</code> ou <code>EXIT_SUCCESS</code> si tout va bien.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot pink"></div>
+        <div>
+          <strong style="color:var(--pink);font-size:16px;">Les espaces séparent les arguments dans le shell</strong>
+          <p style="font-size:14px;color:var(--muted);">Un argument avec un espace doit être entre guillemets : <code>./prog "Hello World"</code> → <code>argv[1] = "Hello World"</code> (1 seul argument). Sans guillemets → 2 arguments séparés.</p>
+          <pre><code><span class="cmt">$ ./prog "Hello World"  → argc=2, argv[1]="Hello World"</span>
+<span class="cmt">$ ./prog Hello World    → argc=3, argv[1]="Hello", argv[2]="World"</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot purple"></div>
+        <div>
+          <strong style="color:var(--purple);font-size:16px;">Ne jamais écrire dans argv — lecture seule</strong>
+          <p style="font-size:14px;color:var(--muted);">Les chaînes dans <code>argv</code> pointent vers la mémoire gérée par le système. Copie dans un buffer local si tu dois modifier : <code>char buf[256]; strcpy(buf, argv[1]);</code></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ ══════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CARTE MENTALE COMPLÈTE</div>
+    <pre><code><span class="cmt">/*
+ *  SIGNATURES VALIDES
+ *  ───────────────────────────────────────────────────────────
+ *  int main(void)                     ← pas d'args
+ *  int main(int argc, char **argv)    ← standard
+ *  int main(int argc, char *argv[])   ← équivalent
+ *
+ *  CE QUE CONTIENT ARGV
+ *  ───────────────────────────────────────────────────────────
+ *  argv[0]       = nom/chemin du programme  (toujours présent)
+ *  argv[1]       = 1er argument utilisateur
+ *  argv[argc-1]  = dernier argument
+ *  argv[argc]    = NULL                     (sentinelle)
+ *
+ *  RÈGLES D'OR
+ *  ───────────────────────────────────────────────────────────
+ *  1. argc >= 1 TOUJOURS (argv[0] compte)
+ *  2. Vérifier argc avant d'accéder à argv[N]
+ *  3. argv[i] est toujours un char* — convertir avec atoi/strtol
+ *  4. Erreurs → fprintf(stderr) + return (1)
+ *  5. Succès  → return (0)
+ *  6. Espaces dans un arg → guillemets dans le shell
+ *
+ *  PATTERN HOLBERTON STANDARD
+ *  ───────────────────────────────────────────────────────────
+ *  int main(int argc, char **argv)
+ *  {
+ *      if (argc != N)
+ *      {
+ *          fprintf(stderr, "Usage: %s <args>\n", argv[0]);
+ *          return (1);
+ *      }
+ *      [... utiliser argv[1] à argv[N-1] ...]
+ *      return (0);
+ *  }
+ */</span></code></pre>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <span>ARGS PARSED</span> — READ INPUT, CONQUER OUTPUT<br><br>
+  <span>Holberton School</span> — C Programming — argc &amp; argv
+
+  <br><br><a href="https://github.com/Adamzou-lab" target="_blank" rel="noopener noreferrer" class="github-link">⌥ GITHUB — ADAMZOU-LAB</a>
+</footer>
+
+<a class="hub-btn" href="../index.html">
+  <span class="hub-icon">⌂</span>
+  HUB
+</a>
+
+</body>
+</html>
