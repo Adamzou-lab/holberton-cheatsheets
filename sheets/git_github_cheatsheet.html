@@ -5,45 +5,328 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Git & GitHub — Holberton Cheat Sheet</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/common.css">
 <style>
   :root {
-    --neon:       #ff6b00;
-    --grid-color: rgba(255, 107, 0, 0.03);
-    --code-bg:    rgba(255, 107, 0, 0.1);
-    --glow-1:     rgba(255, 107, 0, 0.5);
-    --glow-2:     rgba(255, 107, 0, 0.2);
+    --bg:     #0f0a05;
+    --bg2:    #1a1005;
+    --bg3:    #1f1508;
+    --card:   #181005;
+    --border: #2e1f08;
+    --neon:   #ff6b00;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --text:   #e0d0c0;
+    --muted:  #705040;
+    --white:  #fff5ee;
   }
 
-  /* ── FLOW DIAGRAM ── */
-  .flow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0; margin: 16px 0; }
-  .flow-box { background: var(--border); border: 1px solid var(--neon); border-radius: 6px; padding: 10px 16px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--neon); text-align: center; line-height: 1.6; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,107,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,107,0,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(15px, 2.6vw, 24px);
+    color: var(--white);
+    line-height: 1.6;
+    text-shadow: 0 0 20px rgba(255,107,0,0.5), 0 0 40px rgba(255,107,0,0.2);
+    margin-bottom: 20px;
+  }
+  header h1 span { color: var(--neon); }
+  .header-sub { font-size: 18px; color: var(--muted); letter-spacing: 2px; }
+
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--neon);
+    letter-spacing: 2px;
+    margin: 50px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::before { content: '▶'; color: var(--pink); font-size: 10px; animation: blink 1s step-end infinite; }
+  .section-title::after  { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--neon), transparent); }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--neon);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green .card-title  { color: var(--green); }
+  .card.pink .card-title   { color: var(--pink); }
+  .card.purple .card-title { color: var(--purple); }
+  .card-icon { font-size: 16px; }
+
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre {
+    background: #0e0800;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-top: 12px;
+  }
+  code {
+    background: rgba(255,107,0,0.1);
+    color: var(--neon);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  /* Git-specific syntax */
+  .cmd   { color: var(--neon); font-weight: bold; }
+  .flag  { color: var(--cyan); }
+  .arg   { color: var(--yellow); }
+  .str   { color: var(--green); }
+  .cmt   { color: var(--muted); font-style: italic; }
+  .ok    { color: var(--green); }
+  .err   { color: var(--pink); }
+  .hash  { color: var(--purple); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .analogy {
+    background: linear-gradient(135deg, #150c03, #0f0800);
+    border: 1px solid var(--yellow);
+    border-left: 4px solid var(--yellow);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .analogy-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  .tip  { background: rgba(57,255,20,0.05); border: 1px solid rgba(57,255,20,0.3); border-left: 4px solid var(--green); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .warn { background: rgba(255,45,120,0.05); border: 1px solid rgba(255,45,120,0.3); border-left: 4px solid var(--pink); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .tip::before  { content: '✅ '; }
+  .warn::before { content: '⚠️ '; }
+
+  .macro-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; font-size: 13px; margin-top: 12px; }
+  .macro-table th { background: var(--border); color: var(--neon); padding: 10px 14px; text-align: left; font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; }
+  .macro-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .macro-table tr:hover td { background: rgba(255,107,0,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; font-family: 'Share Tech Mono', monospace; }
+  .macro-table .macro-type { color: var(--cyan); font-size: 11px; }
+
+  .level-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--border); border: 1px solid var(--purple); border-radius: 4px; padding: 4px 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--purple); margin-bottom: 16px; }
+
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--bg); background: var(--neon); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  .skill-tree { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 24px; }
+  .skill-tree::before { content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(to bottom, var(--neon), var(--purple)); }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--neon); background: var(--bg); flex-shrink: 0; margin-left: -24px; margin-top: 3px; box-shadow: 0 0 8px var(--neon); }
+  .skill-dot.done   { background: var(--neon); }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.pink   { border-color: var(--pink);   box-shadow: 0 0 8px var(--pink);   background: var(--pink); }
+  .skill-dot.purple { border-color: var(--purple); box-shadow: 0 0 8px var(--purple); background: var(--purple); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+
+  /* FLOW DIAGRAM */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 16px 0;
+  }
+  .flow-box {
+    background: var(--border);
+    border: 1px solid var(--neon);
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--neon);
+    text-align: center;
+    line-height: 1.6;
+  }
   .flow-box.cyan   { border-color: var(--cyan);   color: var(--cyan); }
   .flow-box.green  { border-color: var(--green);  color: var(--green); }
   .flow-box.yellow { border-color: var(--yellow); color: var(--yellow); }
   .flow-box.pink   { border-color: var(--pink);   color: var(--pink); }
   .flow-box.purple { border-color: var(--purple); color: var(--purple); }
-  .flow-arrow { font-family: 'Share Tech Mono', monospace; font-size: 18px; color: var(--muted); padding: 0 8px; }
+  .flow-arrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px;
+    color: var(--muted);
+    padding: 0 8px;
+  }
 
-  /* ── BRANCH DIAGRAM ── */
-  .branch-diagram { background: #0e0800; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 13px; line-height: 2; overflow-x: auto; }
+  /* BRANCH DIAGRAM */
+  .branch-diagram {
+    background: #0e0800;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+    overflow-x: auto;
+  }
   .b-main    { color: var(--neon); }
   .b-feature { color: var(--cyan); }
   .b-node    { color: var(--yellow); }
   .b-merge   { color: var(--green); }
   .b-info    { color: var(--muted); font-style: italic; }
 
-  /* ── CONFLICT BLOCK ── */
-  .conflict-block { background: #0e0800; border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 13px; line-height: 1.8; }
+  /* CONFLICT BLOCK */
+  .conflict-block {
+    background: #0e0800;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-top: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+  }
   .cf-head   { color: var(--pink); }
   .cf-sep    { color: var(--muted); }
   .cf-theirs { color: var(--cyan); }
   .cf-ok     { color: var(--green); }
 
+  .compare-label { font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .compare-label.bad  { color: var(--pink); }
+  .compare-label.good { color: var(--green); }
+
+  footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--muted); letter-spacing: 2px; position: relative; z-index: 1; }
+  footer span { color: var(--neon); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
   @media (max-width: 600px) {
+    header h1 { font-size: 12px; }
+    .section-title { font-size: 8px; }
     .flow { flex-direction: column; }
     .flow-arrow { transform: rotate(90deg); }
   }
+
+  /* HUB BUTTON */
+  .hub-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+  .hub-btn:hover {
+    color: var(--neon);
+    border-color: var(--neon);
+    box-shadow: 0 0 18px rgba(0,245,255,0.2);
+    transform: translateY(-50%) translateX(4px);
+  }
+  .hub-icon { font-size: 14px; }
 </style>
 </head>
 <body>
@@ -693,8 +976,10 @@ sudo apt-get install git
   <span>GIT MASTERED</span> — COMMIT, PUSH, REPEAT. NO FEAR.<br><br>
   <span>Holberton School</span> — Git &amp; GitHub — Version Control
 
-  <br><br><a href="https://github.com/Adamzou-lab" target="_blank" rel="noopener noreferrer" class="github-link">⌥ GITHUB — ADAMZOU-LAB</a>
+  <br><br><a href="https://github.com/Adamzou-lab" target="_blank" rel="noopener noreferrer" style="color:#4a6050; text-decoration:none; font-size:7px; letter-spacing:2px;">⌥ GITHUB — ADAMZOU-LAB</a>
 </footer>
+
+
 <a class="hub-btn" href="../index.html">
   <span class="hub-icon">⌂</span>
   HUB
