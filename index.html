@@ -506,7 +506,7 @@
 
 <script>
   // --- XP SYSTEM ---
-  const TOTAL = 3;
+  const TOTAL = document.querySelectorAll('.sheet-card').length;
   const LEVELS = ['LVL 0', 'LVL 1', 'LVL 2 → PRO', 'LVL MAX ★'];
   const LEVEL_MSGS = ['', 'Première fiche vue !', 'Tu progresses !', 'TOUTES LES FICHES MAÎTRISÉES !'];
   let done = JSON.parse(localStorage.getItem('hb-done') || '[]');
@@ -514,7 +514,7 @@
   function updateXP() {
     const count = done.length;
     const pct = Math.round((count / TOTAL) * 100);
-    const level = count === 0 ? 0 : count === TOTAL ? 3 : count;
+    const level = count === 0 ? 0 : count === TOTAL ? 3 : pct < 50 ? 1 : 2;
     document.getElementById('xp-fill').style.width = pct + '%';
     document.getElementById('xp-level').textContent = LEVELS[Math.min(level, 3)];
     document.getElementById('xp-current').textContent = count;
