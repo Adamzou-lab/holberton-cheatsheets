@@ -662,6 +662,12 @@
     });
   });
 
+  // --- REVERSE ORDER (newest first) ---
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  [...document.querySelectorAll('.sheet-card')].reverse().forEach(c => grid.insertBefore(c, grid.firstChild));
+  grid.appendChild(empty);
+
   // --- INIT ---
   updateCards();
   restoreState();
