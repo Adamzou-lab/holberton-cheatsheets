@@ -15,6 +15,7 @@ Accessible sur **[cheatsheets.adamzou.fr](https://cheatsheets.adamzou.fr)** (Git
 | [Function Pointers](sheets/function_pointers_cheatsheet.html) | Pointeurs de fonctions, callbacks, tableaux de fptr, pattern `_printf` |
 | [Structures & Typedef](sheets/structures_typedef_cheatsheet.html) | `struct`, `typedef`, opérateurs `.` et `->`, linked list node, conventions Betty |
 | [Malloc & Free](sheets/malloc_free_cheatsheet.html) | `malloc`, `calloc`, `realloc`, `free`, Valgrind, gestion du heap |
+| [Git & GitHub](sheets/git_github_cheatsheet.html) | Versionning, branches, commits, push/pull, workflow GitHub |
 
 ---
 

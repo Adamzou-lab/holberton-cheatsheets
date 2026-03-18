@@ -121,6 +121,7 @@
   .filter-btn[data-filter="security"].active { border-color: var(--pink); color: var(--pink); background: rgba(255,45,120,0.08); }
   .filter-btn[data-filter="c-lang"].active { border-color: var(--purple); color: var(--purple); background: rgba(181,78,255,0.08); }
   .filter-btn[data-filter="algorithms"].active { border-color: var(--orange); color: var(--orange); background: rgba(255,107,0,0.08); }
+  .filter-btn[data-filter="git"].active { border-color: #ff6b00; color: #ff6b00; background: rgba(255,107,0,0.08); }
 
   /* --- GRID --- */
   .grid { max-width: 900px; margin: 0 auto; padding: 0 24px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; position: relative; z-index: 1; }
@@ -136,6 +137,7 @@
   .sheet-card[data-subject="security"]   { --accent: var(--pink);   --accent-rgb: 255,45,120; }
   .sheet-card[data-subject="c-lang"]     { --accent: var(--purple); --accent-rgb: 181,78,255; }
   .sheet-card[data-subject="algorithms"] { --accent: var(--orange); --accent-rgb: 255,107,0; }
+  .sheet-card[data-subject="git"]        { --accent: #ff6b00;       --accent-rgb: 255,107,0; }
 
   .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .card-icon { font-size: 28px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(var(--accent-rgb, 0,245,255), 0.4)); }
@@ -354,6 +356,7 @@
   <button class="filter-btn" data-filter="c-lang">C LANG</button>
   <button class="filter-btn" data-filter="security">SECURITY</button>
   <button class="filter-btn" data-filter="algorithms">ALGO</button>
+  <button class="filter-btn" data-filter="git">GIT</button>
 </div>
 
 <!-- GRID -->
@@ -440,6 +443,20 @@
     <div class="card-footer">
       <div class="card-topics"><span class="topic-tag">malloc</span><span class="topic-tag">valgrind</span><span class="topic-tag">heap</span></div>
       <button class="check-btn" data-id="malloc" title="Marquer comme vue" onclick="event.preventDefault(); toggleDone(this)">✓</button>
+    </div>
+  </a>
+
+  <a class="sheet-card" href="sheets/git_github_cheatsheet.html" data-subject="git" data-id="git" data-title="git github versionning commits branches" data-tags="git init add commit push pull clone branch merge rebase log status remote">
+    <div class="completed-ribbon">DONE</div>
+    <div class="card-header">
+      <span class="card-icon">🌿</span>
+      <div class="card-badges"><span class="subject-badge">GIT</span><span class="level-badge">⭐⭐ LVL 2</span></div>
+    </div>
+    <div class="card-title">GIT<br>&amp; GITHUB</div>
+    <div class="card-desc">Versionning, branches, commits, push/pull et workflow GitHub. Les commandes essentielles pour survivre en équipe.</div>
+    <div class="card-footer">
+      <div class="card-topics"><span class="topic-tag">commit</span><span class="topic-tag">branch</span><span class="topic-tag">merge</span></div>
+      <button class="check-btn" data-id="git" title="Marquer comme vue" onclick="event.preventDefault(); toggleDone(this)">✓</button>
     </div>
   </a>
 
