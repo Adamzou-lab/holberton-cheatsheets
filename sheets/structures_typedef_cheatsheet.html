@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Structures & typedef — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #0a080f;
+    --bg2:    #0f0a1a;
+    --bg3:    #130f1f;
+    --card:   #100d18;
+    --border: #1e1530;
+    --neon:   #b54eff;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --orange: #ff6b00;
+    --text:   #ccc8e0;
+    --muted:  #5a4a70;
+    --white:  #f0eeff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* SCANLINES */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* GRID BG */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(181,78,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(181,78,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(15px, 2.6vw, 24px);
+    color: var(--white);
+    line-height: 1.6;
+    text-shadow: 0 0 20px rgba(181,78,255,0.5), 0 0 40px rgba(181,78,255,0.2);
+    margin-bottom: 20px;
+  }
+  header h1 span { color: var(--neon); }
+  .header-sub {
+    font-size: 18px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--neon);
+    letter-spacing: 2px;
+    margin: 50px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::before {
+    content: '▶';
+    color: var(--pink);
+    font-size: 10px;
+    animation: blink 1s step-end infinite;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--neon), transparent);
+  }
+  .card.pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--neon);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card.pink .card-title   { color: var(--pink); }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green .card-title  { color: var(--green); }
+  .card.orange .card-title { color: var(--orange); }
+  .card-icon { font-size: 16px; }
+
+  /* CODE BLOCKS */
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre {
+    background: #07050e;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-top: 12px;
+  }
+  code {
+    background: rgba(181,78,255,0.1);
+    color: var(--neon);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  /* Syntax colors */
+  .kw    { color: var(--pink); }
+  .fn    { color: var(--cyan); }
+  .type  { color: var(--neon); }
+  .str   { color: var(--green); }
+  .num   { color: var(--orange); }
+  .cmt   { color: var(--muted); font-style: italic; }
+  .macro { color: var(--yellow); }
+
+  /* GRIDS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ANALOGY */
+  .analogy {
+    background: linear-gradient(135deg, #0d0a15, #0a080f);
+    border: 1px solid var(--yellow);
+    border-left: 4px solid var(--yellow);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .analogy-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--yellow);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  /* TIP / WARN */
+  .tip {
+    background: rgba(57,255,20,0.05);
+    border: 1px solid rgba(57,255,20,0.3);
+    border-left: 4px solid var(--green);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .warn {
+    background: rgba(255,45,120,0.05);
+    border: 1px solid rgba(255,45,120,0.3);
+    border-left: 4px solid var(--pink);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .tip::before  { content: '✅ '; }
+  .warn::before { content: '⚠️ '; }
+
+  /* TABLE */
+  .macro-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .macro-table th {
+    background: var(--border);
+    color: var(--neon);
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .macro-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .macro-table tr:hover td { background: rgba(181,78,255,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; }
+  .macro-table .macro-type { color: var(--cyan); font-size: 11px; }
+
+  /* LEVEL BADGE */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--border);
+    border: 1px solid var(--neon);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--neon);
+    margin-bottom: 16px;
+  }
+
+  /* STEPS */
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--bg);
+    background: var(--neon);
+    width: 30px; height: 30px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .step-content h4 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  /* SKILL TREE */
+  .skill-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 24px;
+  }
+  .skill-tree::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--neon), var(--pink));
+  }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--neon);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-left: -24px; margin-top: 3px;
+    box-shadow: 0 0 8px var(--neon);
+  }
+  .skill-dot.done  { background: var(--neon); }
+  .skill-dot.cyan  { border-color: var(--cyan);  box-shadow: 0 0 8px var(--cyan);  background: var(--cyan); }
+  .skill-dot.pink  { border-color: var(--pink);  box-shadow: 0 0 8px var(--pink);  background: var(--pink); }
+  .skill-dot.green { border-color: var(--green); box-shadow: 0 0 8px var(--green); background: var(--green); }
+
+  /* STRUCT MEMORY DIAGRAM */
+  .struct-mem {
+    background: #07050e;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+  }
+  .struct-mem-header {
+    background: var(--border);
+    padding: 8px 14px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--neon);
+    letter-spacing: 1px;
+  }
+  .struct-mem-row {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .struct-mem-row:last-child { border-bottom: none; }
+  .struct-mem-offset {
+    width: 80px;
+    padding: 10px 12px;
+    background: rgba(181,78,255,0.05);
+    color: var(--muted);
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .struct-mem-field {
+    padding: 10px 14px;
+    flex: 1;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .field-tag {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    padding: 3px 6px;
+    border-radius: 3px;
+  }
+  .field-tag.ptr   { background: rgba(0,245,255,0.1);  color: var(--cyan);   border: 1px solid var(--cyan); }
+  .field-tag.int_  { background: rgba(255,107,0,0.1);  color: var(--orange); border: 1px solid var(--orange); }
+  .field-tag.char_ { background: rgba(57,255,20,0.1);  color: var(--green);  border: 1px solid var(--green); }
+
+  /* COMPARE BLOCK */
+  .compare-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .compare-label.bad  { color: var(--pink); }
+  .compare-label.good { color: var(--green); }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+  }
+  footer span { color: var(--neon); }
+
+  /* ANIMATIONS */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 0.6s ease forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 12px; }
+    .section-title { font-size: 8px; }
+    .struct-mem-offset { width: 55px; font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — C Programming ✦</span>
+  <h1>STRUCTURES<br><span>&amp; TYPEDEF</span></h1>
+  <p class="header-sub">Crée tes propres types. Domine la mémoire.</p>
+</header>
+
+<div class="container">
+
+  <!-- ═══════════════════ PARTIE 1 : STRUCTURES ═══════════════════ -->
+
+  <div class="section-title">C'EST QUOI UNE STRUCTURE ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🧱</span> DÉFINITION</div>
+    <p>Une <strong style="color:var(--neon)">structure</strong> est un type de données composite défini par l'utilisateur. Elle regroupe des variables de <strong style="color:var(--pink)">types différents</strong> sous un même identifiant. C'est le seul moyen en C de créer un type "objet" contenant plusieurs champs.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Dans un RPG, chaque <strong>personnage</strong> a un nom, des points de vie, un niveau, une arme. Toutes ces infos forment une <strong>fiche de personnage</strong>. En C, une struct, c'est exactement cette fiche : un seul "objet" qui regroupe toutes les données liées à une entité. Au lieu de jongler avec 10 variables séparées, tu as une seule struct <code>Player</code>.</p>
+    </div>
+
+    <div class="tip">Une struct occupe un bloc <strong>contigu</strong> en mémoire. Chaque champ est à un offset fixe depuis le début de la struct.</div>
+  </div>
+
+  <!-- ═══════════════════ DÉCLARATION ═══════════════════ -->
+  <div class="section-title">DÉCLARER UNE STRUCTURE</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">📐</span> SYNTAXE DE BASE</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Définir la structure (scope global, avant main)</h4>
+          <pre><code><span class="cmt">/* Définition du type — scope global */</span>
+<span class="kw">struct</span> <span class="type">User</span>
+{
+    <span class="type">char</span>  *name;   <span class="cmt">/* offset 0  — pointeur (8 bytes) */</span>
+    <span class="type">char</span>  *email;  <span class="cmt">/* offset 8  — pointeur (8 bytes) */</span>
+    <span class="type">int</span>   age;     <span class="cmt">/* offset 16 — int (4 bytes)      */</span>
+};               <span class="cmt">/* ← NE PAS oublier le ; final !  */</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Déclarer une variable de ce type</h4>
+          <pre><code><span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    <span class="kw">struct</span> <span class="type">User</span> user;       <span class="cmt">/* variable sur la stack */</span>
+    <span class="kw">struct</span> <span class="type">User</span> *ptr;       <span class="cmt">/* pointeur vers struct  */</span>
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Accéder aux champs avec <code>.</code></h4>
+          <pre><code>user.name  = <span class="str">"Foo Bar"</span>;
+user.email = <span class="str">"foo@hbtn.io"</span>;
+user.age   = <span class="num">98</span>;
+
+printf(<span class="str">"%s — %d ans\n"</span>, user.name, user.age);</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ MÉMOIRE ═══════════════════ -->
+  <div class="section-title">LA STRUCTURE EN MÉMOIRE</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LAYOUT MÉMOIRE — struct User</div>
+    <p style="margin-bottom:12px;">Une struct occupe un bloc contigu. Les champs sont placés dans l'ordre de déclaration, avec possible <strong style="color:var(--yellow)">padding</strong> pour l'alignement.</p>
+
+    <div class="struct-mem">
+      <div class="struct-mem-header">struct User — sizeof = 24 bytes (sur système 64-bit)</div>
+      <div class="struct-mem-row">
+        <div class="struct-mem-offset">+0 (8B)</div>
+        <div class="struct-mem-field">
+          <span class="field-tag ptr">PTR</span>
+          <strong style="color:var(--cyan)">name</strong> — adresse de la chaîne "Foo Bar"
+        </div>
+      </div>
+      <div class="struct-mem-row">
+        <div class="struct-mem-offset">+8 (8B)</div>
+        <div class="struct-mem-field">
+          <span class="field-tag ptr">PTR</span>
+          <strong style="color:var(--cyan)">email</strong> — adresse de la chaîne "foo@hbtn.io"
+        </div>
+      </div>
+      <div class="struct-mem-row">
+        <div class="struct-mem-offset">+16 (4B)</div>
+        <div class="struct-mem-field">
+          <span class="field-tag int_">INT</span>
+          <strong style="color:var(--orange)">age</strong> — valeur 98 directement stockée
+        </div>
+      </div>
+      <div class="struct-mem-row">
+        <div class="struct-mem-offset">+20 (4B)</div>
+        <div class="struct-mem-field" style="color:var(--muted);">
+          <em>padding — alignement mémoire (ajouté par le compilateur)</em>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip" style="margin-top:14px;"><code>sizeof(struct User)</code> donne la taille totale incluant le padding. Toujours utiliser <code>sizeof</code> avec <code>malloc</code>, jamais calculer manuellement !</div>
+    <div class="warn">Ordonne tes champs du plus grand au plus petit pour minimiser le padding et économiser de la mémoire.</div>
+  </div>
+
+  <!-- ═══════════════════ POINTEURS DE STRUCT ═══════════════════ -->
+  <div class="section-title">POINTEURS VERS UNE STRUCTURE — . vs -></div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🎯</span> L'OPÉRATEUR FLÈCHE <code>-&gt;</code></div>
+    <p style="margin-bottom:12px;">Quand tu travailles avec un <strong style="color:var(--neon)">pointeur</strong> vers une struct, tu dois déréférencer avant d'accéder au champ. <code>-&gt;</code> fait les deux d'un coup.</p>
+
+    <div class="grid-2">
+      <div>
+        <div class="compare-label bad">❌ VERBOSE (mais correct)</div>
+        <pre><code><span class="kw">struct</span> <span class="type">User</span> *ptr = &user;
+
+<span class="cmt">/* Déréférence + accès */</span>
+(*ptr).name = <span class="str">"Foo"</span>;
+(*ptr).age  = <span class="num">98</span>;</code></pre>
+      </div>
+      <div>
+        <div class="compare-label good">✅ ÉLÉGANT (Holberton style)</div>
+        <pre><code><span class="kw">struct</span> <span class="type">User</span> *ptr = &user;
+
+<span class="cmt">/* Flèche = déréférence + accès */</span>
+ptr->name = <span class="str">"Foo"</span>;
+ptr->age  = <span class="num">98</span>;</code></pre>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p><code>.</code> c'est comme avoir la fiche de personnage <strong>entre les mains</strong> (accès direct). <code>-&gt;</code> c'est comme avoir l'<strong>adresse</strong> du coffre qui contient la fiche : la flèche ouvre le coffre ET lit la fiche en une seule action.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ MALLOC STRUCT ═══════════════════ -->
+  <div class="section-title">STRUCT + MALLOC — LE PATTERN HOLBERTON</div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🛠️</span> ALLOUER UNE STRUCT DYNAMIQUEMENT</div>
+    <p style="margin-bottom:12px;">Pattern classique des projets Holberton : une fonction <code>new_XXX</code> qui alloue et initialise une struct.</p>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">struct</span> <span class="type">User</span>
+{
+    <span class="type">char</span> *name;
+    <span class="type">char</span> *email;
+    <span class="type">int</span>  age;
+};
+
+<span class="kw">struct</span> <span class="type">User</span> *<span class="fn">new_user</span>(<span class="type">char</span> *name, <span class="type">char</span> *email, <span class="type">int</span> age)
+{
+    <span class="kw">struct</span> <span class="type">User</span> *user;
+
+    user = malloc(<span class="kw">sizeof</span>(<span class="kw">struct</span> <span class="type">User</span>)); <span class="cmt">/* alloue la struct */</span>
+    <span class="kw">if</span> (user == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);                   <span class="cmt">/* toujours vérifier ! */</span>
+    user->name  = name;
+    user->email = email;
+    user->age   = age;
+    <span class="kw">return</span> (user);
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    <span class="kw">struct</span> <span class="type">User</span> *u = <span class="fn">new_user</span>(<span class="str">"Foo"</span>, <span class="str">"foo@foo.bar"</span>, <span class="num">98</span>);
+
+    <span class="kw">if</span> (u == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="num">1</span>);
+    printf(<span class="str">"User %s created !\n"</span>, u->name);
+    printf(<span class="str">"His email is: %s\n"</span>, u->email);
+    printf(<span class="str">"And he is %d years old\n"</span>, u->age);
+    free(u);        <span class="cmt">/* ne jamais oublier ! */</span>
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+    <div class="warn">Toujours <code>free()</code> les structs allouées avec <code>malloc</code>. Si la struct contient des pointeurs vers d'autres <code>malloc</code>, libère-les d'abord !</div>
+  </div>
+
+  <!-- ═══════════════════ PARTIE 2 : TYPEDEF ═══════════════════ -->
+
+  <div class="section-title">TYPEDEF — RENOMME TES TYPES</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">✏️</span> DÉFINITION</div>
+    <p>Le mot-clé <strong style="color:var(--neon)">typedef</strong> permet de donner un <strong style="color:var(--pink)">alias</strong> à un type existant. Il ne crée pas un nouveau type — il crée un nouveau <em>nom</em> pour un type déjà existant.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Dans ton jeu, une <strong>épée longue</strong> s'appelle techniquement <code>weapon_type_melee_blade_long</code>. Avec typedef, tu lui donnes l'alias <strong><code>Sword</code></strong>. C'est le même objet, même comportement — juste un nom plus court et lisible pour ton code.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ TYPEDEF SYNTAXE ═══════════════════ -->
+  <div class="section-title">SYNTAXES TYPEDEF — DU SIMPLE AU COMPLEXE</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">📋</span> CAS 1 — TYPES SIMPLES</div>
+    <p style="margin-bottom:12px;">Donner un alias à un type primitif pour la lisibilité ou la portabilité.</p>
+    <pre><code><span class="cmt">/* Syntaxe : typedef &lt;type_original&gt; &lt;nouveau_nom&gt;; */</span>
+
+<span class="kw">typedef</span> <span class="type">unsigned char</span>  byte;   <span class="cmt">/* byte = unsigned char */</span>
+<span class="kw">typedef</span> <span class="type">unsigned int</span>   uint;   <span class="cmt">/* uint = unsigned int  */</span>
+<span class="kw">typedef</span> <span class="type">char</span>          *string; <span class="cmt">/* string = char*       */</span>
+
+<span class="cmt">/* Utilisation : exactement comme le type original */</span>
+byte c = <span class="num">200</span>;
+uint i = <span class="num">42</span>;
+string name = <span class="str">"Holberton"</span>;</code></pre>
+  </div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🧱</span> CAS 2 — TYPEDEF + STRUCT (le plus courant à Holberton)</div>
+    <p style="margin-bottom:12px;">Évite de réécrire <code>struct</code> partout. Deux syntaxes équivalentes :</p>
+
+    <div class="grid-2">
+      <div>
+        <div class="compare-label" style="color:var(--muted); font-family:'Press Start 2P',monospace; font-size:7px; margin-bottom:10px;">MÉTHODE A — en 2 étapes</div>
+        <pre><code><span class="kw">struct</span> <span class="type">Computer</span> {
+    <span class="type">char</span> *name;
+    <span class="type">char</span> *brand;
+};
+<span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">Computer</span> Computer;
+
+<span class="cmt">/* Utilisation */</span>
+Computer pc;  <span class="cmt">/* au lieu de struct Computer pc */</span></code></pre>
+      </div>
+      <div>
+        <div class="compare-label" style="color:var(--neon); font-family:'Press Start 2P',monospace; font-size:7px; margin-bottom:10px;">MÉTHODE B — en 1 étape ✅</div>
+        <pre><code><span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">Computer</span> {
+    <span class="type">char</span> *name;
+    <span class="type">char</span> *brand;
+} Computer;
+
+<span class="cmt">/* Utilisation */</span>
+Computer pc;  <span class="cmt">/* propre et direct */</span></code></pre>
+      </div>
+    </div>
+
+    <div class="tip">La <strong>Méthode B</strong> est la plus utilisée à Holberton. Elle combine la définition de la struct et son alias en une seule déclaration.</div>
+    <div class="warn">Garde le même nom pour le tag struct et le typedef (ex: <code>struct User</code> → <code>User</code>). Certains style guides interdisent les typedef de struct — Holberton les autorise et les encourage avec Betty.</div>
+  </div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">⚡</span> CAS 3 — TYPEDEF + FUNCTION POINTER (rappel)</div>
+    <p style="margin-bottom:12px;">Indispensable pour les projets <code>_printf</code> et Simple Shell :</p>
+    <pre><code><span class="cmt">/* Sans typedef — illisible */</span>
+<span class="type">int</span> (*op)(<span class="type">int</span>, <span class="type">int</span>);
+
+<span class="cmt">/* Avec typedef — clair et réutilisable */</span>
+<span class="kw">typedef</span> <span class="type">int</span> (*op_t)(<span class="type">int</span>, <span class="type">int</span>);
+
+op_t add_op;
+op_t ops[<span class="num">10</span>];   <span class="cmt">/* tableau de 10 function pointers */</span>
+
+<span class="cmt">/* Combo struct + function pointer — pattern _printf */</span>
+<span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">spec_s</span> {
+    <span class="type">char</span> *specifier;
+    <span class="type">int</span>  (*f)(va_list);
+} spec_t;</code></pre>
+  </div>
+
+  <!-- ═══════════════════ TABLEAU RÉCAP ═══════════════════ -->
+  <div class="section-title">TABLEAU RÉCAP — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">📊</span> CHEAT TABLE STRUCTURES</div>
+    <table class="macro-table">
+      <thead>
+        <tr><th>Syntaxe</th><th>Ce que ça fait</th><th>Exemple</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="macro-name">struct Nom { ... };</span></td>
+          <td>Déclare un nouveau type struct</td>
+          <td><code>struct User { int age; };</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">struct Nom var;</span></td>
+          <td>Crée une variable de ce type</td>
+          <td><code>struct User u;</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">var.champ</span></td>
+          <td>Accède à un champ (variable directe)</td>
+          <td><code>u.age = 98;</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">ptr-&gt;champ</span></td>
+          <td>Accède à un champ (via pointeur)</td>
+          <td><code>ptr->age = 98;</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">sizeof(struct Nom)</span></td>
+          <td>Taille en bytes de la struct</td>
+          <td><code>malloc(sizeof(struct User))</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">typedef struct Nom { } Alias;</span></td>
+          <td>Struct + alias en une fois</td>
+          <td><code>typedef struct User { } User;</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">Alias var;</span></td>
+          <td>Déclare sans mot-clé struct</td>
+          <td><code>User u;</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════ 3 BOSS ═══════════════════ -->
+  <div class="section-title">LES 3 BOSS — EXEMPLES PROGRESSIFS</div>
+
+  <!-- BOSS 1 -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🐣</span> BOSS 1 — STRUCT SIMPLE AVEC TYPEDEF</div>
+    <div class="level-badge">⚔️ LVL 1 — FACILE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">point_s</span> {
+    <span class="type">int</span> x;
+    <span class="type">int</span> y;
+} point_t;
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    point_t p;         <span class="cmt">/* plus besoin de "struct" */</span>
+
+    p.x = <span class="num">10</span>;
+    p.y = <span class="num">42</span>;
+    printf(<span class="str">"Point: (%d, %d)\n"</span>, p.x, p.y);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+  </div>
+
+  <!-- BOSS 2 -->
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> BOSS 2 — STRUCT IMBRIQUÉE + POINTEUR</div>
+    <div class="level-badge">🔥 LVL 2 — INTERMÉDIAIRE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">date_s</span> {
+    <span class="type">int</span> day;
+    <span class="type">int</span> month;
+    <span class="type">int</span> year;
+} date_t;
+
+<span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">player_s</span> {
+    <span class="type">char</span>   *name;
+    <span class="type">int</span>    level;
+    date_t birthday;    <span class="cmt">/* struct imbriquée */</span>
+} player_t;
+
+<span class="type">void</span> <span class="fn">print_player</span>(player_t *p)  <span class="cmt">/* toujours passer par pointeur */</span>
+{
+    printf(<span class="str">"%s — LVL %d\n"</span>, p->name, p->level);
+    printf(<span class="str">"Né le %d/%d/%d\n"</span>,
+        p->birthday.day,
+        p->birthday.month,
+        p->birthday.year);
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    player_t hero = {<span class="str">"Link"</span>, <span class="num">42</span>, {<span class="num">1</span>, <span class="num">9</span>, <span class="num">2001</span>}};
+
+    <span class="fn">print_player</span>(&hero);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+    <div class="tip">Passe toujours les structs en argument <strong>par pointeur</strong>, jamais par valeur — copier une struct entière est coûteux en mémoire !</div>
+  </div>
+
+  <!-- BOSS FINAL -->
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">💀</span> BOSS FINAL — LINKED LIST NODE (style Holberton)</div>
+    <div class="level-badge">💀 LVL 3 — HOLBERTON STYLE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="cmt">/* Struct qui se référence elle-même — forward déclaration */</span>
+<span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">node_s</span> {
+    <span class="type">int</span>          n;
+    <span class="kw">struct</span> <span class="type">node_s</span> *next;  <span class="cmt">/* pointeur vers le même type */</span>
+} node_t;
+
+node_t *<span class="fn">new_node</span>(<span class="type">int</span> n)
+{
+    node_t *node = malloc(<span class="kw">sizeof</span>(node_t));
+
+    <span class="kw">if</span> (node == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+    node->n    = n;
+    node->next = <span class="kw">NULL</span>;
+    <span class="kw">return</span> (node);
+}
+
+<span class="type">void</span> <span class="fn">print_list</span>(node_t *head)
+{
+    <span class="kw">while</span> (head != <span class="kw">NULL</span>)
+    {
+        printf(<span class="str">"[%d] -> "</span>, head->n);
+        head = head->next;
+    }
+    printf(<span class="str">"NULL\n"</span>);
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    node_t *head = <span class="fn">new_node</span>(<span class="num">1</span>);
+
+    head->next       = <span class="fn">new_node</span>(<span class="num">2</span>);
+    head->next->next = <span class="fn">new_node</span>(<span class="num">3</span>);
+    <span class="fn">print_list</span>(head);  <span class="cmt">/* [1] -> [2] -> [3] -> NULL */</span>
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+    <div class="warn">Dans une struct auto-référencée, tu dois utiliser <code>struct node_s *next</code> (avec le tag complet), pas <code>node_t *next</code> — le typedef n'est pas encore connu à ce stade de la déclaration !</div>
+  </div>
+
+  <!-- ═══════════════════ ERREURS CLASSIQUES ═══════════════════ -->
+  <div class="section-title">ERREURS CLASSIQUES — ❌ vs ✅</div>
+
+  <div class="grid-2">
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">❌</span> MAUVAIS</div>
+      <pre><code><span class="cmt">/* Oublier le ; après la struct */</span>
+<span class="kw">struct</span> <span class="type">User</span> { <span class="type">int</span> age; }
+<span class="cmt">/* → erreur de compilation */</span>
+
+<span class="cmt">/* . sur un pointeur */</span>
+<span class="kw">struct</span> <span class="type">User</span> *p = &u;
+p.age = <span class="num">98</span>;  <span class="cmt">/* ❌ p est un pointeur ! */</span>
+
+<span class="cmt">/* -> sur une variable directe */</span>
+<span class="kw">struct</span> <span class="type">User</span> u;
+u->age = <span class="num">98</span>; <span class="cmt">/* ❌ u n'est pas un pointeur ! */</span>
+
+<span class="cmt">/* Oublier de vérifier malloc */</span>
+p = malloc(<span class="kw">sizeof</span>(<span class="kw">struct</span> <span class="type">User</span>));
+p->age = <span class="num">42</span>; <span class="cmt">/* ❌ si malloc échoue → segfault */</span></code></pre>
+    </div>
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> CORRECT</div>
+      <pre><code><span class="cmt">/* ; obligatoire ! */</span>
+<span class="kw">struct</span> <span class="type">User</span> { <span class="type">int</span> age; };
+<span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* -> sur un pointeur */</span>
+<span class="kw">struct</span> <span class="type">User</span> *p = &u;
+p->age = <span class="num">98</span>; <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* . sur une variable directe */</span>
+<span class="kw">struct</span> <span class="type">User</span> u;
+u.age = <span class="num">98</span>;  <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* Vérifier malloc */</span>
+p = malloc(<span class="kw">sizeof</span>(<span class="kw">struct</span> <span class="type">User</span>));
+<span class="kw">if</span> (!p) <span class="kw">return</span> (<span class="kw">NULL</span>);
+p->age = <span class="num">42</span>; <span class="cmt">/* ✅ */</span></code></pre>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ TIPS HOLBERTON ═══════════════════ -->
+  <div class="section-title">TIPS SPÉCIAUX HOLBERTON</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🎓</span> CONVENTIONS BETTY + HOLBERTON</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;">Nomme tes types avec le suffixe <code>_t</code></strong>
+          <p style="font-size:14px;color:var(--muted);">Convention Holberton : <code>typedef struct user_s { ... } user_t;</code>. Le tag interne prend <code>_s</code>, l'alias prend <code>_t</code>.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;">Déclare tes structs dans le header (<code>.h</code>)</strong>
+          <p style="font-size:14px;color:var(--muted);">Jamais dans un <code>.c</code> — les structs partagées entre fichiers doivent être dans les headers avec les header guards.</p>
+          <pre><code><span class="cmt">/* main.h */</span>
+<span class="macro">#ifndef MAIN_H</span>
+<span class="macro">#define MAIN_H</span>
+
+<span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">user_s</span> {
+    <span class="type">char</span> *name;
+    <span class="type">int</span>  age;
+} user_t;
+
+<span class="macro">#endif</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div>
+          <strong style="color:var(--cyan);font-size:16px;">Valgrind — libère les champs avant la struct</strong>
+          <p style="font-size:14px;color:var(--muted);">Si une struct contient des pointeurs mallocés, libère d'abord les champs, puis la struct.</p>
+          <pre><code>free(user->name);   <span class="cmt">/* 1. champs d'abord */</span>
+free(user->email);  <span class="cmt">/* 2. champs d'abord */</span>
+free(user);         <span class="cmt">/* 3. struct en dernier */</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot pink"></div>
+        <div>
+          <strong style="color:var(--pink);font-size:16px;">Projet _printf — le pattern spec_t</strong>
+          <p style="font-size:14px;color:var(--muted);">La combinaison struct + typedef + function pointer est au cœur du projet <code>_printf</code> : un tableau de <code>spec_t</code> associe chaque spécifier à sa fonction d'impression.</p>
+          <pre><code><span class="kw">typedef</span> <span class="kw">struct</span> <span class="type">spec_s</span> {
+    <span class="type">char</span> *s;
+    <span class="type">int</span>  (*f)(va_list);
+} spec_t;
+
+spec_t specs[] = {
+    {<span class="str">"d"</span>, print_int},
+    {<span class="str">"s"</span>, print_str},
+    {<span class="str">"c"</span>, print_char},
+    {<span class="kw">NULL</span>, <span class="kw">NULL</span>}
+};</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ RÉSUMÉ ═══════════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CARTE MENTALE COMPLÈTE</div>
+    <pre><code><span class="cmt">/*
+ *  STRUCT                          TYPEDEF
+ *  ──────────────────────────────────────────────────────────
+ *  Groupe des variables             Donne un alias à un type
+ *  de types différents
+ *
+ *  struct User { ... };             typedef unsigned char byte;
+ *  struct User u;                   typedef struct User { } User;
+ *  u.name = "Foo";      (direct)
+ *  ptr->name = "Foo";   (pointeur)
+ *
+ *  sizeof(struct User)  → taille    User u;  ← sans "struct" !
+ *  malloc(sizeof(...))  → heap      user_t   ← convention _t
+ *
+ *  RÈGLES D'OR :
+ *  ─────────────────────────────────────────────────────────
+ *  1. Toujours ; après la définition de struct
+ *  2.  .  si variable directe  |  ->  si pointeur
+ *  3. Toujours vérifier NULL après malloc
+ *  4. Libérer les champs AVANT la struct (valgrind !)
+ *  5. Structs partagées → header avec header guards
+ *  6. Convention Holberton : struct nom_s { } nom_t;
+ */</span></code></pre>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <span>STRUCT UNLOCKED</span> — TYPE BY TYPE, LEVEL BY LEVEL<br><br>
+  <span>Holberton School</span> — C Programming — Structures &amp; Typedef
+</footer>
+
+</body>
+</html>

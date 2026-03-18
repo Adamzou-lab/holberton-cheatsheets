@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malloc & Free — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #0f080a;
+    --bg2:    #1a0a0f;
+    --bg3:    #1f0f13;
+    --card:   #180d10;
+    --border: #2e1520;
+    --neon:   #ff2d78;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text:   #e0c8ce;
+    --muted:  #704050;
+    --white:  #fff0f3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* SCANLINES */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* GRID BG */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,45,120,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,120,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(15px, 2.6vw, 24px);
+    color: var(--white);
+    line-height: 1.6;
+    text-shadow: 0 0 20px rgba(255,45,120,0.5), 0 0 40px rgba(255,45,120,0.2);
+    margin-bottom: 20px;
+  }
+  header h1 span { color: var(--neon); }
+  .header-sub {
+    font-size: 18px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--neon);
+    letter-spacing: 2px;
+    margin: 50px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::before {
+    content: '▶';
+    color: var(--cyan);
+    font-size: 10px;
+    animation: blink 1s step-end infinite;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--neon), transparent);
+  }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--neon);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green .card-title  { color: var(--green); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.orange .card-title { color: var(--orange); }
+  .card-icon { font-size: 16px; }
+
+  /* CODE */
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre {
+    background: #0e0508;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-top: 12px;
+  }
+  code {
+    background: rgba(255,45,120,0.1);
+    color: var(--neon);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  .kw    { color: var(--neon); }
+  .fn    { color: var(--cyan); }
+  .type  { color: var(--purple); }
+  .str   { color: var(--green); }
+  .num   { color: var(--orange); }
+  .cmt   { color: var(--muted); font-style: italic; }
+  .macro { color: var(--yellow); }
+
+  /* GRIDS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ANALOGY */
+  .analogy {
+    background: linear-gradient(135deg, #150a0d, #0f0508);
+    border: 1px solid var(--yellow);
+    border-left: 4px solid var(--yellow);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .analogy-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--yellow);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  /* TIP / WARN */
+  .tip {
+    background: rgba(57,255,20,0.05);
+    border: 1px solid rgba(57,255,20,0.3);
+    border-left: 4px solid var(--green);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .warn {
+    background: rgba(255,45,120,0.07);
+    border: 1px solid rgba(255,45,120,0.4);
+    border-left: 4px solid var(--neon);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .tip::before  { content: '✅ '; }
+  .warn::before { content: '💀 '; }
+
+  /* TABLE */
+  .macro-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .macro-table th {
+    background: var(--border);
+    color: var(--neon);
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .macro-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .macro-table tr:hover td { background: rgba(255,45,120,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; }
+  .macro-table .macro-type { color: var(--cyan); font-size: 11px; }
+
+  /* LEVEL BADGE */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--border);
+    border: 1px solid var(--purple);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--purple);
+    margin-bottom: 16px;
+  }
+
+  /* STEPS */
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--bg);
+    background: var(--neon);
+    width: 30px; height: 30px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .step-content h4 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  /* SKILL TREE */
+  .skill-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 24px;
+  }
+  .skill-tree::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--neon), var(--purple));
+  }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--neon);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-left: -24px; margin-top: 3px;
+    box-shadow: 0 0 8px var(--neon);
+  }
+  .skill-dot.done   { background: var(--neon); }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.purple { border-color: var(--purple); box-shadow: 0 0 8px var(--purple); background: var(--purple); }
+
+  /* MEMORY MAP */
+  .mem-map {
+    background: #0e0508;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+  }
+  .mem-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--border);
+  }
+  .mem-row:last-child { border-bottom: none; }
+  .mem-addr {
+    width: 110px;
+    padding: 12px 14px;
+    background: rgba(255,45,120,0.04);
+    color: var(--muted);
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .mem-label {
+    padding: 12px 14px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  .mem-tag {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    padding: 3px 7px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .mem-tag.stack  { background: rgba(0,245,255,0.1);  color: var(--cyan);   border: 1px solid var(--cyan); }
+  .mem-tag.heap   { background: rgba(255,45,120,0.12); color: var(--neon);   border: 1px solid var(--neon); }
+  .mem-tag.text   { background: rgba(57,255,20,0.1);   color: var(--green);  border: 1px solid var(--green); }
+  .mem-tag.bss    { background: rgba(255,107,0,0.1);   color: var(--orange); border: 1px solid var(--orange); }
+  .mem-highlight  { color: var(--neon); font-weight: bold; }
+
+  /* VALGRIND BLOCK */
+  .valgrind-block {
+    background: #050e08;
+    border: 1px solid rgba(57,255,20,0.3);
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .vg-ok   { color: var(--green); }
+  .vg-err  { color: var(--neon); }
+  .vg-warn { color: var(--yellow); }
+  .vg-info { color: var(--muted); }
+
+  /* COMPARE */
+  .compare-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .compare-label.bad  { color: var(--neon); }
+  .compare-label.good { color: var(--green); }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+  }
+  footer span { color: var(--neon); }
+
+  /* ANIMATIONS */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 0.6s ease forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 12px; }
+    .section-title { font-size: 8px; }
+    .mem-addr { width: 70px; font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — C Programming ✦</span>
+  <h1>MALLOC<br><span>&amp; FREE</span></h1>
+  <p class="header-sub">Prends le contrôle du Heap. Libère tout.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ ALLOCATION AUTO vs DYNAMIQUE ══════════════ -->
+  <div class="section-title">ALLOCATION AUTO vs DYNAMIQUE</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> LES DEUX MODES D'ALLOCATION</div>
+
+    <div class="grid-2">
+      <div>
+        <div class="compare-label good">✅ AUTOMATIQUE (stack)</div>
+        <pre><code><span class="cmt">/* Le compilateur gère tout */</span>
+<span class="type">int</span>  n = <span class="num">5</span>;
+<span class="type">char</span> s[] = <span class="str">"Hello"</span>;
+<span class="type">int</span>  ar[<span class="num">3</span>];
+
+<span class="cmt">/* ✅ Taille connue à la compilation
+   ✅ Libération automatique
+   ❌ Taille FIXE — pas de variable */</span></code></pre>
+      </div>
+      <div>
+        <div class="compare-label" style="color:var(--cyan); font-family:'Press Start 2P',monospace; font-size:7px; margin-bottom:10px;">💡 DYNAMIQUE (heap)</div>
+        <pre><code><span class="cmt">/* Tu gères toi-même */</span>
+<span class="type">int</span>  n = <span class="num">5</span>;
+<span class="type">char</span> *s = malloc(n * <span class="kw">sizeof</span>(<span class="type">char</span>));
+
+<span class="cmt">/* ✅ Taille décidée à l'exécution
+   ✅ Survit à la fin de la fonction
+   ❌ DOIT être libérée avec free() */</span></code></pre>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>L'allocation <strong>automatique</strong>, c'est ton <strong>inventaire de départ</strong> dans un RPG : 5 emplacements fixes, toujours disponibles, vidés automatiquement en fin de niveau. L'allocation <strong>dynamique</strong>, c'est un <strong>coffre que tu loues</strong> dans la ville (le heap) : tu choisis la taille, tu peux y stocker autant que tu veux — mais tu dois <em>rendre les clés</em> (appeler <code>free()</code>) quand tu n'en as plus besoin, sinon le coffre reste loué pour rien.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════ MÉMOIRE VIRTUELLE ══════════════ -->
+  <div class="section-title">LA MÉMOIRE VIRTUELLE — OÙ VIT MALLOC ?</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> CARTE DE LA MÉMOIRE VIRTUELLE</div>
+    <p style="margin-bottom:14px;"><code>malloc()</code> alloue dans le segment <strong style="color:var(--neon)">HEAP</strong>. Le heap grandit vers le haut, la stack vers le bas.</p>
+
+    <div class="mem-map">
+      <div class="mem-row">
+        <div class="mem-addr">haute ↑</div>
+        <div class="mem-label">Kernel Space (inaccessible)</div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-addr">↓ variable</div>
+        <div class="mem-label">
+          <span class="mem-tag stack">STACK</span>
+          Variables locales, args, adresses de retour — libération AUTO
+        </div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-addr">↕ grandit ↑</div>
+        <div class="mem-label" style="border: 1px solid var(--neon); box-shadow: 0 0 10px rgba(255,45,120,0.15);">
+          <span class="mem-tag heap">HEAP</span>
+          <span class="mem-highlight">⬅ malloc() alloue ici — libération MANUELLE avec free()</span>
+        </div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-addr">fixe</div>
+        <div class="mem-label">
+          <span class="mem-tag bss">BSS / DATA</span>
+          Variables globales et statiques
+        </div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-addr">basse ↓</div>
+        <div class="mem-label">
+          <span class="mem-tag text">TEXT</span>
+          Code compilé (fonctions, instructions)
+        </div>
+      </div>
+    </div>
+
+    <div class="tip" style="margin-top:14px;">Stack = rapide, taille limitée (~8MB). Heap = lent, taille limitée par la RAM dispo. Ne jamais retourner un pointeur vers une variable locale (stack) — elle est détruite à la fin de la fonction !</div>
+  </div>
+
+  <!-- ══════════════ MALLOC ══════════════ -->
+  <div class="section-title">MALLOC — ALLOUER DE LA MÉMOIRE</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">📦</span> PROTOTYPE &amp; COMPORTEMENT</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>   <span class="cmt">/* OBLIGATOIRE */</span>
+
+<span class="type">void</span> *<span class="fn">malloc</span>(<span class="type">size_t</span> size);
+<span class="cmt">/* ↑ retourne void* (cast implicite en C)
+   ↑ retourne NULL si échec
+   ↑ mémoire NON initialisée (contient des données aléatoires !) */</span></code></pre>
+
+    <div class="steps" style="margin-top:16px;">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Allouer un tableau de n entiers</h4>
+          <pre><code><span class="type">int</span> *arr;
+arr = malloc(n * <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="cmt">/* n * 4 bytes réservés sur le heap */</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Toujours vérifier le retour (JAMAIS TRUST MALLOC)</h4>
+          <pre><code><span class="kw">if</span> (arr == <span class="kw">NULL</span>)
+{
+    fprintf(stderr, <span class="str">"Not enough memory!\n"</span>);
+    <span class="kw">return</span> (<span class="kw">NULL</span>);  <span class="cmt">/* ou return (1) dans main */</span>
+}</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Utiliser normalement, puis libérer</h4>
+          <pre><code>arr[<span class="num">0</span>] = <span class="num">42</span>;     <span class="cmt">/* utilise comme un tableau normal */</span>
+arr[<span class="num">1</span>] = <span class="num">7</span>;
+free(arr);        <span class="cmt">/* libère la mémoire */</span>
+arr = <span class="kw">NULL</span>;       <span class="cmt">/* bonne pratique : évite le dangling pointer */</span></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="warn">La mémoire allouée par <code>malloc</code> contient des <strong>données indéfinies</strong> (garbage). Si tu lis avant d'écrire → comportement indéfini. Utilise <code>calloc</code> si tu veux une initialisation à zéro.</div>
+  </div>
+
+  <!-- ══════════════ FREE ══════════════ -->
+  <div class="section-title">FREE — LIBÉRER LA MÉMOIRE</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗑️</span> PROTOTYPE &amp; RÈGLES</div>
+    <pre><code><span class="type">void</span> <span class="fn">free</span>(<span class="type">void</span> *ptr);
+<span class="cmt">/* ptr doit avoir été retourné par malloc / calloc / realloc
+   free(NULL) est safe — ne fait rien
+   NE PAS free deux fois le même pointeur ! */</span></code></pre>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p><code>free()</code> c'est <strong>rendre les clés du coffre</strong> au gestionnaire de la ville. La mémoire n'est pas effacée immédiatement — elle est juste marquée comme disponible pour d'autres. Si tu gardes une copie des clés et tu essaies de rouvrir le coffre après (<strong>dangling pointer</strong>), tu risques de tomber sur quelqu'un d'autre qui l'occupe déjà : <strong>segfault garanti</strong>.</p>
+    </div>
+
+    <div class="grid-2" style="margin-top:14px;">
+      <div>
+        <div class="compare-label bad">💀 PIÈGES MORTELS</div>
+        <pre><code><span class="cmt">/* Double free — UNDEFINED BEHAVIOR */</span>
+free(ptr);
+free(ptr);  <span class="cmt">/* 💀 crash ou corruption */</span>
+
+<span class="cmt">/* Dangling pointer */</span>
+free(ptr);
+ptr[<span class="num">0</span>] = <span class="num">42</span>; <span class="cmt">/* 💀 ptr pointe vers rien */</span>
+
+<span class="cmt">/* Free sur stack — INTERDIT */</span>
+<span class="type">int</span> x = <span class="num">5</span>;
+free(&x);   <span class="cmt">/* 💀 x est sur la stack ! */</span></code></pre>
+      </div>
+      <div>
+        <div class="compare-label good">✅ BONNES PRATIQUES</div>
+        <pre><code><span class="cmt">/* Mettre à NULL après free */</span>
+free(ptr);
+ptr = <span class="kw">NULL</span>;  <span class="cmt">/* ✅ évite double free */</span>
+
+<span class="cmt">/* Vérifier NULL avant free */</span>
+<span class="kw">if</span> (ptr != <span class="kw">NULL</span>)
+    free(ptr);
+
+<span class="cmt">/* free(NULL) est safe */</span>
+free(<span class="kw">NULL</span>);  <span class="cmt">/* ✅ ne fait rien */</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ CALLOC ══════════════ -->
+  <div class="section-title">CALLOC — ALLOUER + INITIALISER À ZÉRO</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🧊</span> PROTOTYPE &amp; DIFFÉRENCE AVEC MALLOC</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="type">void</span> *<span class="fn">calloc</span>(<span class="type">size_t</span> nmemb, <span class="type">size_t</span> size);
+<span class="cmt">/* nmemb = nombre d'éléments
+   size   = taille de chaque élément
+   → alloue nmemb * size bytes
+   → initialise TOUT à 0 (contrairement à malloc)
+   → retourne NULL si échec */</span></code></pre>
+
+    <div class="grid-2" style="margin-top:12px;">
+      <div>
+        <div class="compare-label" style="color:var(--yellow); font-family:'Press Start 2P',monospace; font-size:7px; margin-bottom:10px;">MALLOC — garbage dedans</div>
+        <pre><code><span class="type">int</span> *a = malloc(<span class="num">5</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="cmt">/* a[0] = ??? (garbage)
+   a[1] = ???
+   ... */</span></code></pre>
+      </div>
+      <div>
+        <div class="compare-label good">CALLOC — tout à zéro</div>
+        <pre><code><span class="type">int</span> *a = calloc(<span class="num">5</span>, <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="cmt">/* a[0] = 0
+   a[1] = 0
+   ... tout initialisé ! */</span>
+free(a); <span class="cmt">/* même free() ensuite */</span></code></pre>
+      </div>
+    </div>
+
+    <div class="tip"><code>calloc</code> est plus lent que <code>malloc</code> car il initialise la mémoire. Utilise-le quand tu as besoin de zéros garantis (tableaux, chaînes vides, structs initialisées).</div>
+  </div>
+
+  <!-- ══════════════ REALLOC ══════════════ -->
+  <div class="section-title">REALLOC — REDIMENSIONNER UNE ALLOCATION</div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">📐</span> PROTOTYPE &amp; COMPORTEMENT</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="type">void</span> *<span class="fn">realloc</span>(<span class="type">void</span> *ptr, <span class="type">size_t</span> size);
+<span class="cmt">/* ptr  = pointeur vers un bloc malloc/calloc existant
+   size = nouvelle taille en bytes
+   → peut déplacer le bloc en mémoire (nouvelle adresse !)
+   → copie les anciennes données dans le nouveau bloc
+   → retourne NULL si échec (l'ancien bloc est TOUJOURS valide)
+   → realloc(NULL, size)  ≡ malloc(size)
+   → realloc(ptr, 0)      ≡ free(ptr) */</span></code></pre>
+
+    <pre><code><span class="cmt">/* Pattern sécurisé — NE PAS faire ptr = realloc(ptr, ...) */</span>
+<span class="type">int</span> *arr = malloc(<span class="num">5</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="type">int</span> *tmp;
+
+tmp = realloc(arr, <span class="num">10</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="kw">if</span> (tmp == <span class="kw">NULL</span>)
+{
+    <span class="cmt">/* arr est toujours valide ici ! */</span>
+    free(arr);
+    <span class="kw">return</span> (<span class="kw">NULL</span>);
+}
+arr = tmp;  <span class="cmt">/* seulement si succès */</span>
+<span class="cmt">/* arr pointe maintenant vers un bloc de 10 ints
+   Les 5 premières valeurs sont conservées */</span></code></pre>
+
+    <div class="warn">Ne JAMAIS faire <code>ptr = realloc(ptr, size)</code> directement ! Si <code>realloc</code> retourne NULL, tu perds l'ancienne adresse → memory leak impossible à <code>free</code>.</div>
+  </div>
+
+  <!-- ══════════════ TABLEAU RÉCAP 4 FONCTIONS ══════════════ -->
+  <div class="section-title">LES 4 FONCTIONS — TABLEAU RÉCAP</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">📊</span> CHEAT TABLE COMPLÈTE</div>
+    <table class="macro-table">
+      <thead>
+        <tr><th>Fonction</th><th>Prototype</th><th>Init ?</th><th>Usage</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="macro-name">malloc</span></td>
+          <td><code>void *malloc(size_t size)</code></td>
+          <td><span style="color:var(--neon)">❌ Garbage</span></td>
+          <td>Allocation générale</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">calloc</span></td>
+          <td><code>void *calloc(size_t n, size_t size)</code></td>
+          <td><span style="color:var(--green)">✅ Zéros</span></td>
+          <td>Tableaux, structs à zéro</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">realloc</span></td>
+          <td><code>void *realloc(void *ptr, size_t size)</code></td>
+          <td><span style="color:var(--yellow)">↕ Copie</span></td>
+          <td>Redimensionner un bloc</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">free</span></td>
+          <td><code>void free(void *ptr)</code></td>
+          <td>—</td>
+          <td>Libérer un bloc malloc/calloc/realloc</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════ 3 BOSS ══════════════ -->
+  <div class="section-title">LES 3 BOSS — EXEMPLES PROGRESSIFS</div>
+
+  <!-- BOSS 1 -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🐣</span> BOSS 1 — CRÉER UNE STRING DYNAMIQUE</div>
+    <div class="level-badge">⚔️ LVL 1 — FACILE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="type">char</span> *<span class="fn">create_string</span>(<span class="type">int</span> len, <span class="type">char</span> c)
+{
+    <span class="type">char</span> *s;
+    <span class="type">int</span>  i;
+
+    s = malloc((len + <span class="num">1</span>) * <span class="kw">sizeof</span>(<span class="type">char</span>)); <span class="cmt">/* +1 pour le \0 */</span>
+    <span class="kw">if</span> (s == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+    i = <span class="num">0</span>;
+    <span class="kw">while</span> (i < len)
+    {
+        s[i] = c;
+        i++;
+    }
+    s[i] = <span class="str">'\0'</span>;
+    <span class="kw">return</span> (s);  <span class="cmt">/* caller doit free() */</span>
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    <span class="type">char</span> *str = <span class="fn">create_string</span>(<span class="num">5</span>, <span class="str">'H'</span>);
+
+    <span class="kw">if</span> (!str)
+        <span class="kw">return</span> (<span class="num">1</span>);
+    printf(<span class="str">"%s\n"</span>, str);  <span class="cmt">/* "HHHHH" */</span>
+    free(str);
+    str = <span class="kw">NULL</span>;
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+  </div>
+
+  <!-- BOSS 2 -->
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> BOSS 2 — TABLEAU DYNAMIQUE DEPUIS ARGV</div>
+    <div class="level-badge">🔥 LVL 2 — INTERMÉDIAIRE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="type">void</span> <span class="fn">print_int_array</span>(<span class="type">int</span> *a, <span class="type">int</span> size)
+{
+    <span class="type">int</span> i = <span class="num">0</span>;
+    <span class="kw">while</span> (i < size)
+        printf(<span class="str">"%d\n"</span>, a[i++]);
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">int</span> ac, <span class="type">char</span> **av)
+{
+    <span class="type">int</span> *a;
+    <span class="type">int</span> asize;
+    <span class="type">int</span> i = <span class="num">0</span>;
+
+    <span class="kw">if</span> (ac < <span class="num">2</span>)
+    {
+        fprintf(stderr, <span class="str">"Usage: %s number [NUMBER]\n"</span>, av[<span class="num">0</span>]);
+        <span class="kw">return</span> (<span class="num">1</span>);
+    }
+    asize = ac - <span class="num">1</span>;
+    a = malloc(asize * <span class="kw">sizeof</span>(<span class="type">int</span>)); <span class="cmt">/* taille connue qu'au runtime */</span>
+    <span class="kw">if</span> (a == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="num">1</span>);
+    <span class="kw">while</span> (i < asize)
+    {
+        a[i] = atoi(av[i + <span class="num">1</span>]);
+        i++;
+    }
+    <span class="fn">print_int_array</span>(a, asize);
+    free(a);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+  </div>
+
+  <!-- BOSS FINAL -->
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">💀</span> BOSS FINAL — TABLEAU DYNAMIQUE AVEC REALLOC</div>
+    <div class="level-badge">💀 LVL 3 — HOLBERTON STYLE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="cmt">/* Ajoute un élément à un tableau en le redimensionnant */</span>
+<span class="type">int</span> *<span class="fn">push</span>(<span class="type">int</span> *arr, <span class="type">int</span> *size, <span class="type">int</span> value)
+{
+    <span class="type">int</span> *tmp;
+
+    tmp = realloc(arr, (*size + <span class="num">1</span>) * <span class="kw">sizeof</span>(<span class="type">int</span>));
+    <span class="kw">if</span> (tmp == <span class="kw">NULL</span>)
+    {
+        free(arr);         <span class="cmt">/* libère l'ancien bloc */</span>
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+    }
+    tmp[*size] = value;
+    (*size)++;
+    <span class="kw">return</span> (tmp);          <span class="cmt">/* peut être une nouvelle adresse ! */</span>
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    <span class="type">int</span> *arr = <span class="kw">NULL</span>;
+    <span class="type">int</span> size = <span class="num">0</span>;
+    <span class="type">int</span> i;
+
+    arr = <span class="fn">push</span>(arr, &size, <span class="num">10</span>);
+    arr = <span class="fn">push</span>(arr, &size, <span class="num">20</span>);
+    arr = <span class="fn">push</span>(arr, &size, <span class="num">30</span>);
+    <span class="kw">if</span> (!arr)
+        <span class="kw">return</span> (<span class="num">1</span>);
+    i = <span class="num">0</span>;
+    <span class="kw">while</span> (i < size)
+        printf(<span class="str">"%d\n"</span>, arr[i++]);  <span class="cmt">/* 10, 20, 30 */</span>
+    free(arr);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+  </div>
+
+  <!-- ══════════════ VALGRIND ══════════════ -->
+  <div class="section-title">VALGRIND — DÉBOGUER LES MEMORY LEAKS</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🔍</span> COMMANDES VALGRIND</div>
+    <pre><code><span class="cmt"># Compiler TOUJOURS avec -g pour valgrind</span>
+gcc -Wall -Werror -Wextra -pedantic -std=gnu89 -g main.c -o prog
+
+<span class="cmt"># Vérification basique des leaks</span>
+valgrind ./prog
+
+<span class="cmt"># Vérification complète (recommandée Holberton)</span>
+valgrind --leak-check=full ./prog
+
+<span class="cmt"># Vérification ultra détaillée (affiche chaque allocation)</span>
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./prog</code></pre>
+
+    <p style="margin-top:14px; margin-bottom:10px; font-weight:700; color:var(--white);">Lire la sortie Valgrind :</p>
+
+    <div class="valgrind-block">
+      <span class="vg-info">==12345==</span> <span class="vg-ok">HEAP SUMMARY:</span><br>
+      <span class="vg-info">==12345==</span>     in use at exit: <span class="vg-ok">0 bytes in 0 blocks</span><br>
+      <span class="vg-info">==12345==</span>   total heap usage: 3 allocs, 3 frees, 72 bytes allocated<br>
+      <br>
+      <span class="vg-info">==12345==</span> <span class="vg-ok">All heap blocks were freed -- no leaks are possible</span><br>
+      <span class="vg-info">==12345==</span><br>
+      <span class="vg-info">==12345==</span> <span class="vg-ok">ERROR SUMMARY: 0 errors from 0 contexts</span>
+    </div>
+
+    <p style="margin-top:14px; margin-bottom:10px; font-weight:700; color:var(--neon);">⚠️ En cas de leak :</p>
+
+    <div class="valgrind-block">
+      <span class="vg-info">==12345==</span> <span class="vg-err">LEAK SUMMARY:</span><br>
+      <span class="vg-info">==12345==</span>    definitely lost: <span class="vg-err">40 bytes in 1 blocks</span><br>
+      <span class="vg-info">==12345==</span>      indirectly lost: <span class="vg-warn">0 bytes in 0 blocks</span><br>
+      <span class="vg-info">==12345==</span><br>
+      <span class="vg-info">==12345==</span> <span class="vg-err">40 bytes in 1 blocks are definitely lost</span><br>
+      <span class="vg-info">==12345==</span>    at 0x...: malloc (in /usr/lib/valgrind/...)<br>
+      <span class="vg-info">==12345==</span>    by 0x...: <span class="vg-warn">main (main.c:12)</span>  <span class="vg-info">← ligne du malloc non libéré</span>
+    </div>
+
+    <div class="tip" style="margin-top:14px;"><strong>definitely lost</strong> = tu as oublié un <code>free()</code>. <strong>still reachable</strong> = bloc accessible mais non libéré en fin de programme (moins grave). Holberton exige <strong>0 definitely lost</strong>.</div>
+  </div>
+
+  <!-- ══════════════ ERREURS CLASSIQUES ══════════════ -->
+  <div class="section-title">ERREURS CLASSIQUES — ❌ vs ✅</div>
+
+  <div class="grid-2">
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">💀</span> LES CRIMES MÉMOIRE</div>
+      <pre><code><span class="cmt">/* 1. Oublier le +1 pour \0 */</span>
+<span class="type">char</span> *s = malloc(strlen(str));
+<span class="cmt">/* ❌ → buffer overflow sur \0 */</span>
+
+<span class="cmt">/* 2. Ne pas vérifier malloc */</span>
+<span class="type">int</span> *p = malloc(<span class="num">100</span>);
+p[<span class="num">0</span>] = <span class="num">42</span>; <span class="cmt">/* ❌ si NULL → segfault */</span>
+
+<span class="cmt">/* 3. Double free */</span>
+free(p); free(p); <span class="cmt">/* ❌ undefined behavior */</span>
+
+<span class="cmt">/* 4. realloc direct sans tmp */</span>
+p = realloc(p, <span class="num">200</span>);
+<span class="cmt">/* ❌ si NULL → perd l'ancien p */</span>
+
+<span class="cmt">/* 5. Free partiel de tableau */</span>
+<span class="type">int</span> *arr = malloc(<span class="num">5</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+free(arr + <span class="num">2</span>); <span class="cmt">/* ❌ pas l'adresse d'origine ! */</span></code></pre>
+    </div>
+    <div class="card green fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> LES BONNES PRATIQUES</div>
+      <pre><code><span class="cmt">/* 1. +1 pour \0 */</span>
+<span class="type">char</span> *s = malloc(strlen(str) + <span class="num">1</span>);
+<span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* 2. Toujours vérifier */</span>
+<span class="type">int</span> *p = malloc(<span class="num">100</span>);
+<span class="kw">if</span> (!p) <span class="kw">return</span> (<span class="kw">NULL</span>);
+
+<span class="cmt">/* 3. NULL après free */</span>
+free(p); p = <span class="kw">NULL</span>; <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* 4. tmp pour realloc */</span>
+tmp = realloc(p, <span class="num">200</span>);
+<span class="kw">if</span> (!tmp) { free(p); <span class="kw">return</span> (<span class="kw">NULL</span>); }
+p = tmp;  <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* 5. Toujours free l'adresse de base */</span>
+<span class="type">int</span> *arr = malloc(<span class="num">5</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+free(arr);  <span class="cmt">/* ✅ adresse d'origine */</span></code></pre>
+    </div>
+  </div>
+
+  <!-- ══════════════ TIPS HOLBERTON ══════════════ -->
+  <div class="section-title">TIPS SPÉCIAUX HOLBERTON</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🎓</span> LES 6 COMMANDEMENTS DE LA MÉMOIRE</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;">Never trust malloc — toujours vérifier NULL</strong>
+          <p style="font-size:14px;color:var(--muted);">Holberton est strict là-dessus. Chaque <code>malloc</code>, <code>calloc</code>, <code>realloc</code> doit être suivi d'un <code>if (ptr == NULL)</code>.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;">Toujours utiliser sizeof avec malloc</strong>
+          <p style="font-size:14px;color:var(--muted);">Ne jamais hardcoder les tailles. <code>malloc(4)</code> ❌ → <code>malloc(sizeof(int))</code> ✅. Portabilité garantie.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div>
+          <strong style="color:var(--cyan);font-size:16px;">0 leaks Valgrind = passage du projet</strong>
+          <p style="font-size:14px;color:var(--muted);">Chaque allocation doit avoir son <code>free</code>. Inclure les free dans les chemins d'erreur !</p>
+          <pre><code><span class="cmt">/* Libérer en cascade si erreur */</span>
+<span class="kw">if</span> (!(node->name = malloc(len)))
+{
+    free(node);   <span class="cmt">/* libère ce qu'on a déjà alloué */</span>
+    <span class="kw">return</span> (<span class="kw">NULL</span>);
+}</code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot green"></div>
+        <div>
+          <strong style="color:var(--green);font-size:16px;">calloc pour les structs et tableaux à zéro</strong>
+          <p style="font-size:14px;color:var(--muted);">Utilise <code>calloc</code> quand tu veux une struct initialisée à zéro (pointeurs NULL, ints à 0). Évite des bugs difficiles à trouver.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot yellow"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:16px;">Mettre le pointeur à NULL après free</strong>
+          <p style="font-size:14px;color:var(--muted);"><code>free(ptr); ptr = NULL;</code> — évite les double-free accidentels et les dangling pointers. Habitude à prendre dès maintenant.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot purple"></div>
+        <div>
+          <strong style="color:var(--purple);font-size:16px;">Compiler avec -g avant de lancer Valgrind</strong>
+          <p style="font-size:14px;color:var(--muted);">Sans <code>-g</code>, Valgrind ne peut pas te donner les numéros de lignes. Toujours compiler avec <code>-g</code> pour le debug.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ ══════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CARTE MENTALE COMPLÈTE</div>
+    <pre><code><span class="cmt">/*
+ *  FONCTION   INIT    USAGE                      FREE
+ *  ─────────────────────────────────────────────────────────────
+ *  malloc(n)  ❌      allocation générale         free(ptr)
+ *  calloc(n,s)✅ 0    tableau/struct à zéro       free(ptr)
+ *  realloc(p,n) copie redimensionner un bloc      free(ptr)
+ *  free(ptr)   —      libérer malloc/calloc/realloc
+ *
+ *  LE PATTERN SÉCURISÉ :
+ *  ─────────────────────────────────────────────────────────────
+ *  ptr = malloc(n * sizeof(type));   // allouer
+ *  if (ptr == NULL)                  // TOUJOURS vérifier
+ *      return (NULL);
+ *  [... utiliser ptr ...]
+ *  free(ptr);                        // libérer
+ *  ptr = NULL;                       // éviter dangling pointer
+ *
+ *  VALGRIND :
+ *  ─────────────────────────────────────────────────────────────
+ *  gcc -g main.c -o prog
+ *  valgrind --leak-check=full ./prog
+ *  → "0 bytes in 0 blocks" + "0 errors" = ✅ parfait
+ *
+ *  RÈGLES D'OR :
+ *  ─────────────────────────────────────────────────────────────
+ *  1. 1 malloc = 1 free (pas plus, pas moins)
+ *  2. Toujours free l'adresse d'ORIGINE (pas ptr+2 !)
+ *  3. Ne jamais free une variable locale (stack)
+ *  4. realloc → utiliser un tmp, ne jamais écraser directement
+ *  5. +1 pour le \0 des strings
+ */</span></code></pre>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <span>MEMORY MANAGED</span> — NO LEAK, NO FEAR, NO MERCY<br><br>
+  <span>Holberton School</span> — C Programming — Malloc, Free, Calloc, Realloc
+</footer>
+
+</body>
+</html>
