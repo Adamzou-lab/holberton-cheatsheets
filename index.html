@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Holberton Cheatsheets — by Adam</title>
+<title>Holberton Cheatsheets — cheatsheets.adamzou.fr</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --bg2: #0f0f1a;
-    --bg3: #141428;
-    --card: #111120;
+    --bg:     #0a0a0f;
+    --bg2:    #0f0f1a;
+    --bg3:    #141428;
+    --card:   #111120;
     --border: #1e1e3a;
-    --cyan: #00f5ff;
-    --green: #39ff14;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
     --yellow: #ffe600;
-    --pink: #ff2d78;
+    --pink:   #ff2d78;
     --purple: #b54eff;
     --orange: #ff6b00;
-    --text: #c8d0e8;
-    --muted: #5a6080;
-    --white: #eef2ff;
+    --text:   #c8d0e8;
+    --muted:  #5a6080;
+    --white:  #eef2ff;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,13 +39,7 @@
     content: '';
     position: fixed;
     inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
-    );
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
     pointer-events: none;
     z-index: 9999;
   }
@@ -55,320 +49,563 @@
     position: fixed;
     inset: 0;
     background-image:
-      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+      linear-gradient(rgba(0,245,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.025) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
     z-index: 0;
   }
 
-  .container {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 20px;
+  /* --- HEADER --- */
+  header {
+    text-align: center;
+    padding: 64px 24px 48px;
     position: relative;
     z-index: 1;
   }
 
-  /* HEADER */
-  header {
-    text-align: center;
-    padding: 60px 20px 40px;
-  }
+  .tag { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--cyan); letter-spacing: 5px; text-transform: uppercase; display: block; margin-bottom: 16px; opacity: 0.8; }
 
-  .logo {
+  header h1 {
     font-family: 'Press Start 2P', monospace;
-    font-size: clamp(14px, 3vw, 22px);
-    color: var(--cyan);
-    text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,245,255,0.3);
-    letter-spacing: 2px;
-    margin-bottom: 16px;
-    line-height: 1.6;
-  }
-
-  .subtitle {
-    font-family: 'Share Tech Mono', monospace;
-    color: var(--muted);
-    font-size: 14px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
-
-  .subtitle span {
-    color: var(--green);
-  }
-
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 40px 0;
-    position: relative;
-  }
-
-  .divider::after {
-    content: '◆';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--bg);
-    padding: 0 12px;
-    color: var(--cyan);
-    font-size: 12px;
-  }
-
-  /* SECTION TITLE */
-  .section-title {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 11px;
-    color: var(--purple);
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    margin-bottom: 28px;
-  }
-
-  /* CARDS GRID */
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 60px;
-  }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 28px 24px;
-    text-decoration: none;
-    display: block;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 3px;
-    height: 100%;
-    background: var(--accent, var(--cyan));
-    box-shadow: 0 0 12px var(--accent, var(--cyan));
-  }
-
-  .card:hover {
-    border-color: var(--accent, var(--cyan));
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  }
-
-  .card-tag {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    color: var(--accent, var(--cyan));
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-    opacity: 0.8;
-  }
-
-  .card-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    font-size: 20px;
+    font-size: clamp(16px, 2.8vw, 28px);
     color: var(--white);
-    margin-bottom: 10px;
+    line-height: 1.6;
+    text-shadow: 0 0 20px rgba(0,245,255,0.5), 0 0 50px rgba(0,245,255,0.2);
+    margin-bottom: 14px;
+    animation: glitch 8s infinite;
+  }
+  header h1 span { color: var(--cyan); }
+
+  @keyframes glitch {
+    0%,88%,100% { text-shadow: 0 0 20px rgba(0,245,255,0.5), 0 0 50px rgba(0,245,255,0.2); }
+    90% { text-shadow: -3px 0 var(--pink), 3px 0 var(--cyan); }
+    92% { text-shadow: 3px 0 var(--pink), -3px 0 var(--cyan); }
+    94% { text-shadow: 0 0 20px rgba(0,245,255,0.5), 0 0 50px rgba(0,245,255,0.2); }
   }
 
-  .card-desc {
-    font-size: 14px;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-bottom: 18px;
+  .header-sub { font-size: 17px; color: var(--muted); letter-spacing: 2px; margin-bottom: 32px; }
+
+  /* --- XP SYSTEM --- */
+  .xp-system { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 32px; }
+  .xp-header { display: flex; align-items: center; gap: 16px; }
+  .xp-label { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--yellow); }
+  .xp-level { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--cyan); }
+  .xp-track { width: 280px; height: 14px; background: var(--border); border-radius: 7px; overflow: hidden; border: 1px solid var(--yellow); }
+  .xp-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--yellow), var(--orange)); border-radius: 7px; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 8px var(--yellow); }
+  .xp-text { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); }
+  .xp-text span { color: var(--yellow); }
+
+  /* TOAST */
+  .toast { position: fixed; top: 24px; right: 24px; background: var(--card); border: 2px solid var(--yellow); border-radius: 8px; padding: 16px 20px; font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--yellow); z-index: 99999; box-shadow: 0 0 30px rgba(255,230,0,0.3); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center; line-height: 1.8; }
+  .toast.show { transform: translateX(0); }
+  .toast-icon { font-size: 20px; display: block; margin-bottom: 8px; }
+
+  /* --- STATS --- */
+  .stats-bar { display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .stat-num { font-family: 'Press Start 2P', monospace; font-size: 18px; color: var(--cyan); text-shadow: 0 0 10px rgba(0,245,255,0.5); }
+  .stat-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; }
+  .stat-divider { width: 1px; height: 40px; background: var(--border); }
+
+  /* --- CONTROLS --- */
+  .controls { max-width: 900px; margin: 0 auto 40px; padding: 0 24px; position: relative; z-index: 1; display: flex; gap: 14px; flex-wrap: wrap; }
+  .search-wrap { flex: 1; min-width: 220px; position: relative; }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--cyan); pointer-events: none; }
+  .search-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px 12px 40px; font-family: 'Share Tech Mono', monospace; font-size: 14px; color: var(--white); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: var(--cyan); box-shadow: 0 0 12px rgba(0,245,255,0.15); }
+  .filter-btn { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 18px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--muted); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .filter-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .filter-btn.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,245,255,0.08); box-shadow: 0 0 10px rgba(0,245,255,0.1); }
+  .filter-btn[data-filter="security"].active { border-color: var(--pink); color: var(--pink); background: rgba(255,45,120,0.08); }
+  .filter-btn[data-filter="c-lang"].active { border-color: var(--purple); color: var(--purple); background: rgba(181,78,255,0.08); }
+  .filter-btn[data-filter="algorithms"].active { border-color: var(--orange); color: var(--orange); background: rgba(255,107,0,0.08); }
+
+  /* --- GRID --- */
+  .grid { max-width: 900px; margin: 0 auto; padding: 0 24px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; position: relative; z-index: 1; }
+
+  /* --- SHEET CARD --- */
+  .sheet-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; cursor: pointer; text-decoration: none; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; opacity: 0; transform: translateY(40px); }
+  .sheet-card.in-view { animation: scrollReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  @keyframes scrollReveal { to { opacity: 1; transform: translateY(0); } }
+  .sheet-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent, var(--cyan)), transparent); }
+  .sheet-card::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, rgba(var(--accent-rgb, 0,245,255), 0.04), transparent 60%); pointer-events: none; }
+  .sheet-card:hover { transform: translateY(-4px) !important; border-color: var(--accent, var(--cyan)); box-shadow: 0 8px 30px rgba(var(--accent-rgb, 0,245,255), 0.12); }
+  .sheet-card.completed { border-color: rgba(57,255,20,0.4) !important; }
+  .sheet-card[data-subject="security"]   { --accent: var(--pink);   --accent-rgb: 255,45,120; }
+  .sheet-card[data-subject="c-lang"]     { --accent: var(--purple); --accent-rgb: 181,78,255; }
+  .sheet-card[data-subject="algorithms"] { --accent: var(--orange); --accent-rgb: 255,107,0; }
+
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .card-icon { font-size: 28px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(var(--accent-rgb, 0,245,255), 0.4)); }
+  .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .subject-badge { font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 3px 8px; border-radius: 3px; border: 1px solid var(--accent, var(--cyan)); color: var(--accent, var(--cyan)); background: rgba(var(--accent-rgb, 0,245,255), 0.08); white-space: nowrap; }
+  .level-badge { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); white-space: nowrap; }
+  .card-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--white); line-height: 1.7; letter-spacing: 1px; }
+  .card-desc { font-size: 14px; color: var(--text); line-height: 1.6; flex: 1; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
+  .card-topics { display: flex; flex-wrap: wrap; gap: 5px; }
+  .topic-tag { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 2px 6px; }
+
+  .check-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s; flex-shrink: 0; position: relative; z-index: 10; }
+  .check-btn:hover { border-color: var(--green); background: rgba(57,255,20,0.1); }
+  .check-btn.checked { border-color: var(--green); background: rgba(57,255,20,0.15); box-shadow: 0 0 8px rgba(57,255,20,0.3); }
+
+  .completed-ribbon { position: absolute; top: 14px; left: -28px; background: var(--green); color: var(--bg); font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 4px 32px; transform: rotate(-45deg); letter-spacing: 1px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .sheet-card.completed .completed-ribbon { opacity: 1; }
+
+  /* --- REQUEST SECTION --- */
+  .request-section {
+    max-width: 900px;
+    margin: 20px auto 60px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
   }
 
-  .card-cta {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    color: var(--accent, var(--cyan));
+  .request-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 14px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    user-select: none;
   }
 
-  .card-cta::after {
-    content: '→';
-    transition: transform 0.2s;
-  }
-
-  .card:hover .card-cta::after {
-    transform: translateX(4px);
-  }
-
-  /* FORMSPREE */
-  .contact-section {
-    margin-bottom: 80px;
-  }
-
-  .contact-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 36px 32px;
-    max-width: 560px;
-  }
-
-  .contact-box p {
-    color: var(--muted);
-    font-size: 14px;
-    margin-bottom: 24px;
-  }
-
-  .form-group {
-    margin-bottom: 16px;
-  }
-
-  .form-group label {
-    display: block;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    color: var(--cyan);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 6px;
-  }
-
-  .form-group input,
-  .form-group textarea {
-    width: 100%;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 15px;
-    padding: 10px 14px;
-    border-radius: 3px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus,
-  .form-group textarea:focus {
-    border-color: var(--cyan);
-    box-shadow: 0 0 0 2px rgba(0,245,255,0.1);
-  }
-
-  .form-group textarea {
-    height: 100px;
-    resize: vertical;
-  }
-
-  .btn-submit {
+  .request-title {
     font-family: 'Press Start 2P', monospace;
     font-size: 10px;
-    background: transparent;
-    border: 1px solid var(--cyan);
     color: var(--cyan);
-    padding: 12px 24px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .request-title::before { content: '▶'; color: var(--pink); animation: blink 1s step-end infinite; }
+  .request-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .request-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.4s ease, padding 0.4s ease;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .request-box.open {
+    max-height: 600px;
+    opacity: 1;
+    padding: 32px;
+  }
+
+  .request-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--cyan), var(--purple), transparent); }
+
+  .request-intro {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 24px;
+    line-height: 1.7;
+  }
+
+  .request-intro strong { color: var(--cyan); }
+
+  .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+
+  .form-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+  }
+
+  .form-input, .form-textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: var(--white);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+  .form-input:focus, .form-textarea:focus { border-color: var(--cyan); box-shadow: 0 0 12px rgba(0,245,255,0.15); }
+
+  .form-textarea { resize: vertical; min-height: 90px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .submit-btn {
+    background: transparent;
+    border: 2px solid var(--cyan);
+    border-radius: 6px;
+    padding: 14px 28px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--cyan);
     cursor: pointer;
     transition: all 0.2s;
-    letter-spacing: 1px;
-    text-shadow: 0 0 8px var(--cyan);
-    box-shadow: 0 0 8px rgba(0,245,255,0.1);
+    width: 100%;
+    letter-spacing: 2px;
+    margin-top: 4px;
   }
 
-  .btn-submit:hover {
-    background: rgba(0,245,255,0.08);
-    box-shadow: 0 0 16px rgba(0,245,255,0.25);
+  .submit-btn:hover { background: rgba(0,245,255,0.1); box-shadow: 0 0 20px rgba(0,245,255,0.2); transform: translateY(-2px); }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .form-success {
+    text-align: center;
+    padding: 24px;
+    display: none;
   }
+
+  .form-success.show { display: block; }
+  .success-icon { font-size: 40px; margin-bottom: 12px; }
+  .success-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--green); margin-bottom: 10px; }
+  .success-sub { font-size: 15px; color: var(--muted); }
+
+  .toggle-btn {
+    background: rgba(0,245,255,0.06);
+    border: 1px solid var(--cyan);
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--cyan);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .toggle-btn:hover { background: rgba(0,245,255,0.12); box-shadow: 0 0 12px rgba(0,245,255,0.15); }
+
+  /* EMPTY STATE */
+  .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; display: none; }
+  .empty-state.visible { display: block; }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-text { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; }
 
   /* FOOTER */
-  footer {
-    text-align: center;
-    padding: 32px 20px 48px;
-    border-top: 1px solid var(--border);
-  }
+  footer { text-align: center; padding: 32px 20px; border-top: 1px solid var(--border); font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--muted); letter-spacing: 2px; position: relative; z-index: 1; }
+  footer span { color: var(--cyan); }
 
-  footer p {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  footer a {
-    color: var(--cyan);
-    text-decoration: none;
-  }
-
-  footer a:hover {
-    text-decoration: underline;
+  @media (max-width: 600px) {
+    header h1 { font-size: 13px; }
+    .controls { flex-direction: column; }
+    .grid { grid-template-columns: 1fr; }
+    .xp-track { width: 220px; }
+    .form-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">⭐</span>
+  LEVEL UP !<br>
+  <span id="toast-msg" style="color:var(--cyan)"></span>
+</div>
+
 <header>
-  <div class="logo">HOLBERTON<br>CHEATSHEETS</div>
-  <p class="subtitle">by <span>Adam Zou</span> — Holberton School</p>
-</header>
+  <span class="tag">◦ Holberton School — cheatsheets.adamzou.fr ◦</span>
+  <h1>HOLBERTON<br><span>CHEATSHEETS</span></h1>
+  <p class="header-sub">toutes tes fiches de révision au même endroit</p>
 
-<div class="container">
-
-  <hr class="divider">
-
-  <p class="section-title">// Fiches disponibles</p>
-
-  <div class="cards">
-
-    <a href="sheets/variadic_functions_cheatsheet.html" class="card" style="--accent: var(--cyan)">
-      <div class="card-tag">C Language</div>
-      <div class="card-title">Variadic Functions</div>
-      <div class="card-desc">va_list, va_start, va_arg, va_end — tout ce qu'il faut pour les fonctions à arguments variables.</div>
-      <div class="card-cta">Ouvrir la fiche</div>
-    </a>
-
-    <a href="sheets/recursion_cheatsheet.html" class="card" style="--accent: var(--green)">
-      <div class="card-tag">C Language</div>
-      <div class="card-title">Récursion</div>
-      <div class="card-desc">Cas de base, pile d'appels, fibonacci, factorielle — maîtrise la récursion en C.</div>
-      <div class="card-cta">Ouvrir la fiche</div>
-    </a>
-
-    <a href="sheets/security_memory_lab_v2.html" class="card" style="--accent: var(--pink)">
-      <div class="card-tag">Security</div>
-      <div class="card-title">Security & Memory Lab</div>
-      <div class="card-desc">Buffer overflow, gestion mémoire, bonnes pratiques sécurité en C.</div>
-      <div class="card-cta">Ouvrir la fiche</div>
-    </a>
-
+  <div class="xp-system">
+    <div class="xp-header">
+      <span class="xp-label">XP</span>
+      <span class="xp-level" id="xp-level">LVL 0</span>
+    </div>
+    <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
+    <div class="xp-text"><span id="xp-current">0</span> / <span id="xp-max">3</span> fiches vues</div>
   </div>
 
-  <hr class="divider">
+  <div class="stats-bar">
+    <div class="stat"><span class="stat-num" id="total-count">3</span><span class="stat-label">SHEETS</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><span class="stat-num" id="done-count">0</span><span class="stat-label">VUES</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><span class="stat-num" style="color:var(--green)" id="pct-count">0%</span><span class="stat-label">MAÎTRISÉ</span></div>
+  </div>
+</header>
 
-  <div class="contact-section">
-    <p class="section-title">// Suggérer une fiche</p>
-    <div class="contact-box">
-      <p>Tu veux une fiche sur un sujet Holberton ? Envoie-moi ta suggestion ici.</p>
-      <form action="https://formspree.io/f/xreyranz" method="POST">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="ton@email.com">
-        </div>
-        <div class="form-group">
-          <label for="message">Suggestion</label>
-          <textarea id="message" name="message" placeholder="Ex: une fiche sur les linked lists..."></textarea>
-        </div>
-        <button type="submit" class="btn-submit">ENVOYER</button>
-      </form>
+<!-- CONTROLS -->
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" id="search" placeholder="Rechercher une fiche..." autocomplete="off">
+  </div>
+  <button class="filter-btn active" data-filter="all">ALL</button>
+  <button class="filter-btn" data-filter="c-lang">C LANG</button>
+  <button class="filter-btn" data-filter="security">SECURITY</button>
+  <button class="filter-btn" data-filter="algorithms">ALGO</button>
+</div>
+
+<!-- GRID -->
+<div class="grid" id="grid">
+
+  <a class="sheet-card" href="sheets/variadic_functions_cheatsheet.html" data-subject="c-lang" data-id="variadic" data-title="variadic functions" data-tags="va_list va_start va_arg va_end stdarg">
+    <div class="completed-ribbon">DONE</div>
+    <div class="card-header">
+      <span class="card-icon">🎮</span>
+      <div class="card-badges"><span class="subject-badge">C LANG</span><span class="level-badge">⭐⭐ LVL 2</span></div>
     </div>
+    <div class="card-title">VARIADIC<br>FUNCTIONS</div>
+    <div class="card-desc">Fonctions à nombre variable d'arguments. Maîtrise les macros va_list, va_start, va_arg et va_end avec des exemples gaming.</div>
+    <div class="card-footer">
+      <div class="card-topics"><span class="topic-tag">va_list</span><span class="topic-tag">va_arg</span><span class="topic-tag">stdarg.h</span></div>
+      <button class="check-btn" data-id="variadic" title="Marquer comme vue" onclick="event.preventDefault(); toggleDone(this)">✓</button>
+    </div>
+  </a>
+
+  <a class="sheet-card" href="sheets/recursion_cheatsheet.html" data-subject="c-lang" data-id="recursion" data-title="recursion récursion" data-tags="base case recursive factorial fibonacci strlen">
+    <div class="completed-ribbon">DONE</div>
+    <div class="card-header">
+      <span class="card-icon">🔁</span>
+      <div class="card-badges"><span class="subject-badge">C LANG</span><span class="level-badge">⭐⭐ LVL 2</span></div>
+    </div>
+    <div class="card-title">RECURSION<br>→ LEVEL UP</div>
+    <div class="card-desc">Fonctions récursives en C. Cas de base, cas récursif, call stack, factorielle, fibonacci et exemples Holberton.</div>
+    <div class="card-footer">
+      <div class="card-topics"><span class="topic-tag">base case</span><span class="topic-tag">stack</span><span class="topic-tag">fibonacci</span></div>
+      <button class="check-btn" data-id="recursion" title="Marquer comme vue" onclick="event.preventDefault(); toggleDone(this)">✓</button>
+    </div>
+  </a>
+
+  <a class="sheet-card" href="sheets/security_memory_lab_v2.html" data-subject="security" data-id="security" data-title="security memory lab secure input valgrind" data-tags="buffer overflow double free use-after-free memory leak valgrind malloc free ownership">
+    <div class="completed-ribbon">DONE</div>
+    <div class="card-header">
+      <span class="card-icon">⚠️</span>
+      <div class="card-badges"><span class="subject-badge">SECURITY</span><span class="level-badge">⭐⭐⭐ COEFF 2</span></div>
+    </div>
+    <div class="card-title">SECURE INPUT<br>&amp; MEMORY LAB</div>
+    <div class="card-desc">Buffer overflow, double free, use-after-free, memory leak. Valgrind, ownership rules et patching sécurisé.</div>
+    <div class="card-footer">
+      <div class="card-topics"><span class="topic-tag">valgrind</span><span class="topic-tag">malloc</span><span class="topic-tag">ownership</span></div>
+      <button class="check-btn" data-id="security" title="Marquer comme vue" onclick="event.preventDefault(); toggleDone(this)">✓</button>
+    </div>
+  </a>
+
+  <div class="empty-state" id="empty">
+    <div class="empty-icon">🔍</div>
+    <p class="empty-text">AUCUNE FICHE TROUVÉE</p>
+    <p style="font-family:'Share Tech Mono';font-size:13px;color:var(--muted);margin-top:12px">Essaie un autre mot-clé</p>
   </div>
 
 </div>
 
+<!-- REQUEST SECTION -->
+<div class="request-section">
+  <div class="request-header" onclick="toggleForm()">
+    <div class="request-title" style="flex:1">DEMANDER UNE FICHE</div>
+    <button class="toggle-btn" id="toggle-btn">+ OUVRIR</button>
+  </div>
+
+  <div class="request-box" id="request-box">
+
+    <!-- FORM -->
+    <div id="form-content">
+      <p class="request-intro">
+        Tu veux une fiche sur un sujet qui n'existe pas encore ? Fais une demande — <strong>Adam</strong> la créera et l'ajoutera au site ! 🎮
+      </p>
+
+      <form id="request-form" action="https://formspree.io/f/xreyranz" method="POST">
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="prenom">TON PRÉNOM</label>
+            <input class="form-input" type="text" id="prenom" name="prenom" placeholder="Ex: Lucas" required maxlength="30">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sujet">SUJET SOUHAITÉ</label>
+            <input class="form-input" type="text" id="sujet" name="sujet" placeholder="Ex: Pointeurs en C" required maxlength="60">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="description">DESCRIPTION</label>
+          <textarea class="form-textarea" id="description" name="description" placeholder="Décris ce que tu veux apprendre ou ce qui te bloque..." required maxlength="300"></textarea>
+        </div>
+
+        <button class="submit-btn" type="submit" id="submit-btn">▶ ENVOYER LA DEMANDE</button>
+      </form>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="form-success" id="form-success">
+      <div class="success-icon">🎮</div>
+      <div class="success-title">DEMANDE ENVOYÉE !</div>
+      <p class="success-sub">Adam a reçu ta demande.<br>La fiche sera ajoutée prochainement !</p>
+    </div>
+
+  </div>
+</div>
+
 <footer>
-  <p>Fait avec Claude par <a href="https://adamzou.fr" target="_blank">Adam Zou</a> — <a href="https://cheatsheets.adamzou.fr" target="_blank">cheatsheets.adamzou.fr</a></p>
+  <p>HOLBERTON SCHOOL ◦ <span>cheatsheets.adamzou.fr</span></p>
+  <p style="margin-top:10px;color:var(--green)">[ STUDY HARD. CODE HARDER. ]</p>
+  <p style="margin-top:10px;color:var(--muted)">Fait avec <span>Claude</span> par <span>Adam</span><span style="color:var(--cyan);text-shadow:0 0 8px var(--cyan)">.</span></p>
 </footer>
+
+<script>
+  // --- XP SYSTEM ---
+  const TOTAL = 3;
+  const LEVELS = ['LVL 0', 'LVL 1', 'LVL 2 → PRO', 'LVL MAX ★'];
+  const LEVEL_MSGS = ['', 'Première fiche vue !', 'Tu progresses !', 'TOUTES LES FICHES MAÎTRISÉES !'];
+  let done = JSON.parse(localStorage.getItem('hb-done') || '[]');
+
+  function updateXP() {
+    const count = done.length;
+    const pct = Math.round((count / TOTAL) * 100);
+    const level = count === 0 ? 0 : count === TOTAL ? 3 : count;
+    document.getElementById('xp-fill').style.width = pct + '%';
+    document.getElementById('xp-level').textContent = LEVELS[Math.min(level, 3)];
+    document.getElementById('xp-current').textContent = count;
+    document.getElementById('xp-max').textContent = TOTAL;
+    document.getElementById('done-count').textContent = count;
+    document.getElementById('pct-count').textContent = pct + '%';
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function toggleDone(btn) {
+    const id = btn.dataset.id;
+    const card = btn.closest('.sheet-card');
+    const prevCount = done.length;
+    if (done.includes(id)) {
+      done = done.filter(d => d !== id);
+      btn.textContent = '✓';
+      btn.classList.remove('checked');
+      card.classList.remove('completed');
+    } else {
+      done.push(id);
+      btn.textContent = '✓';
+      btn.classList.add('checked');
+      card.classList.add('completed');
+      const newLevel = done.length;
+      if (newLevel > prevCount && LEVEL_MSGS[newLevel]) showToast(LEVEL_MSGS[newLevel]);
+    }
+    localStorage.setItem('hb-done', JSON.stringify(done));
+    updateXP();
+  }
+
+  function restoreState() {
+    document.querySelectorAll('.sheet-card').forEach(card => {
+      const id = card.dataset.id;
+      const btn = card.querySelector('.check-btn');
+      if (done.includes(id)) {
+        card.classList.add('completed');
+        btn.textContent = '✓';
+        btn.classList.add('checked');
+      }
+    });
+    updateXP();
+  }
+
+  // --- FORM TOGGLE ---
+  function toggleForm() {
+    const box = document.getElementById('request-box');
+    const btn = document.getElementById('toggle-btn');
+    box.classList.toggle('open');
+    btn.textContent = box.classList.contains('open') ? '− FERMER' : '+ OUVRIR';
+  }
+
+  // --- FORM SUBMIT ---
+  document.getElementById('request-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ ENVOI EN COURS...';
+    try {
+      const response = await fetch(this.action, {
+        method: 'POST',
+        body: new FormData(this),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (response.ok) {
+        document.getElementById('form-content').style.display = 'none';
+        document.getElementById('form-success').classList.add('show');
+      } else {
+        btn.disabled = false;
+        btn.textContent = '▶ ENVOYER LA DEMANDE';
+        alert('Erreur lors de l\'envoi. Réessaie !');
+      }
+    } catch {
+      btn.disabled = false;
+      btn.textContent = '▶ ENVOYER LA DEMANDE';
+      alert('Erreur réseau. Réessaie !');
+    }
+  });
+
+  // --- SCROLL ANIMATIONS ---
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('in-view'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.sheet-card').forEach(card => observer.observe(card));
+
+  // --- SEARCH & FILTER ---
+  const cards = document.querySelectorAll('.sheet-card');
+  const searchInput = document.getElementById('search');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const empty = document.getElementById('empty');
+  const totalCount = document.getElementById('total-count');
+  let currentFilter = 'all';
+  let currentSearch = '';
+
+  function updateCards() {
+    let visible = 0;
+    cards.forEach(card => {
+      const subject = card.dataset.subject;
+      const title = card.dataset.title.toLowerCase();
+      const tags = card.dataset.tags.toLowerCase();
+      const search = currentSearch.toLowerCase();
+      const matchFilter = currentFilter === 'all' || subject === currentFilter;
+      const matchSearch = !search || title.includes(search) || tags.includes(search);
+      card.style.display = (matchFilter && matchSearch) ? 'flex' : 'none';
+      if (matchFilter && matchSearch) visible++;
+    });
+    empty.classList.toggle('visible', visible === 0);
+    totalCount.textContent = visible;
+  }
+
+  searchInput.addEventListener('input', e => { currentSearch = e.target.value; updateCards(); });
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      updateCards();
+    });
+  });
+
+  // --- INIT ---
+  restoreState();
+</script>
 
 </body>
 </html>
