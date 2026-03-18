@@ -357,6 +357,7 @@
   <button class="filter-btn" data-filter="security">SECURITY</button>
   <button class="filter-btn" data-filter="algorithms">ALGO</button>
   <button class="filter-btn" data-filter="git">GIT</button>
+  <button class="filter-btn" id="goto-form-btn" onclick="openAndScrollToForm()" style="margin-left:auto;border-color:var(--cyan);color:var(--cyan);">+ NOUVEAU</button>
 </div>
 
 <!-- GRID -->
@@ -469,7 +470,7 @@
 </div>
 
 <!-- REQUEST SECTION -->
-<div class="request-section">
+<div class="request-section" id="add-form">
   <div class="request-header" onclick="toggleForm()">
     <div class="request-title" style="flex:1">DEMANDER UNE FICHE</div>
     <button class="toggle-btn" id="toggle-btn">+ OUVRIR</button>
@@ -579,6 +580,18 @@
       }
     });
     updateXP();
+  }
+
+  // --- SCROLL TO FORM ---
+  function openAndScrollToForm() {
+    const box = document.getElementById('request-box');
+    const btn = document.getElementById('toggle-btn');
+    if (!box.classList.contains('open')) {
+      box.classList.add('open');
+      btn.textContent = '− FERMER';
+    }
+    document.getElementById('add-form').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => document.getElementById('prenom').focus(), 600);
   }
 
   // --- FORM TOGGLE ---
