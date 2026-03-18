@@ -122,6 +122,7 @@
   .filter-btn[data-filter="c-lang"].active { border-color: var(--purple); color: var(--purple); background: rgba(181,78,255,0.08); }
   .filter-btn[data-filter="algorithms"].active { border-color: var(--orange); color: var(--orange); background: rgba(255,107,0,0.08); }
   .filter-btn[data-filter="git"].active { border-color: #ff6b00; color: #ff6b00; background: rgba(255,107,0,0.08); }
+  .filter-btn[data-filter="cs"].active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,245,255,0.08); }
 
   /* --- GRID --- */
   .grid { max-width: 900px; margin: 0 auto; padding: 0 24px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; position: relative; z-index: 1; }
@@ -138,6 +139,7 @@
   .sheet-card[data-subject="c-lang"]     { --accent: var(--purple); --accent-rgb: 181,78,255; }
   .sheet-card[data-subject="algorithms"] { --accent: var(--orange); --accent-rgb: 255,107,0; }
   .sheet-card[data-subject="git"]        { --accent: #ff6b00;       --accent-rgb: 255,107,0; }
+  .sheet-card[data-subject="cs"]         { --accent: var(--cyan);   --accent-rgb: 0,245,255; }
 
   .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .card-icon { font-size: 28px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(var(--accent-rgb, 0,245,255), 0.4)); }
@@ -357,6 +359,7 @@
   <button class="filter-btn" data-filter="security">SECURITY</button>
   <button class="filter-btn" data-filter="algorithms">ALGO</button>
   <button class="filter-btn" data-filter="git">GIT</button>
+  <button class="filter-btn" data-filter="cs">CS</button>
   <button id="goto-form-btn" onclick="openAndScrollToForm()" style="margin-left:auto;background:var(--card);border:1px solid var(--cyan);border-radius:6px;padding:10px 18px;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--cyan);cursor:pointer;white-space:nowrap;transition:all 0.2s;">+ NOUVEAU</button>
 </div>
 
@@ -461,11 +464,11 @@
     </div>
   </a>
 
-  <a class="sheet-card" href="sheets/binary_decimal_hex_cheatsheet.html" data-subject="c-lang" data-id="binhex" data-title="binaire décimal hexadécimal binary decimal hex bases" data-tags="base 2 base 10 base 16 conversion bits octets bitwise">
+  <a class="sheet-card" href="sheets/binary_decimal_hex_cheatsheet.html" data-subject="cs" data-id="binhex" data-title="binaire décimal hexadécimal binary decimal hex bases" data-tags="base 2 base 10 base 16 conversion bits octets bitwise">
     <div class="completed-ribbon">DONE</div>
     <div class="card-header">
       <span class="card-icon">💻</span>
-      <div class="card-badges"><span class="subject-badge">C LANG</span><span class="level-badge">⭐⭐ LVL 2</span></div>
+      <div class="card-badges"><span class="subject-badge">CS</span><span class="level-badge">⭐⭐ LVL 2</span></div>
     </div>
     <div class="card-title">BINAIRE<br>DÉC &amp; HEX</div>
     <div class="card-desc">Conversion entre bases 2, 10 et 16. Comprendre les bits, octets et notation hexadécimale — parle le langage de la machine.</div>
