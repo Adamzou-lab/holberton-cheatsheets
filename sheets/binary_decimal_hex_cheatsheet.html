@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binaire, Décimal & Hexadécimal — Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #050a0f;
+    --bg2:    #080f1a;
+    --bg3:    #0a1420;
+    --card:   #080d15;
+    --border: #0f2035;
+    --neon:   #4d9fff;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text:   #c0d0e0;
+    --muted:  #304050;
+    --white:  #eef6ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(77,159,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(77,159,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(13px, 2.4vw, 22px);
+    color: var(--white);
+    line-height: 1.7;
+    text-shadow: 0 0 20px rgba(77,159,255,0.6), 0 0 40px rgba(77,159,255,0.2);
+    margin-bottom: 20px;
+  }
+  header h1 span { color: var(--neon); }
+  .header-sub { font-size: 18px; color: var(--muted); letter-spacing: 2px; }
+
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--neon);
+    letter-spacing: 2px;
+    margin: 50px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::before { content: '▶'; color: var(--pink); font-size: 10px; animation: blink 1s step-end infinite; }
+  .section-title::after  { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--neon), transparent); }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--neon);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green .card-title  { color: var(--green); }
+  .card.pink .card-title   { color: var(--pink); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.orange .card-title { color: var(--orange); }
+  .card-icon { font-size: 16px; }
+
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre {
+    background: #030810;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.9;
+    margin-top: 12px;
+  }
+  code {
+    background: rgba(77,159,255,0.1);
+    color: var(--neon);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  .b { color: var(--pink); }        /* binary digits */
+  .d { color: var(--green); }       /* decimal digits */
+  .h { color: var(--neon); }        /* hex digits */
+  .op { color: var(--yellow); }     /* operators */
+  .exp { color: var(--purple); }    /* exponents */
+  .cmt { color: var(--muted); font-style: italic; }
+  .ok  { color: var(--green); }
+  .err { color: var(--pink); }
+  .hi  { color: var(--cyan); font-weight: bold; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .analogy {
+    background: linear-gradient(135deg, #050c15, #030810);
+    border: 1px solid var(--yellow);
+    border-left: 4px solid var(--yellow);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .analogy-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  .tip  { background: rgba(57,255,20,0.05); border: 1px solid rgba(57,255,20,0.3); border-left: 4px solid var(--green); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .warn { background: rgba(255,45,120,0.05); border: 1px solid rgba(255,45,120,0.3); border-left: 4px solid var(--pink); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .tip::before  { content: '✅ '; }
+  .warn::before { content: '⚠️ '; }
+
+  /* BIG CONVERSION TABLE */
+  .conv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .conv-table th {
+    padding: 10px 12px;
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .conv-table th.th-dec  { background: rgba(57,255,20,0.1);  color: var(--green); }
+  .conv-table th.th-bin  { background: rgba(255,45,120,0.1); color: var(--pink); }
+  .conv-table th.th-hex  { background: rgba(77,159,255,0.1); color: var(--neon); }
+  .conv-table th.th-oct  { background: rgba(255,230,0,0.1);  color: var(--yellow); }
+  .conv-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    vertical-align: middle;
+  }
+  .conv-table tr:hover td { background: rgba(77,159,255,0.04); }
+  .conv-table .td-dec  { color: var(--green); }
+  .conv-table .td-bin  { color: var(--pink); }
+  .conv-table .td-hex  { color: var(--neon); font-weight: bold; }
+  .conv-table .td-oct  { color: var(--yellow); }
+  .conv-table tr.special td { background: rgba(77,159,255,0.06); }
+
+  /* BIT BOXES */
+  .bit-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+  .bit-box {
+    width: 44px;
+    height: 50px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .bit-box.one  { background: rgba(255,45,120,0.12); border-color: var(--pink); }
+  .bit-box.zero { background: rgba(77,159,255,0.05); border-color: var(--border); }
+  .bit-val { font-size: 18px; font-weight: bold; }
+  .bit-val.one  { color: var(--pink); }
+  .bit-val.zero { color: var(--muted); }
+  .bit-exp { font-size: 9px; color: var(--purple); }
+  .bit-sep { color: var(--muted); font-family: 'Share Tech Mono',monospace; font-size:11px; padding: 0 4px; }
+
+  /* STEPS */
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--bg); background: var(--neon); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  /* SKILL TREE */
+  .skill-tree { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 24px; }
+  .skill-tree::before { content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(to bottom, var(--neon), var(--purple)); }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--neon); background: var(--bg); flex-shrink: 0; margin-left: -24px; margin-top: 3px; box-shadow: 0 0 8px var(--neon); }
+  .skill-dot.done   { background: var(--neon); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.pink   { border-color: var(--pink);   box-shadow: 0 0 8px var(--pink);   background: var(--pink); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.purple { border-color: var(--purple); box-shadow: 0 0 8px var(--purple); background: var(--purple); }
+  .skill-dot.orange { border-color: var(--orange); box-shadow: 0 0 8px var(--orange); background: var(--orange); }
+
+  /* MACRO TABLE */
+  .macro-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; font-size: 13px; margin-top: 12px; }
+  .macro-table th { background: var(--border); color: var(--neon); padding: 10px 14px; text-align: left; font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; }
+  .macro-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .macro-table tr:hover td { background: rgba(77,159,255,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; }
+
+  /* OPERATION VISUAL */
+  .op-block {
+    background: #030810;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    line-height: 2;
+    margin-top: 12px;
+  }
+  .op-line { display: flex; align-items: center; gap: 8px; }
+  .op-sign { color: var(--yellow); font-size: 18px; width: 20px; }
+  .op-sep  { border-top: 1px solid var(--neon); margin: 4px 0; }
+
+  footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--muted); letter-spacing: 2px; position: relative; z-index: 1; }
+  footer span { color: var(--neon); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 11px; }
+    .section-title { font-size: 8px; }
+    .bit-box { width: 36px; height: 44px; }
+    .bit-val { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Dev &amp; Cybersécurité — Bases Numériques ✦</span>
+  <h1>BINAIRE, DÉCIMAL<br><span>&amp; HEXADÉCIMAL</span></h1>
+  <p class="header-sub">Parle la langue des machines.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ LES 3 BASES ══════════════ -->
+  <div class="section-title">LES 3 SYSTÈMES DE NUMÉRATION</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔢</span> COMPRENDRE LES BASES</div>
+    <p>Chaque système de numération utilise un certain nombre de <strong style="color:var(--neon)">symboles (chiffres)</strong>. La <strong style="color:var(--neon)">base</strong> détermine combien de symboles existent et la valeur positionnelle de chaque chiffre.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Imagine un compteur de score. En base <strong>10</strong>, tu comptes de 0 à 9 avant de passer à la dizaine — c'est notre système humain. En base <strong>2</strong> (binaire), tu ne comptes que 0 et 1 — c'est le langage du CPU, qui ne connaît que "courant / pas de courant". En base <strong>16</strong> (hex), tu utilises 0-9 puis A-F pour représenter des valeurs plus grandes en moins de caractères — les programmeurs adorent ça pour lire la mémoire.</p>
+    </div>
+
+    <div class="grid-3" style="margin-top:16px;">
+      <div style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.3); border-radius:8px; padding:16px; text-align:center;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--green); margin-bottom:10px;">DÉCIMAL</div>
+        <div style="font-family:'Share Tech Mono',monospace; font-size:28px; color:var(--green);">Base 10</div>
+        <div style="font-size:14px; color:var(--muted); margin-top:8px;">Symboles : <strong style="color:var(--green);">0 1 2 3 4 5 6 7 8 9</strong></div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Préfixe : aucun</div>
+        <div style="font-size:13px; color:var(--muted);">Usage : vie courante</div>
+      </div>
+      <div style="background:rgba(255,45,120,0.05); border:1px solid rgba(255,45,120,0.3); border-radius:8px; padding:16px; text-align:center;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--pink); margin-bottom:10px;">BINAIRE</div>
+        <div style="font-family:'Share Tech Mono',monospace; font-size:28px; color:var(--pink);">Base 2</div>
+        <div style="font-size:14px; color:var(--muted); margin-top:8px;">Symboles : <strong style="color:var(--pink);">0 1</strong></div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Préfixe : <code>0b</code> ou <code>%</code></div>
+        <div style="font-size:13px; color:var(--muted);">Usage : CPU, mémoire, bits</div>
+      </div>
+      <div style="background:rgba(77,159,255,0.05); border:1px solid rgba(77,159,255,0.3); border-radius:8px; padding:16px; text-align:center;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--neon); margin-bottom:10px;">HEXADÉCIMAL</div>
+        <div style="font-family:'Share Tech Mono',monospace; font-size:28px; color:var(--neon);">Base 16</div>
+        <div style="font-size:14px; color:var(--muted); margin-top:8px;">Symboles : <strong style="color:var(--neon);">0-9 A B C D E F</strong></div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Préfixe : <code>0x</code></div>
+        <div style="font-size:13px; color:var(--muted);">Usage : adresses, couleurs, opcodes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TABLE DE CORRESPONDANCE ══════════════ -->
+  <div class="section-title">TABLE DE CORRESPONDANCE — 0 À 255</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">📋</span> DÉC / BIN / HEX / OCT — LES VALEURS CLÉS</div>
+    <table class="conv-table">
+      <thead>
+        <tr>
+          <th class="th-dec">DÉC</th>
+          <th class="th-bin">BINAIRE</th>
+          <th class="th-hex">HEX</th>
+          <th class="th-oct">OCTAL</th>
+          <th class="th-dec">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-dec">0</td><td class="td-bin">0000 0000</td><td class="td-hex">0x00</td><td class="td-oct">000</td><td>NULL</td></tr>
+        <tr><td class="td-dec">1</td><td class="td-bin">0000 0001</td><td class="td-hex">0x01</td><td class="td-oct">001</td><td></td></tr>
+        <tr><td class="td-dec">2</td><td class="td-bin">0000 0010</td><td class="td-hex">0x02</td><td class="td-oct">002</td><td></td></tr>
+        <tr><td class="td-dec">3</td><td class="td-bin">0000 0011</td><td class="td-hex">0x03</td><td class="td-oct">003</td><td></td></tr>
+        <tr><td class="td-dec">4</td><td class="td-bin">0000 0100</td><td class="td-hex">0x04</td><td class="td-oct">004</td><td></td></tr>
+        <tr><td class="td-dec">7</td><td class="td-bin">0000 0111</td><td class="td-hex">0x07</td><td class="td-oct">007</td><td></td></tr>
+        <tr class="special"><td class="td-dec">8</td><td class="td-bin">0000 1000</td><td class="td-hex">0x08</td><td class="td-oct">010</td><td style="color:var(--purple);">2³ — retenue</td></tr>
+        <tr><td class="td-dec">9</td><td class="td-bin">0000 1001</td><td class="td-hex">0x09</td><td class="td-oct">011</td><td></td></tr>
+        <tr><td class="td-dec">10</td><td class="td-bin">0000 1010</td><td class="td-hex">0x0A</td><td class="td-oct">012</td><td style="color:var(--neon);">A en hex</td></tr>
+        <tr><td class="td-dec">11</td><td class="td-bin">0000 1011</td><td class="td-hex">0x0B</td><td class="td-oct">013</td><td style="color:var(--neon);">B en hex</td></tr>
+        <tr><td class="td-dec">12</td><td class="td-bin">0000 1100</td><td class="td-hex">0x0C</td><td class="td-oct">014</td><td style="color:var(--neon);">C en hex</td></tr>
+        <tr><td class="td-dec">13</td><td class="td-bin">0000 1101</td><td class="td-hex">0x0D</td><td class="td-oct">015</td><td style="color:var(--neon);">D en hex</td></tr>
+        <tr><td class="td-dec">14</td><td class="td-bin">0000 1110</td><td class="td-hex">0x0E</td><td class="td-oct">016</td><td style="color:var(--neon);">E en hex</td></tr>
+        <tr><td class="td-dec">15</td><td class="td-bin">0000 1111</td><td class="td-hex">0x0F</td><td class="td-oct">017</td><td style="color:var(--neon);">F en hex</td></tr>
+        <tr class="special"><td class="td-dec">16</td><td class="td-bin">0001 0000</td><td class="td-hex">0x10</td><td class="td-oct">020</td><td style="color:var(--purple);">2⁴ — retenue hex</td></tr>
+        <tr><td class="td-dec">32</td><td class="td-bin">0010 0000</td><td class="td-hex">0x20</td><td class="td-oct">040</td><td style="color:var(--cyan);">SPACE (ASCII)</td></tr>
+        <tr><td class="td-dec">48</td><td class="td-bin">0011 0000</td><td class="td-hex">0x30</td><td class="td-oct">060</td><td style="color:var(--cyan);">'0' (ASCII)</td></tr>
+        <tr><td class="td-dec">65</td><td class="td-bin">0100 0001</td><td class="td-hex">0x41</td><td class="td-oct">101</td><td style="color:var(--cyan);">'A' (ASCII)</td></tr>
+        <tr><td class="td-dec">97</td><td class="td-bin">0110 0001</td><td class="td-hex">0x61</td><td class="td-oct">141</td><td style="color:var(--cyan);">'a' (ASCII)</td></tr>
+        <tr class="special"><td class="td-dec">127</td><td class="td-bin">0111 1111</td><td class="td-hex">0x7F</td><td class="td-oct">177</td><td style="color:var(--purple);">INT8 max / DEL</td></tr>
+        <tr class="special"><td class="td-dec">128</td><td class="td-bin">1000 0000</td><td class="td-hex">0x80</td><td class="td-oct">200</td><td style="color:var(--pink);">MSB — signe négatif</td></tr>
+        <tr><td class="td-dec">192</td><td class="td-bin">1100 0000</td><td class="td-hex">0xC0</td><td class="td-oct">300</td><td style="color:var(--orange);">Masque /2 réseau</td></tr>
+        <tr><td class="td-dec">255</td><td class="td-bin">1111 1111</td><td class="td-hex">0xFF</td><td class="td-oct">377</td><td style="color:var(--green);">UINT8 max</td></tr>
+        <tr class="special"><td class="td-dec">256</td><td class="td-bin">1 0000 0000</td><td class="td-hex">0x100</td><td class="td-oct">400</td><td style="color:var(--purple);">2⁸ — overflow byte</td></tr>
+        <tr><td class="td-dec">65535</td><td class="td-bin">1111 1111 1111 1111</td><td class="td-hex">0xFFFF</td><td class="td-oct">—</td><td style="color:var(--green);">UINT16 max</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════ COMPRENDRE UN OCTET ══════════════ -->
+  <div class="section-title">ANATOMIE D'UN OCTET (8 BITS)</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🧬</span> LIRE UN OCTET BIT PAR BIT</div>
+    <p style="margin-bottom:14px;">Chaque bit a un <strong style="color:var(--purple)">poids positionnel</strong> : une puissance de 2. La valeur totale = somme des poids des bits à <strong style="color:var(--pink)">1</strong>.</p>
+
+    <p style="font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--muted); margin-bottom:8px;">Exemple : <strong style="color:var(--neon);">0b10110101</strong> = <strong style="color:var(--green);">181</strong> décimal = <strong style="color:var(--neon);">0xB5</strong></p>
+
+    <div class="bit-row">
+      <div class="bit-box one"> <div class="bit-exp">2⁷</div><div class="bit-val one">1</div></div>
+      <div class="bit-box zero"><div class="bit-exp">2⁶</div><div class="bit-val zero">0</div></div>
+      <div class="bit-box one"> <div class="bit-exp">2⁵</div><div class="bit-val one">1</div></div>
+      <div class="bit-box one"> <div class="bit-exp">2⁴</div><div class="bit-val one">1</div></div>
+      <div class="bit-box zero"><div class="bit-exp">2³</div><div class="bit-val zero">0</div></div>
+      <div class="bit-box one"> <div class="bit-exp">2²</div><div class="bit-val one">1</div></div>
+      <div class="bit-box zero"><div class="bit-exp">2¹</div><div class="bit-val zero">0</div></div>
+      <div class="bit-box one"> <div class="bit-exp">2⁰</div><div class="bit-val one">1</div></div>
+      <div class="bit-sep">= 128+32+16+4+1 =</div>
+      <div style="font-family:'Share Tech Mono',monospace; font-size:22px; color:var(--green); font-weight:bold;">181</div>
+    </div>
+
+    <pre><code><span class="cmt">  Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0</span>
+<span class="cmt">  MSB                                                       LSB</span>
+<span class="cmt">  (Most Significant Bit)                   (Least Significant Bit)</span>
+
+  <span class="exp">128</span>     <span class="exp">64</span>      <span class="exp">32</span>      <span class="exp">16</span>      <span class="exp">8</span>       <span class="exp">4</span>       <span class="exp">2</span>       <span class="exp">1</span>
+  <span class="b">1</span>       <span class="b">0</span>       <span class="b">1</span>       <span class="b">1</span>       <span class="b">0</span>       <span class="b">1</span>       <span class="b">0</span>       <span class="b">1</span>
+  = <span class="d">128</span> + <span class="d">0</span> + <span class="d">32</span> + <span class="d">16</span> + <span class="d">0</span> + <span class="d">4</span> + <span class="d">0</span> + <span class="d">1</span> = <span class="ok">181</span> = <span class="h">0xB5</span></code></pre>
+
+    <div class="tip">Astuce rapide : retiens les puissances de 2 — <strong>1, 2, 4, 8, 16, 32, 64, 128</strong>. Tu peux lire n'importe quel octet en 5 secondes.</div>
+  </div>
+
+  <!-- ══════════════ CONVERSIONS ══════════════ -->
+  <div class="section-title">MÉTHODES DE CONVERSION</div>
+
+  <!-- DEC → BIN -->
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🔄</span> DÉCIMAL → BINAIRE — DIVISIONS SUCCESSIVES PAR 2</div>
+    <p style="margin-bottom:12px;">Divise par 2 en notant le reste à chaque étape. Lis les restes <strong style="color:var(--pink)">de bas en haut</strong>.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">Ex</div>
+        <div class="step-content">
+          <h4>Convertir 181 en binaire</h4>
+          <pre><code>  <span class="d">181</span> ÷ 2 = <span class="d">90</span>  reste <span class="b">1</span>   ↑ LSB (lire de bas en haut)
+   <span class="d">90</span> ÷ 2 = <span class="d">45</span>  reste <span class="b">0</span>   ↑
+   <span class="d">45</span> ÷ 2 = <span class="d">22</span>  reste <span class="b">1</span>   ↑
+   <span class="d">22</span> ÷ 2 = <span class="d">11</span>  reste <span class="b">0</span>   ↑
+   <span class="d">11</span> ÷ 2 =  <span class="d">5</span>  reste <span class="b">1</span>   ↑
+    <span class="d">5</span> ÷ 2 =  <span class="d">2</span>  reste <span class="b">1</span>   ↑
+    <span class="d">2</span> ÷ 2 =  <span class="d">1</span>  reste <span class="b">0</span>   ↑
+    <span class="d">1</span> ÷ 2 =  <span class="d">0</span>  reste <span class="b">1</span>   ↑ MSB
+
+  Résultat (lire de bas en haut) : <span class="b">1011 0101</span> = <span class="ok">181</span> ✅</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BIN → DEC -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔄</span> BINAIRE → DÉCIMAL — SOMME DES POIDS</div>
+    <pre><code>  <span class="b">1011 0101</span>
+  = <span class="b">1</span>×<span class="exp">2⁷</span> + <span class="b">0</span>×<span class="exp">2⁶</span> + <span class="b">1</span>×<span class="exp">2⁵</span> + <span class="b">1</span>×<span class="exp">2⁴</span> + <span class="b">0</span>×<span class="exp">2³</span> + <span class="b">1</span>×<span class="exp">2²</span> + <span class="b">0</span>×<span class="exp">2¹</span> + <span class="b">1</span>×<span class="exp">2⁰</span>
+  = <span class="d">128</span> + <span class="d">0</span>  + <span class="d">32</span>  + <span class="d">16</span>  + <span class="d">0</span>  + <span class="d">4</span>   + <span class="d">0</span>  + <span class="d">1</span>
+  = <span class="ok">181</span></code></pre>
+  </div>
+
+  <!-- DEC → HEX -->
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🔄</span> DÉCIMAL → HEX — DIVISIONS PAR 16</div>
+    <div class="grid-2">
+      <div>
+        <p style="margin-bottom:8px; font-size:14px;">Même principe qu'en binaire mais on divise par 16. Les restes 10-15 deviennent A-F.</p>
+        <pre><code>  <span class="d">181</span> ÷ 16 = <span class="d">11</span>  reste <span class="h">5</span>   ↑
+   <span class="d">11</span> ÷ 16 =  <span class="d">0</span>  reste <span class="h">B</span>   ↑ (11 = B)
+
+  Résultat : <span class="h">0xB5</span> = <span class="ok">181</span> ✅</code></pre>
+      </div>
+      <div>
+        <p style="margin-bottom:8px; font-size:14px;">Astuce encore plus rapide : <strong style="color:var(--cyan);">via le binaire</strong> — groupes de 4 bits.</p>
+        <pre><code>  <span class="b">1011</span>  <span class="b">0101</span>
+    ↓       ↓
+   <span class="h">B</span>      <span class="h">5</span>
+  = <span class="h">0xB5</span> ✅
+
+  <span class="cmt">4 bits = 1 chiffre hex
+  8 bits = 2 chiffres hex (1 octet)
+  16 bits = 4 chiffres hex
+  32 bits = 8 chiffres hex</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEX → BIN -->
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🔄</span> HEX → BINAIRE — LE PLUS RAPIDE</div>
+    <p style="margin-bottom:12px;">Chaque chiffre hex = exactement <strong style="color:var(--green)">4 bits</strong>. Traduis chiffre par chiffre.</p>
+    <pre><code>  <span class="h">0xDEAD</span>
+
+  <span class="h">D</span> = <span class="d">13</span> = <span class="b">1101</span>
+  <span class="h">E</span> = <span class="d">14</span> = <span class="b">1110</span>
+  <span class="h">A</span> = <span class="d">10</span> = <span class="b">1010</span>
+  <span class="h">D</span> = <span class="d">13</span> = <span class="b">1101</span>
+
+  <span class="h">0xDEAD</span> = <span class="b">1101 1110 1010 1101</span> = <span class="d">57005</span>
+
+  <span class="cmt">Hex vers décimal : 0xDEAD = 13×16³ + 14×16² + 10×16¹ + 13×16⁰</span>
+  <span class="cmt">                            = 53248  + 3584   + 160    + 13 = 57005</span></code></pre>
+    <div class="tip">En cybersécurité tu verras souvent <code>0xDEADBEEF</code>, <code>0xCAFEBABE</code> (magic bytes), <code>0x90</code> (NOP opcode), <code>0xFF</code> (masque réseau). Reconnaître ces valeurs devient un réflexe.</div>
+  </div>
+
+  <!-- ══════════════ OPÉRATIONS BINAIRES ══════════════ -->
+  <div class="section-title">OPÉRATIONS BINAIRES — LES INDISPENSABLES</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">⚡</span> ADDITION BINAIRE</div>
+    <p style="margin-bottom:12px;">Règles : <code>0+0=0</code>, <code>0+1=1</code>, <code>1+0=1</code>, <code>1+1=10</code> (retenue !), <code>1+1+1=11</code> (retenue !)</p>
+    <div class="grid-2">
+      <div>
+        <p style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--purple); margin-bottom:8px;">EXEMPLE : 42 + 27 = 69</p>
+        <div class="op-block">
+          <div class="op-line"><span class="op-sign"> </span><span style="color:var(--muted); font-size:11px;">retenues : </span><span class="b"> 0 0 1 0 1 0 0 0</span></div>
+          <div class="op-line"><span class="op-sign"> </span><span class="d">42</span><span class="cmt"> = </span><span class="b">0010 1010</span></div>
+          <div class="op-line"><span class="op-sign">+</span><span class="d">27</span><span class="cmt"> = </span><span class="b">0001 1011</span></div>
+          <div class="op-sep"></div>
+          <div class="op-line"><span class="op-sign"> </span><span class="ok">69</span><span class="cmt"> = </span><span class="b">0100 0101</span></div>
+        </div>
+      </div>
+      <div>
+        <p style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--pink); margin-bottom:8px;">⚠️ OVERFLOW : 200 + 100 sur 8 bits</p>
+        <div class="op-block">
+          <div class="op-line"><span class="op-sign"> </span><span class="d">200</span><span class="cmt"> = </span><span class="b">1100 1000</span></div>
+          <div class="op-line"><span class="op-sign">+</span><span class="d">100</span><span class="cmt"> = </span><span class="b">0110 0100</span></div>
+          <div class="op-sep"></div>
+          <div class="op-line"><span class="op-sign"> </span><span class="err">44</span><span class="cmt"> = </span><span class="b">0010 1100</span><span style="color:var(--pink);"> ← overflow !</span></div>
+        </div>
+        <p style="font-size:13px; color:var(--muted); margin-top:8px;">300 ne tient pas dans 8 bits (max 255), le bit de retenue est perdu.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ OPÉRATEURS BITWISE ══════════════ -->
+  <div class="section-title">OPÉRATEURS BITWISE — MANIPULER LES BITS</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔧</span> AND, OR, XOR, NOT, SHIFTS</div>
+    <pre><code>  <span class="cmt">A = 0b1010 1100 = 0xAC = 172</span>
+  <span class="cmt">B = 0b1100 1010 = 0xCA = 202</span>
+
+  <span class="op">AND  (&)</span>  <span class="cmt">1 si les deux bits = 1 → masquage</span>
+  <span class="b">1010 1100</span> <span class="op">&</span> <span class="b">1100 1010</span> = <span class="h">1000 1000</span> = <span class="d">136</span> = <span class="h">0x88</span>
+
+  <span class="op">OR   (|)</span>  <span class="cmt">1 si au moins un bit = 1 → mise à 1</span>
+  <span class="b">1010 1100</span> <span class="op">|</span> <span class="b">1100 1010</span> = <span class="h">1110 1110</span> = <span class="d">238</span> = <span class="h">0xEE</span>
+
+  <span class="op">XOR  (^)</span>  <span class="cmt">1 si les deux bits sont différents → chiffrement</span>
+  <span class="b">1010 1100</span> <span class="op">^</span> <span class="b">1100 1010</span> = <span class="h">0110 0110</span> = <span class="d">102</span> = <span class="h">0x66</span>
+
+  <span class="op">NOT  (~)</span>  <span class="cmt">inverse tous les bits</span>
+  <span class="op">~</span><span class="b">1010 1100</span>              = <span class="h">0101 0011</span> = <span class="d">83</span>  = <span class="h">0x53</span>
+
+  <span class="op">SHIFT gauche (&lt;&lt;)</span>  <span class="cmt">décale les bits vers la gauche = × par 2</span>
+  <span class="b">0000 0001</span> <span class="op">&lt;&lt;</span> <span class="d">3</span>       = <span class="h">0000 1000</span> = <span class="d">8</span>   <span class="cmt">(1 × 2³ = 8)</span>
+  <span class="b">0000 0101</span> <span class="op">&lt;&lt;</span> <span class="d">1</span>       = <span class="h">0000 1010</span> = <span class="d">10</span>  <span class="cmt">(5 × 2 = 10)</span>
+
+  <span class="op">SHIFT droite (&gt;&gt;)</span> <span class="cmt">décale vers la droite = ÷ par 2</span>
+  <span class="b">0001 0000</span> <span class="op">&gt;&gt;</span> <span class="d">2</span>       = <span class="h">0000 0100</span> = <span class="d">4</span>   <span class="cmt">(16 ÷ 4 = 4)</span></code></pre>
+  </div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🎯</span> TRICKS BITWISE — USAGES CONCRETS</div>
+    <table class="macro-table">
+      <thead><tr><th>Opération</th><th>Code C</th><th>Explication</th></tr></thead>
+      <tbody>
+        <tr><td><span class="macro-name">Tester le bit N</span></td><td><code>if (x &amp; (1 &lt;&lt; n))</code></td><td>Est-ce que le bit N vaut 1 ?</td></tr>
+        <tr><td><span class="macro-name">Mettre bit N à 1</span></td><td><code>x |= (1 &lt;&lt; n)</code></td><td>SET le bit N</td></tr>
+        <tr><td><span class="macro-name">Mettre bit N à 0</span></td><td><code>x &amp;= ~(1 &lt;&lt; n)</code></td><td>CLEAR le bit N</td></tr>
+        <tr><td><span class="macro-name">Inverser bit N</span></td><td><code>x ^= (1 &lt;&lt; n)</code></td><td>TOGGLE le bit N</td></tr>
+        <tr><td><span class="macro-name">Pair ou impair</span></td><td><code>if (x &amp; 1)</code></td><td>Impair si bit 0 = 1</td></tr>
+        <tr><td><span class="macro-name">Multiplier par 2ⁿ</span></td><td><code>x &lt;&lt; n</code></td><td>Plus rapide que x * pow(2,n)</td></tr>
+        <tr><td><span class="macro-name">Diviser par 2ⁿ</span></td><td><code>x &gt;&gt; n</code></td><td>Plus rapide que x / pow(2,n)</td></tr>
+        <tr><td><span class="macro-name">Mettre à zéro</span></td><td><code>x &amp; 0</code></td><td>Résultat = 0 toujours</td></tr>
+        <tr><td><span class="macro-name">Copier valeur</span></td><td><code>x | 0</code></td><td>Résultat = x inchangé</td></tr>
+        <tr><td><span class="macro-name">XOR swap</span></td><td><code>a^=b; b^=a; a^=b</code></td><td>Swap sans variable temporaire</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════ USAGES EN DEV ══════════════ -->
+  <div class="section-title">USAGES EN DEV &amp; CYBERSÉCURITÉ</div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">💻</span> POURQUOI C'EST ESSENTIEL</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;">Adresses mémoire &amp; pointeurs</strong>
+          <p style="font-size:14px;color:var(--muted);">Les adresses mémoire s'affichent toujours en hex : <code>0x7fff5fbff8a0</code>. Savoir lire l'hex est indispensable pour déboguer avec GDB, Valgrind, ou analyser un crash dump.</p>
+          <pre><code>  (gdb) x/4xb 0x7fff5fbff8a0
+  <span class="h">0x7fff5fbff8a0</span>: <span class="h">0x48</span> <span class="h">0x65</span> <span class="h">0x6c</span> <span class="h">0x6c</span>  <span class="cmt">= "Hell"</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot green"></div>
+        <div>
+          <strong style="color:var(--green);font-size:16px;">Couleurs CSS &amp; RGB</strong>
+          <p style="font-size:14px;color:var(--muted);">Les couleurs web sont en hex sur 3 octets : Rouge / Vert / Bleu. Chaque composante va de 0x00 à 0xFF.</p>
+          <pre><code>  <span class="h">#FF0000</span> = Rouge pur   (R=255, G=0,   B=0)
+  <span class="h">#00FF00</span> = Vert pur    (R=0,   G=255, B=0)
+  <span class="h">#4D9FFF</span> = Bleu néon   (R=77,  G=159, B=255)
+  <span class="h">#FFFFFF</span> = Blanc       (tous à 255)
+  <span class="h">#000000</span> = Noir        (tous à 0)</code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot pink"></div>
+        <div>
+          <strong style="color:var(--pink);font-size:16px;">Adresses IP &amp; masques réseau</strong>
+          <p style="font-size:14px;color:var(--muted);">Une IPv4 = 4 octets. Les masques réseau (subnetting) utilisent les AND bitwise pour isoler les plages d'adresses.</p>
+          <pre><code>  IP      : <span class="d">192</span>.<span class="d">168</span>.<span class="d">1</span>.<span class="d">42</span>
+            <span class="b">11000000.10101000.00000001.00101010</span>
+  Masque  : <span class="d">255</span>.<span class="d">255</span>.<span class="d">255</span>.<span class="d">0</span>  <span class="cmt">= /24</span>
+            <span class="b">11111111.11111111.11111111.00000000</span>
+  AND     :
+  Réseau  : <span class="d">192</span>.<span class="d">168</span>.<span class="d">1</span>.<span class="d">0</span>    <span class="cmt">← plage réseau</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot yellow"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:16px;">Permissions Unix (chmod)</strong>
+          <p style="font-size:14px;color:var(--muted);">Les permissions Linux sont en octal. Chaque groupe rwx = 3 bits.</p>
+          <pre><code>  <span class="cmt">r=4(100) w=2(010) x=1(001)</span>
+  chmod <span class="d">755</span> fichier
+  <span class="cmt">7 = rwx (owner)  = 111 en binaire</span>
+  <span class="cmt">5 = r-x (group)  = 101 en binaire</span>
+  <span class="cmt">5 = r-x (others) = 101 en binaire</span>
+
+  chmod <span class="d">644</span> fichier  <span class="cmt">= rw-r--r--</span>
+  chmod <span class="d">777</span> fichier  <span class="cmt">= rwxrwxrwx ⚠️ dangereux</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot purple"></div>
+        <div>
+          <strong style="color:var(--purple);font-size:16px;">Cybersécurité — XOR &amp; chiffrement</strong>
+          <p style="font-size:14px;color:var(--muted);">XOR est la base de nombreux chiffrements. La propriété clé : <code>A XOR B XOR B = A</code> — XOR avec la même clé deux fois redonne l'original.</p>
+          <pre><code>  message : <span class="b">0100 1000</span>  <span class="cmt">('H' = 72)</span>
+  clé     : <span class="b">0010 1010</span>  <span class="cmt">(42)</span>
+  XOR     : <span class="h">0110 0010</span>  <span class="cmt">(98 = chiffré)</span>
+
+  chiffré : <span class="b">0110 0010</span>
+  clé     : <span class="b">0010 1010</span>
+  XOR     : <span class="ok">0100 1000</span>  <span class="cmt">('H' retrouvé !) ✅</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot orange"></div>
+        <div>
+          <strong style="color:var(--orange);font-size:16px;">Magic bytes &amp; signatures de fichiers</strong>
+          <p style="font-size:14px;color:var(--muted);">Chaque type de fichier commence par des octets signature en hex (les "magic bytes"). Indispensable en forensics/analyse de malware.</p>
+          <pre><code>  <span class="h">FF D8 FF</span>        <span class="cmt">→ JPEG</span>
+  <span class="h">89 50 4E 47</span>     <span class="cmt">→ PNG  (.PNG)</span>
+  <span class="h">50 4B 03 04</span>     <span class="cmt">→ ZIP / JAR / DOCX</span>
+  <span class="h">7F 45 4C 46</span>     <span class="cmt">→ ELF  (binaire Linux)</span>
+  <span class="h">4D 5A</span>           <span class="cmt">→ MZ   (binaire Windows .exe)</span>
+  <span class="h">CA FE BA BE</span>     <span class="cmt">→ Java .class</span>
+  <span class="h">25 50 44 46</span>     <span class="cmt">→ PDF  (%PDF)</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ EN C ══════════════ -->
+  <div class="section-title">EN LANGAGE C — NOTATION &amp; PRINTF</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">⌨️</span> ÉCRIRE ET AFFICHER LES BASES EN C</div>
+    <pre><code><span class="cmt">/* Notation des littéraux */</span>
+<span class="hi">int</span> dec = <span class="d">181</span>;           <span class="cmt">/* décimal   — normal */</span>
+<span class="hi">int</span> bin = <span class="b">0b10110101</span>;   <span class="cmt">/* binaire   — préfixe 0b (GCC extension) */</span>
+<span class="hi">int</span> hex = <span class="h">0xB5</span>;          <span class="cmt">/* hex       — préfixe 0x */</span>
+<span class="hi">int</span> oct = <span class="d">0265</span>;          <span class="cmt">/* octal     — préfixe 0 (attention !) */</span>
+
+<span class="cmt">/* Afficher en différentes bases avec printf */</span>
+printf(<span class="ok">"%d"</span>,  n);   <span class="cmt">/* décimal   → 181  */</span>
+printf(<span class="ok">"%x"</span>,  n);   <span class="cmt">/* hex       → b5   */</span>
+printf(<span class="ok">"%X"</span>,  n);   <span class="cmt">/* HEX MAJ  → B5   */</span>
+printf(<span class="ok">"%#x"</span>, n);   <span class="cmt">/* hex avec préfixe → 0xb5 */</span>
+printf(<span class="ok">"%o"</span>,  n);   <span class="cmt">/* octal    → 265  */</span>
+printf(<span class="ok">"%08b"</span>,n);   <span class="cmt">/* binaire  → pas natif en C standard */</span>
+
+<span class="cmt">/* Fonction pour afficher en binaire */</span>
+<span class="hi">void</span> print_binary(<span class="hi">unsigned char</span> n)
+{
+    <span class="hi">int</span> i = <span class="d">7</span>;
+    <span class="hi">while</span> (i >= <span class="d">0</span>)
+    {
+        putchar((n >> i) & <span class="d">1</span> ? <span class="ok">'1'</span> : <span class="ok">'0'</span>);
+        i--;
+    }
+}</code></pre>
+    <div class="warn">En C, <code>0265</code> est un <strong>octal</strong> (= 181 en décimal), PAS 265 ! Un zéro devant = octal. Source de bugs classiques dans les permissions chmod.</div>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ ══════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CARTE MENTALE COMPLÈTE</div>
+    <pre><code><span class="cmt">/*
+ *  SYSTÈMES        BASE   SYMBOLES          PRÉFIXE C    PRINTF
+ *  ────────────────────────────────────────────────────────────
+ *  Binaire          2     0-1               0b           custom
+ *  Octal            8     0-7               0            %o
+ *  Décimal         10     0-9               rien         %d
+ *  Hexadécimal     16     0-9 A-F           0x           %x %X
+ *
+ *  CONVERSIONS RAPIDES
+ *  ────────────────────────────────────────────────────────────
+ *  Dec → Bin   : divisions successives par 2, lire restes de bas en haut
+ *  Dec → Hex   : divisions par 16, ou via binaire (groupes de 4 bits)
+ *  Bin → Dec   : somme des poids (2⁰ à 2⁷)
+ *  Bin → Hex   : grouper par 4 bits, chaque groupe = 1 chiffre hex
+ *  Hex → Bin   : chaque chiffre hex → 4 bits directs
+ *
+ *  PUISSANCES DE 2 À MÉMORISER
+ *  ────────────────────────────────────────────────────────────
+ *  2⁰=1  2¹=2  2²=4  2³=8  2⁴=16  2⁵=32  2⁶=64  2⁷=128
+ *  2⁸=256  2¹⁰=1024(1K)  2²⁰=1M  2³⁰=1G
+ *
+ *  OPÉRATEURS BITWISE
+ *  ────────────────────────────────────────────────────────────
+ *  &  AND  → masquage, test de bits
+ *  |  OR   → mise à 1 de bits
+ *  ^  XOR  → chiffrement, toggle, swap
+ *  ~  NOT  → inversion complète
+ *  << SHL  → ×2ⁿ
+ *  >> SHR  → ÷2ⁿ
+ *
+ *  VALEURS CLÉS
+ *  ────────────────────────────────────────────────────────────
+ *  0xFF   = 255  = 1111 1111 = UINT8 max / masque 8 bits
+ *  0x7F   = 127  = 0111 1111 = INT8 max
+ *  0x80   = 128  = 1000 0000 = bit de signe (négatif en signed)
+ *  0x0F   = 15   = 0000 1111 = masque nibble bas
+ *  0xF0   = 240  = 1111 0000 = masque nibble haut
+ */</span></code></pre>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <span>0xFF BITS UNLOCKED</span> — READ THE MACHINE, SPEAK ITS LANGUAGE<br><br>
+  <span>Dev &amp; Cybersécurité</span> — Binaire · Décimal · Hexadécimal
+
+  <br><br><a href="https://github.com/Adamzou-lab" target="_blank" rel="noopener noreferrer" style="color:var(--muted);text-decoration:none;font-size:7px;letter-spacing:2px;transition:color 0.2s;" onmouseover="this.style.color='var(--neon)'" onmouseout="this.style.color='var(--muted)'">⌥ GITHUB — ADAMZOU-LAB</a>
+</footer>
+
+
+<style>
+  .hub-btn {
+    position: fixed; top: 50%; left: 14px; transform: translateY(-50%);
+    background: rgba(0,0,0,0.82);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 11px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px; letter-spacing: 2px;
+    color: var(--muted);
+    text-decoration: none;
+    writing-mode: vertical-rl;
+    z-index: 10000;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+  }
+  .hub-btn:hover {
+    color: var(--neon);
+    border-color: var(--neon);
+    box-shadow: 0 0 18px rgba(57,255,20,0.2);
+    transform: translateY(-50%) translateX(4px);
+  }
+  .hub-icon { font-size: 16px; line-height: 1; writing-mode: horizontal-tb; }
+  @media (max-width: 900px) { .hub-btn { display: none; } }
+</style>
+
+<a class="hub-btn" href="../index.html">
+  <span class="hub-icon">⌂</span>
+  HUB
+</a>
+</body>
+</html>

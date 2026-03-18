@@ -16,6 +16,7 @@ Accessible sur **[cheatsheets.adamzou.fr](https://cheatsheets.adamzou.fr)** (Git
 | [Structures & Typedef](sheets/structures_typedef_cheatsheet.html) | `struct`, `typedef`, opérateurs `.` et `->`, linked list node, conventions Betty |
 | [Malloc & Free](sheets/malloc_free_cheatsheet.html) | `malloc`, `calloc`, `realloc`, `free`, Valgrind, gestion du heap |
 | [Git & GitHub](sheets/git_github_cheatsheet.html) | Versionning, branches, commits, push/pull, workflow GitHub |
+| [Binaire, Décimal & Hex](sheets/binary_decimal_hex_cheatsheet.html) | Conversion bases 2/10/16, bits, octets, notation hexadécimale |
 
 ---
 
