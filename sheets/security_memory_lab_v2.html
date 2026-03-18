@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Input & Memory Lab — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #0a0a0f;
+    --bg2:    #0f0f1a;
+    --bg3:    #141428;
+    --card:   #111120;
+    --border: #1e1e3a;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --red:    #ff2222;
+    --text:   #c8d0e8;
+    --muted:  #5a6080;
+    --white:  #eef2ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,45,120,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,120,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ═══ HEADER ═══ */
+  header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--pink);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(16px, 2.6vw, 26px);
+    color: var(--white);
+    line-height: 1.6;
+    text-shadow: 0 0 20px rgba(255,45,120,0.6), 0 0 40px rgba(255,45,120,0.2);
+    margin-bottom: 20px;
+  }
+  header h1 span { color: var(--pink); }
+
+  .header-sub {
+    font-size: 18px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .coeff-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,34,34,0.1);
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    padding: 8px 20px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--red);
+    margin-top: 16px;
+    animation: redglow 1.5s ease-in-out infinite;
+  }
+  @keyframes redglow { 0%,100%{box-shadow:0 0 5px rgba(255,34,34,0.3)} 50%{box-shadow:0 0 20px rgba(255,34,34,0.7)} }
+
+  .xp-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .xp-label { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--yellow); }
+  .xp-track {
+    width: 200px; height: 10px;
+    background: var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--yellow);
+  }
+  .xp-fill {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    border-radius: 5px;
+    animation: fillXP 2s 0.5s ease-out forwards;
+    box-shadow: 0 0 8px var(--pink);
+  }
+  @keyframes fillXP { to { width: 58%; } }
+
+  /* ═══ SECTION TITLES ═══ */
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: var(--pink);
+    letter-spacing: 2px;
+    margin: 50px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::before {
+    content: '▶';
+    color: var(--cyan);
+    font-size: 10px;
+    animation: blink 1s step-end infinite;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ═══ CARDS ═══ */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: var(--pink); transform: translateY(-2px); }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--pink), transparent);
+  }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+  .card.red::before    { background: linear-gradient(90deg, var(--red), transparent); }
+
+  .card:hover { border-color: var(--pink); }
+  .card.cyan:hover   { border-color: var(--cyan); }
+  .card.green:hover  { border-color: var(--green); }
+  .card.yellow:hover { border-color: var(--yellow); }
+  .card.purple:hover { border-color: var(--purple); }
+  .card.orange:hover { border-color: var(--orange); }
+  .card.red:hover    { border-color: var(--red); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--pink);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.green .card-title  { color: var(--green); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.orange .card-title { color: var(--orange); }
+  .card.red .card-title    { color: var(--red); }
+  .card-icon { font-size: 16px; }
+
+  /* ═══ CODE ═══ */
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre {
+    background: #080810;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-top: 12px;
+  }
+  code {
+    background: rgba(255,45,120,0.08);
+    color: var(--pink);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  .kw   { color: var(--pink); }
+  .fn   { color: var(--cyan); }
+  .type { color: var(--purple); }
+  .str  { color: var(--green); }
+  .num  { color: var(--orange); }
+  .cmt  { color: var(--muted); font-style: italic; }
+  .bad  { color: var(--red); }
+  .good { color: var(--green); }
+
+  /* ═══ LAYOUTS ═══ */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ═══ ANALOGY ═══ */
+  .analogy {
+    background: linear-gradient(135deg, #0f1020, #0a0f1e);
+    border: 1px solid var(--yellow);
+    border-left: 4px solid var(--yellow);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .analogy-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--yellow);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  .analogy p { font-size: 15px; line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  /* ═══ TIP / WARN / DANGER ═══ */
+  .tip {
+    background: rgba(57,255,20,0.05);
+    border: 1px solid rgba(57,255,20,0.3);
+    border-left: 4px solid var(--green);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .warn {
+    background: rgba(255,230,0,0.05);
+    border: 1px solid rgba(255,230,0,0.3);
+    border-left: 4px solid var(--yellow);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .danger {
+    background: rgba(255,34,34,0.05);
+    border: 1px solid rgba(255,34,34,0.3);
+    border-left: 4px solid var(--red);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .tip::before    { content: '✅ '; }
+  .warn::before   { content: '⚠️ '; }
+  .danger::before { content: '💀 '; }
+
+  /* ═══ TABLE ═══ */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .data-table th {
+    background: var(--border);
+    color: var(--pink);
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .data-table tr:hover td { background: rgba(255,45,120,0.04); }
+  .danger-cell { color: var(--red); }
+  .safe-cell   { color: var(--green); }
+  .warn-cell   { color: var(--yellow); }
+
+  /* ═══ VULN BADGE ═══ */
+  .vuln-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 6px;
+    letter-spacing: 1px;
+    margin: 3px;
+  }
+  .vuln-badge.critical { background: rgba(255,34,34,0.15);   border: 1px solid var(--red);    color: var(--red); }
+  .vuln-badge.high     { background: rgba(255,107,0,0.15);   border: 1px solid var(--orange); color: var(--orange); }
+  .vuln-badge.medium   { background: rgba(255,230,0,0.15);   border: 1px solid var(--yellow); color: var(--yellow); }
+
+  /* ═══ LEVEL BADGE ═══ */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--border);
+    border: 1px solid var(--purple);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--purple);
+    margin-bottom: 16px;
+  }
+
+  /* ═══ THREAT BARS ═══ */
+  .threat-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+  }
+  .threat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    width: 120px;
+    color: var(--text);
+  }
+  .threat-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .threat-fill {
+    height: 100%;
+    border-radius: 4px;
+    width: 0;
+    animation: fillBar 1.5s ease-out forwards;
+  }
+  .threat-fill.crit   { background: linear-gradient(90deg, var(--red), var(--orange));     animation-delay: 0.2s; --w:95%; box-shadow:0 0 6px var(--red); }
+  .threat-fill.high   { background: linear-gradient(90deg, var(--orange), var(--yellow));  animation-delay: 0.4s; --w:75%; box-shadow:0 0 6px var(--orange); }
+  .threat-fill.medium { background: linear-gradient(90deg, var(--yellow), var(--green));   animation-delay: 0.6s; --w:50%; box-shadow:0 0 6px var(--yellow); }
+  @keyframes fillBar { to { width: var(--w); } }
+
+  /* ═══ TERMINAL ═══ */
+  .terminal {
+    background: #050508;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--cyan);
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin-top: 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+  }
+  .terminal .prompt { color: var(--cyan); }
+  .terminal .out    { color: var(--muted); font-style: italic; }
+  .terminal .err    { color: var(--red); }
+  .terminal .ok     { color: var(--green); }
+
+  /* ═══ SKILL TREE ═══ */
+  .skill-tree {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding-left: 24px;
+  }
+  .skill-tree::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--pink), var(--purple));
+  }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--pink);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-left: -24px;
+    margin-top: 3px;
+    box-shadow: 0 0 8px var(--pink);
+  }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.purple { border-color: var(--purple); box-shadow: 0 0 8px var(--purple); background: var(--purple); }
+  .skill-dot.red    { border-color: var(--red);    box-shadow: 0 0 8px var(--red);    background: var(--red); }
+
+  /* ═══ STEPS ═══ */
+  .steps { display: flex; flex-direction: column; gap: 16px; }
+  .step  { display: flex; gap: 16px; align-items: flex-start; }
+  .step-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--bg);
+    background: var(--pink);
+    width: 30px; height: 30px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .step-num.cyan   { background: var(--cyan); }
+  .step-num.yellow { background: var(--yellow); }
+  .step-num.green  { background: var(--green); }
+  .step-num.purple { background: var(--purple); }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  /* ═══ FADE IN ═══ */
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .fade-in:nth-child(1) { animation-delay: 0.1s; }
+  .fade-in:nth-child(2) { animation-delay: 0.2s; }
+  .fade-in:nth-child(3) { animation-delay: 0.3s; }
+  .fade-in:nth-child(4) { animation-delay: 0.4s; }
+
+  /* ═══ FOOTER ═══ */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+  }
+  footer span { color: var(--pink); }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 13px; }
+    .section-title { font-size: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — C Security ✦</span>
+  <h1>SECURE INPUT<br><span>&amp; MEMORY LAB</span></h1>
+  <p class="header-sub">patch the vuln. survive the audit.</p>
+  <div class="coeff-badge">⚠ COEFF 2 — ZERO DROIT À L'ERREUR</div>
+  <div class="xp-bar">
+    <span class="xp-label">XP</span>
+    <div class="xp-track"><div class="xp-fill"></div></div>
+    <span class="xp-label">LVL 2</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ══════════ MISSION ══════════ -->
+  <div class="section-title">MISSION BRIEFING</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🎯</span> CE QUE TU DOIS FAIRE</div>
+    <p>Tu hérites d'un code C <strong style="color:var(--red)">volontairement vulnérable</strong>. Ta mission : <strong style="color:var(--green)">détecter, analyser et patcher</strong> les failles mémoire <strong>sans changer le comportement externe</strong> du programme.</p>
+
+    <div class="skill-tree" style="margin-top:20px">
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div><strong style="color:var(--cyan);font-size:17px;">Task 0 — Familiarisation</strong>
+          <p style="font-size:14px;color:var(--muted)">Lire, compiler, exécuter. <strong style="color:var(--red)">NE PAS modifier le code.</strong> Observer seulement.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot green"></div>
+        <div><strong style="color:var(--green);font-size:17px;">Analyse dynamique — Valgrind</strong>
+          <p style="font-size:14px;color:var(--muted)">Lancer Valgrind pour détecter les erreurs mémoire à l'exécution.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot yellow"></div>
+        <div><strong style="color:var(--yellow);font-size:17px;">Patch</strong>
+          <p style="font-size:14px;color:var(--muted)">Corriger les vulnérabilités sans casser le comportement externe.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot purple"></div>
+        <div><strong style="color:var(--purple);font-size:17px;">Rapport technique</strong>
+          <p style="font-size:14px;color:var(--muted)">Expliquer chaque bug, l'outil utilisé, et la correction appliquée.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Tu es un <strong>pentester dans Cyberpunk 2077</strong>. On te donne accès au code source d'un système compromis. Tu dois trouver les failles avant que les hackers adverses les exploitent. Chaque bug non patché = une porte d'entrée pour l'ennemi.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ LES 3 BOSS ══════════ -->
+  <div class="section-title">LES 3 BOSS — VULNÉRABILITÉS CLÉS</div>
+
+  <!-- BOSS 1 -->
+  <div class="card red fade-in">
+    <div class="card-title"><span class="card-icon">💣</span> BOSS 1 — BUFFER OVERFLOW</div>
+    <div class="level-badge" style="border-color:var(--red);color:var(--red)">⭐ LVL 1 — CRITIQUE</div>
+    <div class="threat-bar">
+      <span class="threat-label">Danger level</span>
+      <div class="threat-track"><div class="threat-fill crit"></div></div>
+      <span style="color:var(--red);font-family:'Share Tech Mono';font-size:12px">95%</span>
+    </div>
+    <p style="margin-top:12px">Un <strong style="color:var(--red)">buffer overflow</strong> se produit quand tu écris <strong>plus de données que la taille allouée</strong> d'un buffer. Tu écrases ce qui est en mémoire juste après.</p>
+    <pre><code><span class="cmt">/* ❌ DANGEREUX — gets() ne limite PAS la taille */</span>
+<span class="type">char</span> buffer[<span class="num">64</span>];
+<span class="bad">gets</span>(buffer);          <span class="cmt">/* Si l'user tape 100 chars → OVERFLOW */</span>
+
+<span class="cmt">/* ❌ DANGEREUX — scanf sans limite */</span>
+<span class="type">char</span> username[<span class="num">32</span>];
+<span class="bad">scanf</span>(<span class="str">"%s"</span>, username);  <span class="cmt">/* lit jusqu'au whitespace, sans limite */</span>
+
+<span class="cmt">/* ✅ SÉCURISÉ — fgets avec taille explicite */</span>
+<span class="type">char</span> buffer[<span class="num">64</span>];
+<span class="good">fgets</span>(buffer, <span class="kw">sizeof</span>(buffer), stdin); <span class="cmt">/* Lit MAX 63 chars */</span>
+
+<span class="cmt">/* ✅ SÉCURISÉ — scanf avec limite */</span>
+<span class="type">char</span> username[<span class="num">32</span>];
+<span class="good">scanf</span>(<span class="str">"%31s"</span>, username); <span class="cmt">/* 31 = taille - 1 pour le \0 */</span></code></pre>
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>C'est un <strong>inventaire de 10 slots dans Minecraft</strong>. Si tu forces 20 items dedans, les 10 en trop <strong>écrasent l'inventaire du joueur à côté</strong>. En mémoire ce joueur c'est peut-être l'adresse de retour de ta fonction — et là c'est le game over.</p>
+    </div>
+  </div>
+
+  <!-- BOSS 2 -->
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">👻</span> BOSS 2 — DANGLING POINTER / USE-AFTER-FREE</div>
+    <div class="level-badge" style="border-color:var(--orange);color:var(--orange)">⭐⭐ LVL 2 — ÉLEVÉ</div>
+    <div class="threat-bar">
+      <span class="threat-label">Danger level</span>
+      <div class="threat-track"><div class="threat-fill high"></div></div>
+      <span style="color:var(--orange);font-family:'Share Tech Mono';font-size:12px">75%</span>
+    </div>
+    <p style="margin-top:12px">Un <strong style="color:var(--orange)">dangling pointer</strong> pointe vers de la mémoire déjà libérée avec <code>free()</code>. Y accéder = comportement indéfini.</p>
+    <pre><code><span class="cmt">/* ❌ USE-AFTER-FREE */</span>
+<span class="type">char</span> *ptr = <span class="fn">malloc</span>(<span class="num">64</span>);
+<span class="fn">free</span>(ptr);
+<span class="bad">ptr[0]</span> = <span class="str">'A'</span>;  <span class="cmt">/* DANGER : mémoire déjà libérée */</span>
+
+<span class="cmt">/* ❌ DOUBLE FREE */</span>
+<span class="fn">free</span>(ptr);
+<span class="bad">free</span>(ptr);    <span class="cmt">/* DANGER : corruption du heap */</span>
+
+<span class="cmt">/* ✅ BONNE PRATIQUE */</span>
+<span class="fn">free</span>(ptr);
+<span class="good">ptr = NULL</span>;  <span class="cmt">/* Ne pointe plus vers rien de dangereux */</span>
+<span class="kw">if</span> (ptr != NULL)
+    ptr[<span class="num">0</span>] = <span class="str">'A'</span>; <span class="cmt">/* Check avant d'accéder */</span></code></pre>
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Tu as une <strong>référence vers un ennemi dans un jeu</strong>. L'ennemi est tué (free). Si tu continues d'utiliser ta référence pour lui infliger des dégâts, tu touches <strong>la zone mémoire d'un autre objet</strong> qui a pris sa place.</p>
+    </div>
+  </div>
+
+  <!-- BOSS 3 -->
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🕳️</span> BOSS 3 — MEMORY LEAK</div>
+    <div class="level-badge" style="border-color:var(--yellow);color:var(--yellow)">⭐⭐⭐ LVL 3 — HOLBERTON STYLE</div>
+    <div class="threat-bar">
+      <span class="threat-label">Danger level</span>
+      <div class="threat-track"><div class="threat-fill medium"></div></div>
+      <span style="color:var(--yellow);font-family:'Share Tech Mono';font-size:12px">50%</span>
+    </div>
+    <p style="margin-top:12px">Un <strong style="color:var(--yellow)">memory leak</strong> se produit quand tu alloues de la mémoire avec <code>malloc</code> mais que tu oublies de la libérer avec <code>free</code>.</p>
+    <pre><code><span class="cmt">/* ❌ MEMORY LEAK — malloc sans free */</span>
+<span class="type">void</span> <span class="fn">create_user</span>(<span class="type">void</span>)
+{
+    <span class="type">char</span> *name = <span class="fn">malloc</span>(<span class="num">64</span>);
+    <span class="fn">strcpy</span>(name, <span class="str">"Player1"</span>);
+    <span class="cmt">/* name n'est jamais free() → LEAK */</span>
+}
+
+<span class="cmt">/* ✅ CORRIGÉ */</span>
+<span class="type">void</span> <span class="fn">create_user</span>(<span class="type">void</span>)
+{
+    <span class="type">char</span> *name = <span class="fn">malloc</span>(<span class="num">64</span>);
+    <span class="kw">if</span> (name == NULL)    <span class="cmt">/* TOUJOURS checker malloc ! */</span>
+        <span class="kw">return</span>;
+    <span class="fn">snprintf</span>(name, <span class="num">64</span>, <span class="str">"Player1"</span>);
+    <span class="cmt">/* ... utilisation ... */</span>
+    <span class="good">free</span>(name);
+    <span class="good">name = NULL</span>;
+}</code></pre>
+  </div>
+
+  <!-- ══════════ INPUT TABLE ══════════ -->
+  <div class="section-title">INPUT HANDLING — LE TABLEAU DE LA MORT</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">📥</span> FONCTIONS SÉCURISÉES VS DANGEREUSES</div>
+    <table class="data-table">
+      <thead>
+        <tr><th>FONCTION</th><th>LIMITE TAILLE ?</th><th>STATUT</th><th>ALTERNATIVE</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>gets()</code></td>        <td class="danger-cell">❌ NON</td><td class="danger-cell">💀 BANNIE C11</td><td><code>fgets()</code></td></tr>
+        <tr><td><code>scanf("%s")</code></td>    <td class="danger-cell">❌ NON</td><td class="warn-cell">⚠️ DANGEREUX</td><td><code>scanf("%31s")</code></td></tr>
+        <tr><td><code>strcpy()</code></td>       <td class="danger-cell">❌ NON</td><td class="warn-cell">⚠️ RISQUÉ</td>  <td><code>strncpy()</code></td></tr>
+        <tr><td><code>strcat()</code></td>       <td class="danger-cell">❌ NON</td><td class="warn-cell">⚠️ RISQUÉ</td>  <td><code>strncat()</code></td></tr>
+        <tr><td><code>sprintf()</code></td>      <td class="danger-cell">❌ NON</td><td class="warn-cell">⚠️ RISQUÉ</td>  <td><code>snprintf()</code></td></tr>
+        <tr><td><code>fgets()</code></td>        <td class="safe-cell">✅ OUI</td>  <td class="safe-cell">✅ SÛR</td>      <td>—</td></tr>
+        <tr><td><code>strncpy()</code></td>      <td class="safe-cell">✅ OUI</td>  <td class="warn-cell">⚠️ Forcer \0</td><td>Ajouter <code>buf[n-1] = '\0'</code></td></tr>
+        <tr><td><code>snprintf()</code></td>     <td class="safe-cell">✅ OUI</td>  <td class="safe-cell">✅ SÛR</td>      <td>—</td></tr>
+      </tbody>
+    </table>
+    <div class="danger" style="margin-top:14px"><code>gets()</code> est tellement dangereuse qu'elle a été <strong>retirée du standard C11</strong>. Si tu la vois dans un code, c'est un red flag immédiat.</div>
+  </div>
+
+  <!-- ══════════ VALGRIND ══════════ -->
+  <div class="section-title">VALGRIND — TON SCANNER DE FAILLES</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">🔍</span> C'EST QUOI VALGRIND ?</div>
+    <p>Valgrind est un outil d'analyse dynamique qui <strong style="color:var(--purple)">exécute ton programme</strong> et surveille chaque accès mémoire en temps réel. Il détecte les erreurs que le compilateur ne voit pas.</p>
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>C'est le <strong>mode replay avec hitbox visibles</strong> dans un jeu de combat. Ton programme tourne normalement, mais Valgrind enregistre chaque coup qui touche une <strong>zone interdite</strong>. Invisible à l'œil nu, flagrant avec l'outil.</p>
+    </div>
+  </div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">💻</span> COMMANDES VALGRIND — À MAÎTRISER</div>
+    <div class="terminal">
+      <div><span class="prompt">$</span> gcc <span style="color:var(--pink)">-g</span> -Wall -Wextra -Werror -pedantic -std=gnu89 main.c -o prog</div>
+      <div class="out">   # Le -g est CRUCIAL : ajoute les numéros de lignes pour Valgrind</div>
+      <br>
+      <div><span class="prompt">$</span> valgrind ./prog</div>
+      <div class="out">   # Analyse basique</div>
+      <br>
+      <div><span class="prompt">$</span> valgrind <span style="color:var(--cyan)">--leak-check=full</span> ./prog</div>
+      <div class="out">   # Détecte toutes les fuites mémoire ← LA COMMANDE PRINCIPALE</div>
+      <br>
+      <div><span class="prompt">$</span> valgrind --leak-check=full <span style="color:var(--cyan)">--show-leak-kinds=all</span> ./prog</div>
+      <div class="out">   # Affiche TOUS les types de leaks (definitely/possibly lost...)</div>
+      <br>
+      <div><span class="prompt">$</span> valgrind <span style="color:var(--cyan)">--track-origins=yes</span> ./prog</div>
+      <div class="out">   # Trace l'ORIGINE de la mémoire non initialisée</div>
+      <br>
+      <div><span class="prompt">$</span> gcc <span style="color:var(--pink)">-fsanitize=address</span> -g main.c -o prog && ./prog</div>
+      <div class="out">   # Alternative : AddressSanitizer (plus rapide)</div>
+    </div>
+    <div class="warn" style="margin-top:12px">Ne jamais utiliser <code>-fsanitize=address</code> ET Valgrind en même temps — ils sont incompatibles.</div>
+  </div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">📊</span> LIRE LES SORTIES VALGRIND</div>
+    <div class="terminal">
+      <div class="err">==1234== Invalid read of size 1</div>
+      <div class="out">   # Lecture hors limites → buffer overflow en lecture</div>
+      <br>
+      <div class="err">==1234== Invalid write of size 4</div>
+      <div class="out">   # Écriture hors limites → buffer overflow en écriture</div>
+      <br>
+      <div class="err">==1234== Use of uninitialised value</div>
+      <div class="out">   # Variable utilisée avant d'être initialisée</div>
+      <br>
+      <div class="err">==1234== Invalid read of size 8  (freed memory)</div>
+      <div class="out">   # Use-after-free → tu lis après free()</div>
+      <br>
+      <div class="err">==1234==    definitely lost: 64 bytes in 1 blocks</div>
+      <div class="out">   # Memory leak confirmé → 64 bytes jamais free()</div>
+      <br>
+      <div class="ok">==1234== All heap blocks were freed -- no leaks are possible</div>
+      <div class="out">   # ✅ C'est ce qu'on veut voir !</div>
+    </div>
+    <div class="tip" style="margin-top:12px">Le numéro <code>==1234==</code> est le PID du process. Il change à chaque exécution, c'est normal.</div>
+  </div>
+
+  <!-- ══════════ MALLOC / FREE ══════════ -->
+  <div class="section-title">MALLOC / FREE — LES 4 RÈGLES D'OR</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">⚙️</span> LE CONTRAT MALLOC/FREE</div>
+    <pre><code><span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="type">void</span> *<span class="fn">malloc</span>(<span class="type">size_t</span> size);          <span class="cmt">/* alloue N octets sur le heap */</span>
+<span class="type">void</span>  <span class="fn">free</span>(<span class="type">void</span> *ptr);              <span class="cmt">/* libère la mémoire allouée */</span>
+<span class="type">void</span> *<span class="fn">calloc</span>(<span class="type">size_t</span> n, <span class="type">size_t</span> s);  <span class="cmt">/* alloue ET initialise à 0 */</span>
+<span class="type">void</span> *<span class="fn">realloc</span>(<span class="type">void</span> *ptr, <span class="type">size_t</span> s); <span class="cmt">/* redimensionne une alloc */</span></code></pre>
+
+    <div class="steps" style="margin-top:18px">
+      <div class="step">
+        <div class="step-num purple">1</div>
+        <div class="step-content">
+          <h4>Toujours vérifier le retour de malloc</h4>
+          <p>Si malloc échoue il retourne <code>NULL</code>. Déréférencer NULL = crash immédiat.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num purple">2</div>
+        <div class="step-content">
+          <h4>1 malloc = 1 free, ni plus ni moins</h4>
+          <p>Oublier = leak. Doubler = corruption du heap (double free).</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num purple">3</div>
+        <div class="step-content">
+          <h4>Mettre le pointeur à NULL après free</h4>
+          <p><code>free(ptr); ptr = NULL;</code> — empêche le use-after-free accidentel.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num purple">4</div>
+        <div class="step-content">
+          <h4>Ne jamais free une adresse non-malloc</h4>
+          <p>Variables locales, milieu de tableau, chaînes littérales → jamais de free.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ OWNERSHIP ══════════ -->
+  <div class="section-title">OWNERSHIP — QUI POSSÈDE QUOI ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🏠</span> LE CONCEPT D'OWNERSHIP</div>
+    <p>L'<strong style="color:var(--cyan)">ownership</strong> = savoir <strong>qui est responsable de free()</strong> un pointeur. C'est la source principale de bugs quand ce n'est pas clair.</p>
+    <pre><code><span class="cmt">/* La fonction alloue ET retourne → l'appelant devient owner */</span>
+<span class="type">char</span> *<span class="fn">build_message</span>(<span class="kw">const</span> <span class="type">char</span> *name)
+{
+    <span class="type">char</span> *result = <span class="fn">malloc</span>(<span class="num">128</span>);
+    <span class="kw">if</span> (result == NULL)
+        <span class="kw">return</span> (NULL);
+    <span class="fn">snprintf</span>(result, <span class="num">128</span>, <span class="str">"Welcome, %s!"</span>, name);
+    <span class="kw">return</span> (result); <span class="cmt">/* L'APPELANT devient responsable du free */</span>
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    <span class="type">char</span> *msg = <span class="fn">build_message</span>(<span class="str">"Link"</span>);
+    <span class="kw">if</span> (msg == NULL)
+        <span class="kw">return</span> (<span class="num">1</span>);
+    <span class="fn">printf</span>(<span class="str">"%s\n"</span>, msg);
+    <span class="good">free</span>(msg);    <span class="cmt">/* main() est l'owner → il free */</span>
+    <span class="good">msg = NULL</span>;
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Dans un MMO, si tu <strong>craftes une épée et tu la donnes</strong> à un autre joueur, c'est lui qui doit la gérer. La fonction qui <strong>retourne un malloc</strong> transfère la responsabilité du free à l'appelant. Si personne ne s'en souvient → memory leak.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ CERT ══════════ -->
+  <div class="section-title">CERT C — LES RÈGLES DU PROJET</div>
+
+  <div class="grid-2">
+    <div class="card red fade-in">
+      <div class="card-title"><span class="card-icon">📋</span> EXP33-C</div>
+      <p><strong style="color:var(--red)">Ne pas lire de mémoire non initialisée</strong></p>
+      <p style="margin-top:8px;font-size:14px">Toute variable doit être initialisée avant lecture.</p>
+      <pre><code><span class="bad">int x;
+printf("%d", x);</span> <span class="cmt">/* ❌ */</span>
+<span class="good">int x = 0;
+printf("%d", x);</span> <span class="cmt">/* ✅ */</span></code></pre>
+    </div>
+    <div class="card orange fade-in">
+      <div class="card-title"><span class="card-icon">📋</span> EXP34-C</div>
+      <p><strong style="color:var(--orange)">Ne pas déréférencer un pointeur NULL</strong></p>
+      <p style="margin-top:8px;font-size:14px">Toujours vérifier après malloc.</p>
+      <pre><code><span class="bad">char *p = malloc(64);
+p[0] = 'A';</span>     <span class="cmt">/* ❌ */</span>
+<span class="good">if (p != NULL)
+    p[0] = 'A';</span>  <span class="cmt">/* ✅ */</span></code></pre>
+    </div>
+    <div class="card yellow fade-in">
+      <div class="card-title"><span class="card-icon">📋</span> ENV30-C</div>
+      <p><strong style="color:var(--yellow)">Pas de comportement non spécifié</strong></p>
+      <p style="margin-top:8px;font-size:14px">Le UB peut "fonctionner" chez toi et crasher sur le serveur Holberton. Ne jamais en dépendre.</p>
+    </div>
+    <div class="card purple fade-in">
+      <div class="card-title"><span class="card-icon">📋</span> MEM30-C</div>
+      <p><strong style="color:var(--purple)">Pas d'accès post-free</strong></p>
+      <p style="margin-top:8px;font-size:14px">Après <code>free(ptr)</code>, le pointeur est invalide. Toujours <code>ptr = NULL</code> derrière.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ COMPILATION ══════════ -->
+  <div class="section-title">COMPILATION — LES BONS FLAGS</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">⚙️</span> FLAGS REQUIS PAR LE PROJET</div>
+    <div class="terminal">
+      <div><span class="prompt">$</span> gcc <span style="color:var(--pink)">-std=gnu89 -Wall -Wextra -Werror -pedantic -g</span> main.c -o prog</div>
+      <br>
+      <div class="out">-std=gnu89  → Standard C89 + extensions GNU (Holberton)</div>
+      <div class="out">-Wall       → Active tous les warnings courants</div>
+      <div class="out">-Wextra     → Active des warnings supplémentaires</div>
+      <div class="out">-Werror     → Transforme les warnings en ERREURS (strict)</div>
+      <div class="out">-pedantic   → Respect strict du standard</div>
+      <div class="out">-g          → Infos de debug — INDISPENSABLE pour Valgrind !</div>
+    </div>
+  </div>
+
+  <!-- ══════════ RAPPORT ══════════ -->
+  <div class="section-title">LE RAPPORT TECHNIQUE — STRUCTURE GAGNANTE</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">📝</span> LES 4 QUESTIONS PAR BUG</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Quoi — Le bug</h4>
+          <p>Nom de la vulnérabilité + fichier + numéro de ligne exacte</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num cyan">2</div>
+        <div class="step-content">
+          <h4>Pourquoi — La cause</h4>
+          <p>Quelle hypothèse était violée ? Quelle fonction était dangereuse ?</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num yellow">3</div>
+        <div class="step-content">
+          <h4>Comment détecté — L'outil</h4>
+          <p>Inspection manuelle ? Valgrind ? Copie du message d'erreur exact.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num green">4</div>
+        <div class="step-content">
+          <h4>Fix — La correction</h4>
+          <p>Code avant / après. Quelle règle CERT ? Comportement externe inchangé ?</p>
+        </div>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:14px">L'énoncé dit : <strong>"AI tools may be used only to help explain findings"</strong>. Utilise Claude pour rédiger le rapport, pas pour trouver les bugs à ta place.</div>
+  </div>
+
+  <!-- ══════════ RECAP ══════════ -->
+  <div class="section-title">RÉCAP — TON CHEAT CODE FINAL</div>
+
+  <div class="card red fade-in">
+    <div class="card-title"><span class="card-icon">☠️</span> LES MOTS QUI DOIVENT TE FAIRE PEUR</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+      <span class="vuln-badge critical">gets()</span>
+      <span class="vuln-badge critical">scanf("%s")</span>
+      <span class="vuln-badge critical">strcpy() sans vérif</span>
+      <span class="vuln-badge critical">free() sans NULL après</span>
+      <span class="vuln-badge high">malloc sans NULL check</span>
+      <span class="vuln-badge high">double free()</span>
+      <span class="vuln-badge high">accès après free()</span>
+      <span class="vuln-badge medium">variable non initialisée</span>
+      <span class="vuln-badge medium">strcat() sans limite</span>
+      <span class="vuln-badge medium">sprintf() sans n</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> LES REMPLACEMENTS SÛRS</div>
+      <table class="data-table">
+        <tr><td class="danger-cell"><code>gets()</code></td><td>→</td><td class="safe-cell"><code>fgets(b, n, stdin)</code></td></tr>
+        <tr><td class="danger-cell"><code>scanf("%s")</code></td><td>→</td><td class="safe-cell"><code>scanf("%31s")</code></td></tr>
+        <tr><td class="danger-cell"><code>strcpy()</code></td><td>→</td><td class="safe-cell"><code>strncpy(d, s, n-1)</code></td></tr>
+        <tr><td class="danger-cell"><code>strcat()</code></td><td>→</td><td class="safe-cell"><code>strncat(d, s, n)</code></td></tr>
+        <tr><td class="danger-cell"><code>sprintf()</code></td><td>→</td><td class="safe-cell"><code>snprintf(b, n, ...)</code></td></tr>
+      </table>
+    </div>
+    <div class="card cyan fade-in">
+      <div class="card-title"><span class="card-icon">🔧</span> VALGRIND EN 3 COMMANDES</div>
+      <div class="terminal" style="font-size:12px">
+        <div><span class="prompt">$</span> <span style="color:var(--cyan)">gcc -g ... -o prog</span></div>
+        <div class="out">   # toujours avec -g !</div>
+        <br>
+        <div><span class="prompt">$</span> <span style="color:var(--cyan)">valgrind --leak-check=full ./prog</span></div>
+        <div class="out">   # commande principale</div>
+        <br>
+        <div><span class="prompt">$</span> <span style="color:var(--cyan)">valgrind --track-origins=yes ./prog</span></div>
+        <div class="out">   # si mémoire non init</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>HOLBERTON SCHOOL ✦ SECURE INPUT &amp; MEMORY LAB ✦ <span>COEFF 2</span></p>
+  <p style="margin-top:10px; color:var(--green)">[ PATCH THE CODE. SURVIVE THE AUDIT. ]</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursion — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #0a0a0f;
+    --bg2:    #0f0f1a;
+    --bg3:    #141428;
+    --card:   #111120;
+    --border: #1e1e3a;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text:   #c8d0e8;
+    --muted:  #5a6080;
+    --white:  #eef2ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(181,78,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(181,78,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ═══ HEADER ═══ */
+  header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--purple);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(18px, 3vw, 30px);
+    color: var(--white);
+    line-height: 1.6;
+    text-shadow: 0 0 20px rgba(181,78,255,0.6), 0 0 40px rgba(181,78,255,0.2);
+    margin-bottom: 20px;
+  }
+  header h1 span { color: var(--purple); }
+
+  .header-sub {
+    font-size: 18px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .xp-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .xp-label { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--yellow); }
+  .xp-track {
+    width: 200px; height: 10px;
+    background: var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--yellow);
+  }
+  .xp-fill {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--purple), var(--cyan));
+    border-radius: 5px;
+    animation: fillXP 2s 0.5s ease-out forwards;
+    box-shadow: 0 0 8px var(--purple);
+  }
+  @keyframes fillXP { to { width: 65%; } }
+
+  /* ═══ SECTION TITLES ═══ */
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: var(--purple);
+    letter-spacing: 2px;
+    margin: 50px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::before {
+    content: '▶';
+    color: var(--cyan);
+    font-size: 10px;
+    animation: blink 1s step-end infinite;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ═══ CARDS ═══ */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: var(--purple); transform: translateY(-2px); }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--purple), transparent);
+  }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card:hover          { border-color: var(--purple); }
+  .card.cyan:hover     { border-color: var(--cyan); }
+  .card.green:hover    { border-color: var(--green); }
+  .card.yellow:hover   { border-color: var(--yellow); }
+  .card.pink:hover     { border-color: var(--pink); }
+  .card.orange:hover   { border-color: var(--orange); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--purple);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.green .card-title  { color: var(--green); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.pink .card-title   { color: var(--pink); }
+  .card.orange .card-title { color: var(--orange); }
+  .card-icon { font-size: 16px; }
+
+  /* ═══ CODE ═══ */
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre {
+    background: #080810;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-top: 12px;
+  }
+  code {
+    background: rgba(181,78,255,0.08);
+    color: var(--purple);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  .kw   { color: var(--pink); }
+  .fn   { color: var(--cyan); }
+  .type { color: var(--purple); }
+  .str  { color: var(--green); }
+  .num  { color: var(--orange); }
+  .cmt  { color: var(--muted); font-style: italic; }
+  .bad  { color: var(--pink); }
+  .good { color: var(--green); }
+
+  /* ═══ LAYOUTS ═══ */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ═══ ANALOGY ═══ */
+  .analogy {
+    background: linear-gradient(135deg, #0f1020, #0a0f1e);
+    border: 1px solid var(--yellow);
+    border-left: 4px solid var(--yellow);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .analogy-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--yellow);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  .analogy p { font-size: 15px; line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  /* ═══ TIP / WARN ═══ */
+  .tip {
+    background: rgba(57,255,20,0.05);
+    border: 1px solid rgba(57,255,20,0.3);
+    border-left: 4px solid var(--green);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .warn {
+    background: rgba(255,45,120,0.05);
+    border: 1px solid rgba(255,45,120,0.3);
+    border-left: 4px solid var(--pink);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .tip::before  { content: '✅ '; }
+  .warn::before { content: '⚠️ '; }
+
+  /* ═══ TABLE ═══ */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .data-table th {
+    background: var(--border);
+    color: var(--purple);
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .data-table tr:hover td { background: rgba(181,78,255,0.04); }
+
+  /* ═══ LEVEL BADGE ═══ */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--border);
+    border: 1px solid var(--purple);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--purple);
+    margin-bottom: 16px;
+  }
+
+  /* ═══ SKILL TREE ═══ */
+  .skill-tree {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding-left: 24px;
+  }
+  .skill-tree::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--purple), var(--cyan));
+  }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--purple);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-left: -24px;
+    margin-top: 3px;
+    box-shadow: 0 0 8px var(--purple);
+  }
+  .skill-dot.done   { background: var(--purple); }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.pink   { border-color: var(--pink);   box-shadow: 0 0 8px var(--pink);   background: var(--pink); }
+  .skill-dot.orange { border-color: var(--orange); box-shadow: 0 0 8px var(--orange); background: var(--orange); }
+
+  /* ═══ STEPS ═══ */
+  .steps { display: flex; flex-direction: column; gap: 16px; }
+  .step  { display: flex; gap: 16px; align-items: flex-start; }
+  .step-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--bg);
+    background: var(--purple);
+    width: 30px; height: 30px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .step-num.cyan   { background: var(--cyan); }
+  .step-num.green  { background: var(--green); }
+  .step-num.yellow { background: var(--yellow); }
+  .step-num.pink   { background: var(--pink); }
+  .step-num.orange { background: var(--orange); }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  /* ═══ STACK VISUALIZER ═══ */
+  .stack-viz {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 14px;
+  }
+  .stack-frame {
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+    animation: slideIn 0.4s ease forwards;
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  .stack-frame:nth-child(1) { background: rgba(181,78,255,0.15); border-color: var(--purple); animation-delay: 0.1s; }
+  .stack-frame:nth-child(2) { background: rgba(0,245,255,0.10);  border-color: var(--cyan);   animation-delay: 0.3s; }
+  .stack-frame:nth-child(3) { background: rgba(255,107,0,0.10);  border-color: var(--orange); animation-delay: 0.5s; }
+  .stack-frame:nth-child(4) { background: rgba(57,255,20,0.10);  border-color: var(--green);  animation-delay: 0.7s; }
+  .stack-frame:nth-child(5) { background: rgba(255,230,0,0.10);  border-color: var(--yellow); animation-delay: 0.9s; }
+  @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+  .frame-label { color: var(--white); font-weight: bold; }
+  .frame-val   { color: var(--cyan); }
+  .frame-ret   { color: var(--muted); font-size: 11px; }
+  .base-case-frame { background: rgba(57,255,20,0.15) !important; border-color: var(--green) !important; }
+
+  /* ═══ FADE IN ═══ */
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .fade-in:nth-child(1) { animation-delay: 0.1s; }
+  .fade-in:nth-child(2) { animation-delay: 0.2s; }
+  .fade-in:nth-child(3) { animation-delay: 0.3s; }
+  .fade-in:nth-child(4) { animation-delay: 0.4s; }
+
+  /* ═══ FOOTER ═══ */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+  }
+  footer span { color: var(--purple); }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 14px; }
+    .section-title { font-size: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — C Programming ✦</span>
+  <h1>RECURSION<br><span>∞ LEVEL UP</span></h1>
+  <p class="header-sub">une fonction qui s'appelle elle-même</p>
+  <div class="xp-bar">
+    <span class="xp-label">XP</span>
+    <div class="xp-track"><div class="xp-fill"></div></div>
+    <span class="xp-label">LVL 4</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ══════════ DÉFINITION ══════════ -->
+  <div class="section-title">C'EST QUOI LA RÉCURSION ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🌀</span> DÉFINITION</div>
+    <p>La <strong style="color:var(--purple)">récursion</strong> c'est quand une fonction <strong style="color:var(--cyan)">s'appelle elle-même</strong> pour résoudre un problème en le décomposant en sous-problèmes plus petits.</p>
+    <p style="margin-top:10px">Toute fonction récursive a obligatoirement <strong style="color:var(--pink)">2 parties</strong> :</p>
+
+    <div class="skill-tree" style="margin-top:18px">
+      <div class="skill-node">
+        <div class="skill-dot pink"></div>
+        <div>
+          <strong style="color:var(--pink);font-size:17px;">Le cas de base (Base Case)</strong>
+          <p style="font-size:14px;color:var(--muted)">La condition d'arrêt. Sans ça → boucle infinie → stack overflow. C'est le <strong style="color:var(--pink)">MUR</strong> qui stoppe la récursion.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div>
+          <strong style="color:var(--cyan);font-size:17px;">Le cas récursif (Recursive Case)</strong>
+          <p style="font-size:14px;color:var(--muted)">L'appel à soi-même avec un argument <strong style="color:var(--cyan)">plus petit</strong>. On se rapproche du cas de base à chaque appel.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Dans <strong>Portal</strong>, tu places un portail d'entrée et un portail de sortie. La récursion c'est pareil — tu entres dans la fonction (portail), tu ressors du même endroit mais avec un état différent. Le <strong>cas de base</strong> c'est le mur qui n'a pas de portail — il stoppe le voyage.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ SQUELETTE ══════════ -->
+  <div class="section-title">LE SQUELETTE — À MÉMORISER</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> STRUCTURE DE BASE</div>
+    <pre><code><span class="type">type</span> <span class="fn">ma_fonction</span>(<span class="type">type</span> param)
+{
+    <span class="cmt">/* 1. CAS DE BASE — condition d'arrêt */</span>
+    <span class="kw">if</span> (param == cas_terminal)
+        <span class="kw">return</span> (valeur_finale);
+
+    <span class="cmt">/* 2. CAS RÉCURSIF — appel avec param plus petit */</span>
+    <span class="kw">return</span> (<span class="fn">ma_fonction</span>(param - <span class="num">1</span>));
+}</code></pre>
+    <div class="warn">Sans cas de base → la fonction s'appelle à l'infini → <strong>Segmentation Fault</strong> (stack overflow).</div>
+  </div>
+
+  <!-- ══════════ BOSS FIGHTS ══════════ -->
+  <div class="section-title">EXEMPLES CONCRETS — LES BOSS FIGHTS</div>
+
+  <!-- BOSS 1 -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> BOSS 1 — FACTORIELLE</div>
+    <div class="level-badge">⭐ LVL 1 — Facile</div>
+    <p>Calcule <code>n! = n × (n-1) × (n-2) × ... × 1</code>. Ex: <code>5! = 120</code></p>
+    <pre><code><span class="type">int</span> <span class="fn">factorial</span>(<span class="type">int</span> n)
+{
+    <span class="cmt">/* Cas de base */</span>
+    <span class="kw">if</span> (n <= <span class="num">1</span>)
+        <span class="kw">return</span> (<span class="num">1</span>);
+
+    <span class="cmt">/* Cas récursif */</span>
+    <span class="kw">return</span> (n * <span class="fn">factorial</span>(n - <span class="num">1</span>));
+}
+
+<span class="cmt">/* factorial(4) → 4 * factorial(3)
+                      → 3 * factorial(2)
+                          → 2 * factorial(1)
+                              → 1  ← cas de base */</span></code></pre>
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>C'est comme <strong>ouvrir des coffres imbriqués dans Zelda</strong>. Le coffre 4 contient le coffre 3, qui contient le coffre 2, qui contient le coffre 1. Le dernier coffre (cas de base) contient le vrai trésor — tu remontes en multipliant à chaque ouverture.</p>
+    </div>
+  </div>
+
+  <!-- BOSS 2 -->
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🐲</span> BOSS 2 — PUISSANCE</div>
+    <div class="level-badge" style="border-color:var(--pink);color:var(--pink)">⭐⭐ LVL 2 — Intermédiaire</div>
+    <p>Calcule <code>base^exp</code> de façon récursive.</p>
+    <pre><code><span class="type">int</span> <span class="fn">power</span>(<span class="type">int</span> base, <span class="type">int</span> exp)
+{
+    <span class="cmt">/* Cas de base */</span>
+    <span class="kw">if</span> (exp == <span class="num">0</span>)
+        <span class="kw">return</span> (<span class="num">1</span>);       <span class="cmt">/* tout^0 = 1 */</span>
+
+    <span class="cmt">/* Cas récursif */</span>
+    <span class="kw">return</span> (base * <span class="fn">power</span>(base, exp - <span class="num">1</span>));
+}
+
+<span class="cmt">/* power(2, 4) = 2 * power(2, 3)
+              = 2 * 2 * power(2, 2)
+              = 2 * 2 * 2 * power(2, 1)
+              = 2 * 2 * 2 * 2 * power(2, 0)
+              = 2 * 2 * 2 * 2 * 1 = 16 */</span></code></pre>
+  </div>
+
+  <!-- BOSS 3 -->
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">👑</span> BOSS FINAL — SUITE DE FIBONACCI</div>
+    <div class="level-badge" style="border-color:var(--orange);color:var(--orange)">⭐⭐⭐ LVL 3 — Holberton Style</div>
+    <p>Calcule le nème terme de Fibonacci : <code>0, 1, 1, 2, 3, 5, 8, 13, 21...</code></p>
+    <pre><code><span class="type">int</span> <span class="fn">fibonacci</span>(<span class="type">int</span> n)
+{
+    <span class="cmt">/* Deux cas de base */</span>
+    <span class="kw">if</span> (n == <span class="num">0</span>)
+        <span class="kw">return</span> (<span class="num">0</span>);
+    <span class="kw">if</span> (n == <span class="num">1</span>)
+        <span class="kw">return</span> (<span class="num">1</span>);
+
+    <span class="cmt">/* Cas récursif — deux appels récursifs ! */</span>
+    <span class="kw">return</span> (<span class="fn">fibonacci</span>(n - <span class="num">1</span>) + <span class="fn">fibonacci</span>(n - <span class="num">2</span>));
+}
+
+<span class="cmt">/* fibonacci(5) :
+   fib(4)          + fib(3)
+   fib(3)+fib(2)   + fib(2)+fib(1)
+   ... arbre binaire d'appels */</span></code></pre>
+    <div class="warn">Fibonacci récursif recalcule les mêmes valeurs des dizaines de fois. Pour <code>n > 30</code> c'est très lent — préférer la version itérative en prod.</div>
+  </div>
+
+  <!-- ══════════ CALL STACK ══════════ -->
+  <div class="section-title">LA CALL STACK — CE QUI SE PASSE EN MÉMOIRE</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">📚</span> VISUALISATION DE factorial(4)</div>
+    <p style="margin-bottom:14px">À chaque appel récursif, une nouvelle <strong style="color:var(--purple)">stack frame</strong> est empilée en mémoire :</p>
+
+    <p style="font-family:'Share Tech Mono';font-size:12px;color:var(--muted);margin-bottom:8px">▼ DESCENTE (appels)</p>
+    <div class="stack-viz">
+      <div class="stack-frame">
+        <span class="frame-label">factorial(4)</span>
+        <span class="frame-val">attend 4 * ?</span>
+        <span class="frame-ret">en attente...</span>
+      </div>
+      <div class="stack-frame">
+        <span class="frame-label">factorial(3)</span>
+        <span class="frame-val">attend 3 * ?</span>
+        <span class="frame-ret">en attente...</span>
+      </div>
+      <div class="stack-frame">
+        <span class="frame-label">factorial(2)</span>
+        <span class="frame-val">attend 2 * ?</span>
+        <span class="frame-ret">en attente...</span>
+      </div>
+      <div class="stack-frame base-case-frame">
+        <span class="frame-label">factorial(1)</span>
+        <span class="frame-val" style="color:var(--green)">retourne 1 ✅</span>
+        <span class="frame-ret">CAS DE BASE</span>
+      </div>
+    </div>
+
+    <p style="font-family:'Share Tech Mono';font-size:12px;color:var(--muted);margin-top:16px;margin-bottom:8px">▲ REMONTÉE (retours)</p>
+    <pre><code><span class="cmt">/* La pile se dépile dans l'ordre inverse */</span>
+factorial(<span class="num">1</span>) <span class="kw">→</span> <span class="num">1</span>
+factorial(<span class="num">2</span>) <span class="kw">→</span> <span class="num">2</span> * <span class="num">1</span>  = <span class="num">2</span>
+factorial(<span class="num">3</span>) <span class="kw">→</span> <span class="num">3</span> * <span class="num">2</span>  = <span class="num">6</span>
+factorial(<span class="num">4</span>) <span class="kw">→</span> <span class="num">4</span> * <span class="num">6</span>  = <span class="num">24</span>  <span class="cmt">← résultat final</span></code></pre>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>C'est le <strong>système de save states dans un émulateur</strong>. À chaque appel récursif tu fais un save state (nouvelle frame). Quand tu atteins le cas de base, tu load les saves en sens inverse pour calculer le résultat final.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ RÈGLES CRITIQUES ══════════ -->
+  <div class="section-title">RÈGLES CRITIQUES — NE MEURS PAS BÊTEMENT</div>
+
+  <div class="grid-2">
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">💀</span> LES GAME OVER</div>
+      <ul style="padding-left:18px; font-size:14px; line-height:2.4;">
+        <li>Oublier le cas de base → <strong style="color:var(--pink)">Segfault</strong></li>
+        <li>Cas de base jamais atteint → <strong style="color:var(--pink)">boucle infinie</strong></li>
+        <li>Pas de progression vers le cas de base → <strong style="color:var(--pink)">stack overflow</strong></li>
+        <li>Trop d'appels récursifs → <strong style="color:var(--pink)">stack overflow</strong></li>
+        <li>Modifier un paramètre global → <strong style="color:var(--pink)">effets de bord</strong></li>
+      </ul>
+    </div>
+    <div class="card green fade-in">
+      <div class="card-title"><span class="card-icon">🏆</span> LES SPEEDRUN TIPS</div>
+      <ul style="padding-left:18px; font-size:14px; line-height:2.4;">
+        <li>Toujours écrire le cas de base <strong>EN PREMIER</strong></li>
+        <li>Vérifier que le param se rapproche du cas de base</li>
+        <li>Tester avec de petites valeurs d'abord</li>
+        <li>Récursion = élégant mais coûteux en mémoire</li>
+        <li>Préférer l'itération pour les grandes valeurs</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════ RÉCURSION VS ITÉRATION ══════════ -->
+  <div class="section-title">RÉCURSION VS ITÉRATION</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">⚖️</span> MÊME RÉSULTAT, APPROCHE DIFFÉRENTE</div>
+    <div class="grid-2" style="margin-top:12px">
+      <div>
+        <p style="font-family:'Press Start 2P';font-size:8px;color:var(--purple);margin-bottom:10px">RÉCURSIF</p>
+        <pre><code><span class="type">int</span> <span class="fn">sum_rec</span>(<span class="type">int</span> n)
+{
+    <span class="kw">if</span> (n == <span class="num">0</span>)
+        <span class="kw">return</span> (<span class="num">0</span>);
+    <span class="kw">return</span> (n + <span class="fn">sum_rec</span>(n - <span class="num">1</span>));
+}</code></pre>
+      </div>
+      <div>
+        <p style="font-family:'Press Start 2P';font-size:8px;color:var(--cyan);margin-bottom:10px">ITÉRATIF</p>
+        <pre><code><span class="type">int</span> <span class="fn">sum_iter</span>(<span class="type">int</span> n)
+{
+    <span class="type">int</span> sum = <span class="num">0</span>;
+    <span class="kw">while</span> (n > <span class="num">0</span>)
+        sum += n--;
+    <span class="kw">return</span> (sum);
+}</code></pre>
+      </div>
+    </div>
+
+    <table class="data-table" style="margin-top:16px">
+      <thead>
+        <tr><th>CRITÈRE</th><th>RÉCURSION</th><th>ITÉRATION</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Lisibilité</td>
+          <td style="color:var(--green)">✅ Plus claire</td>
+          <td style="color:var(--muted)">Parfois verbose</td>
+        </tr>
+        <tr>
+          <td>Mémoire</td>
+          <td style="color:var(--pink)">⚠️ Stack frames</td>
+          <td style="color:var(--green)">✅ O(1)</td>
+        </tr>
+        <tr>
+          <td>Performance</td>
+          <td style="color:var(--pink)">⚠️ Overhead</td>
+          <td style="color:var(--green)">✅ Plus rapide</td>
+        </tr>
+        <tr>
+          <td>Cas d'usage idéal</td>
+          <td style="color:var(--cyan)">Arbres, fractales</td>
+          <td style="color:var(--cyan)">Tableaux, compteurs</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════ STRLEN RÉCURSIF ══════════ -->
+  <div class="section-title">EXEMPLE HOLBERTON — _STRLEN RÉCURSIF</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🎓</span> TYPE D'EXO QUE TU AURAS</div>
+    <p style="margin-bottom:12px">Holberton te demandera souvent de réécrire des fonctions standard en récursif :</p>
+    <pre><code><span class="cmt">/* _strlen récursif — sans boucle, sans variable locale */</span>
+<span class="type">int</span> <span class="fn">_strlen</span>(<span class="type">char</span> *s)
+{
+    <span class="kw">if</span> (*s == <span class="str">'\0'</span>)    <span class="cmt">/* cas de base : fin de string */</span>
+        <span class="kw">return</span> (<span class="num">0</span>);
+    <span class="kw">return</span> (<span class="num">1</span> + <span class="fn">_strlen</span>(s + <span class="num">1</span>)); <span class="cmt">/* avance d'un char */</span>
+}
+
+<span class="cmt">/* _puts récursif */</span>
+<span class="type">void</span> <span class="fn">_puts</span>(<span class="type">char</span> *str)
+{
+    <span class="kw">if</span> (*str == <span class="str">'\0'</span>)
+    {
+        <span class="fn">putchar</span>(<span class="str">'\n'</span>);
+        <span class="kw">return</span>;
+    }
+    <span class="fn">putchar</span>(*str);
+    <span class="fn">_puts</span>(str + <span class="num">1</span>);
+}
+
+<span class="cmt">/* _strcmp récursif */</span>
+<span class="type">int</span> <span class="fn">_strcmp</span>(<span class="type">char</span> *s1, <span class="type">char</span> *s2)
+{
+    <span class="kw">if</span> (*s1 == <span class="str">'\0'</span> || *s1 != *s2)
+        <span class="kw">return</span> (*s1 - *s2);
+    <span class="kw">return</span> (<span class="fn">_strcmp</span>(s1 + <span class="num">1</span>, s2 + <span class="num">1</span>));
+}</code></pre>
+    <div class="tip">Pour les strings récursives : le cas de base c'est presque toujours <code>*s == '\0'</code>, et le cas récursif avance avec <code>s + 1</code>.</div>
+  </div>
+
+  <!-- ══════════ ERREURS COMMUNES ══════════ -->
+  <div class="section-title">ERREURS FRÉQUENTES — ÉVITE LE GAME OVER</div>
+
+  <div class="grid-2">
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">❌</span> ERREUR — PAS DE CAS DE BASE</div>
+      <pre><code><span class="type">int</span> <span class="fn">bad_factorial</span>(<span class="type">int</span> n)
+{
+    <span class="cmt">/* ❌ PAS DE CAS DE BASE */</span>
+    <span class="kw">return</span> (n * <span class="fn">bad_factorial</span>(n - <span class="num">1</span>));
+    <span class="cmt">/* → Segfault / stack overflow */</span>
+}</code></pre>
+    </div>
+    <div class="card green fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> CORRECT</div>
+      <pre><code><span class="type">int</span> <span class="fn">good_factorial</span>(<span class="type">int</span> n)
+{
+    <span class="cmt">/* ✅ CAS DE BASE EN PREMIER */</span>
+    <span class="kw">if</span> (n <= <span class="num">1</span>)
+        <span class="kw">return</span> (<span class="num">1</span>);
+    <span class="kw">return</span> (n * <span class="fn">good_factorial</span>(n - <span class="num">1</span>));
+}</code></pre>
+    </div>
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">❌</span> ERREUR — PAS DE PROGRESSION</div>
+      <pre><code><span class="type">int</span> <span class="fn">bad_func</span>(<span class="type">int</span> n)
+{
+    <span class="kw">if</span> (n == <span class="num">0</span>)
+        <span class="kw">return</span> (<span class="num">0</span>);
+    <span class="cmt">/* ❌ n ne change pas → infini */</span>
+    <span class="kw">return</span> (<span class="fn">bad_func</span>(n));
+}</code></pre>
+    </div>
+    <div class="card green fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> CORRECT</div>
+      <pre><code><span class="type">int</span> <span class="fn">good_func</span>(<span class="type">int</span> n)
+{
+    <span class="kw">if</span> (n == <span class="num">0</span>)
+        <span class="kw">return</span> (<span class="num">0</span>);
+    <span class="cmt">/* ✅ n - 1 : progression vers 0 */</span>
+    <span class="kw">return</span> (<span class="fn">good_func</span>(n - <span class="num">1</span>));
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- ══════════ TIPS HOLBERTON ══════════ -->
+  <div class="section-title">TIPS SPÉCIAL HOLBERTON</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🎓</span> POUR TES PROJETS</div>
+    <ul style="padding-left:18px; font-size:15px; line-height:2.4;">
+      <li>Le projet <strong style="color:var(--yellow)">0x08. C - Recursion</strong> interdit souvent les boucles (<code>while</code>, <code>for</code>, <code>do while</code>)</li>
+      <li>Interdit aussi les variables locales statiques et globales</li>
+      <li><strong style="color:var(--cyan)">Betty style</strong> obligatoire : accolades, commentaires, longueur des fonctions</li>
+      <li>Toujours tester avec <code>n = 0</code> et <code>n = 1</code> en premier</li>
+      <li>Utiliser <code>valgrind</code> pour vérifier qu'il n'y a pas de stack overflow</li>
+    </ul>
+    <pre><code><span class="cmt">/* Header guard pour tes fonctions récursives */</span>
+<span class="kw">#ifndef</span> MAIN_H
+<span class="kw">#define</span> MAIN_H
+
+<span class="type">int</span>  <span class="fn">_strlen</span>(<span class="type">char</span> *s);
+<span class="type">void</span> <span class="fn">_puts</span>(<span class="type">char</span> *str);
+<span class="type">int</span>  <span class="fn">_strcmp</span>(<span class="type">char</span> *s1, <span class="type">char</span> *s2);
+<span class="type">int</span>  <span class="fn">factorial</span>(<span class="type">int</span> n);
+<span class="type">int</span>  <span class="fn">fibonacci</span>(<span class="type">int</span> n);
+
+<span class="kw">#endif</span> <span class="cmt">/* MAIN_H */</span></code></pre>
+  </div>
+
+  <!-- ══════════ RECAP ══════════ -->
+  <div class="section-title">RÉCAP — TON CHEAT CODE FINAL</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">📝</span> LES 4 QUESTIONS À SE POSER</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Quel est mon cas de base ?</h4>
+          <p>La condition qui stoppe tout. Souvent <code>n == 0</code>, <code>n == 1</code>, ou <code>*s == '\0'</code></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num cyan">2</div>
+        <div class="step-content">
+          <h4>Comment je me rapproche du cas de base ?</h4>
+          <p><code>n - 1</code>, <code>s + 1</code>, division par 2... L'argument doit toujours diminuer</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num yellow">3</div>
+        <div class="step-content">
+          <h4>Que retourne l'appel récursif ?</h4>
+          <p>La valeur retournée sert à calculer le résultat du niveau actuel</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num orange">4</div>
+        <div class="step-content">
+          <h4>Est-ce que je combine bien les résultats ?</h4>
+          <p><code>n * func(n-1)</code> pour factorielle, <code>1 + func(s+1)</code> pour strlen...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>HOLBERTON SCHOOL ✦ RECURSION ✦ <span>∞ LEVEL UP</span></p>
+  <p style="margin-top:10px; color:var(--green)">[ TO UNDERSTAND RECURSION, YOU MUST FIRST UNDERSTAND RECURSION ]</p>
+</footer>
+
+</body>
+</html>
