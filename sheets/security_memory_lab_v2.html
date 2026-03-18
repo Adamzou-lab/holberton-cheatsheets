@@ -916,35 +916,36 @@ p[0] = 'A';</span>     <span class="cmt">/* ❌ */</span>
 
 
 <style>
-  .nav-btn {
-    position: fixed; top: 50%; transform: translateY(-50%);
-    background: rgba(0,0,0,0.8); border: 1px solid var(--border);
-    border-radius: 8px; padding: 16px 10px;
+  .hub-btn {
+    position: fixed; top: 50%; left: 14px; transform: translateY(-50%);
+    background: rgba(0,0,0,0.82);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 11px;
     font-family: 'Press Start 2P', monospace;
-    color: var(--muted); text-decoration: none;
-    z-index: 10000; display: flex; flex-direction: column;
-    align-items: center; gap: 10px;
-    transition: color 0.2s, border-color 0.2s, transform 0.2s;
+    font-size: 7px; letter-spacing: 2px;
+    color: var(--muted);
+    text-decoration: none;
+    writing-mode: vertical-rl;
+    z-index: 10000;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
     backdrop-filter: blur(6px);
+    cursor: pointer;
   }
-  .nav-btn:hover { color: var(--neon); border-color: var(--neon); box-shadow: 0 0 14px rgba(57,255,20,0.15); }
-  .nav-arrow { font-size: 14px; line-height: 1; }
-  .nav-label { font-size: 6px; letter-spacing: 1px; writing-mode: vertical-rl; line-height: 1; }
-  .nav-prev { left: 10px; }
-  .nav-prev:hover { transform: translateY(-50%) translateX(-3px); }
-  .nav-next { right: 10px; }
-  .nav-next:hover { transform: translateY(-50%) translateX(3px); }
-  .nav-btn.disabled { opacity: 0.15; pointer-events: none; cursor: default; }
-  @media (max-width: 900px) { .nav-btn { display: none; } }
+  .hub-btn:hover {
+    color: var(--neon);
+    border-color: var(--neon);
+    box-shadow: 0 0 18px rgba(57,255,20,0.2);
+    transform: translateY(-50%) translateX(4px);
+  }
+  .hub-icon { font-size: 16px; line-height: 1; writing-mode: horizontal-tb; }
+  @media (max-width: 900px) { .hub-btn { display: none; } }
 </style>
 
-<a class="nav-btn nav-prev" href="function_pointers_cheatsheet.html">
-  <span class="nav-arrow">❮</span>
-  <span class="nav-label">PRÉC</span>
-</a>
-<a class="nav-btn nav-next" href="recursion_cheatsheet.html">
-  <span class="nav-arrow">❯</span>
-  <span class="nav-label">SUIV</span>
+<a class="hub-btn" href="../index.html">
+  <span class="hub-icon">⌂</span>
+  HUB
 </a>
 </body>
 </html>
