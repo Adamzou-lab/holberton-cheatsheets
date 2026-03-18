@@ -526,7 +526,29 @@
   // --- XP SYSTEM ---
   const TOTAL = document.querySelectorAll('.sheet-card').length;
   const LEVELS = ['LVL 0', 'LVL 1', 'LVL 2 → PRO', 'LVL MAX ★'];
-  const LEVEL_MSGS = ['', 'Première fiche vue !', 'Tu progresses !', 'TOUTES LES FICHES MAÎTRISÉES !'];
+  const VALIDATE_MSGS = [
+    "Fiche validée ! T'es une machine.",
+    "Un de plus. Le savoir s'accumule.",
+    "GG, t'as pas chillé sur celle-là.",
+    "+1 en intelligence. Continue.",
+    "Tu stack les connaissances comme un pro.",
+    "Unlocked. Next level incoming.",
+    "Fiche dans la poche. Holberton approuve.",
+    "Knowledge +1. Tu montres qui est le boss.",
+    "Segment TEXT mis à jour dans ton cerveau.",
+    "Pas de segfault ici. Belle exécution.",
+    "Commit validé. Push vers ton futur.",
+    "T'as free() aucune minute de ta vie.",
+    "Betty serait fière. Vraiment.",
+    "Tu joues pas, tu grind.",
+    "malloc réussi. Zéro leak de motivation.",
+    "Une fiche de plus, un bug de moins demain.",
+    "Pointeur vers le succès bien initialisé.",
+    "Ce savoir ne sera pas double-freed.",
+    "Stack en feu. Heap under control.",
+    "100% valgrind clean. Like ton cerveau."
+  ];
+  let lastMsgIdx = -1;
   let done = JSON.parse(localStorage.getItem('hb-done') || '[]');
 
   function updateXP() {
@@ -562,8 +584,10 @@
       btn.textContent = '✓';
       btn.classList.add('checked');
       card.classList.add('completed');
-      const newLevel = done.length;
-      if (newLevel > prevCount && LEVEL_MSGS[newLevel]) showToast(LEVEL_MSGS[newLevel]);
+      let idx;
+      do { idx = Math.floor(Math.random() * VALIDATE_MSGS.length); } while (idx === lastMsgIdx);
+      lastMsgIdx = idx;
+      showToast(VALIDATE_MSGS[idx]);
     }
     localStorage.setItem('hb-done', JSON.stringify(done));
     updateXP();
