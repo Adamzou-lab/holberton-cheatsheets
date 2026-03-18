@@ -911,5 +911,37 @@ void print_strings(int n, ...);
   <p style="margin-top:10px; color:var(--green)">[ PRESS START TO BECOME A C MASTER ]</p>
 </footer>
 
+
+<style>
+  .nav-btn {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    background: rgba(0,0,0,0.8); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 10px;
+    font-family: 'Press Start 2P', monospace;
+    color: var(--muted); text-decoration: none;
+    z-index: 10000; display: flex; flex-direction: column;
+    align-items: center; gap: 10px;
+    transition: color 0.2s, border-color 0.2s, transform 0.2s;
+    backdrop-filter: blur(6px);
+  }
+  .nav-btn:hover { color: var(--neon); border-color: var(--neon); box-shadow: 0 0 14px rgba(57,255,20,0.15); }
+  .nav-arrow { font-size: 14px; line-height: 1; }
+  .nav-label { font-size: 6px; letter-spacing: 1px; writing-mode: vertical-rl; line-height: 1; }
+  .nav-prev { left: 10px; }
+  .nav-prev:hover { transform: translateY(-50%) translateX(-3px); }
+  .nav-next { right: 10px; }
+  .nav-next:hover { transform: translateY(-50%) translateX(3px); }
+  .nav-btn.disabled { opacity: 0.15; pointer-events: none; cursor: default; }
+  @media (max-width: 900px) { .nav-btn { display: none; } }
+</style>
+
+<a class="nav-btn nav-prev" href="recursion_cheatsheet.html">
+  <span class="nav-arrow">❮</span>
+  <span class="nav-label">PRÉC</span>
+</a>
+<a class="nav-btn nav-next disabled" href="#">
+  <span class="nav-arrow">❯</span>
+  <span class="nav-label">SUIV</span>
+</a>
 </body>
 </html>
