@@ -117,29 +117,6 @@
   }
   @keyframes redglow { 0%,100%{box-shadow:0 0 5px rgba(255,34,34,0.3)} 50%{box-shadow:0 0 20px rgba(255,34,34,0.7)} }
 
-  .xp-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 24px;
-  }
-  .xp-label { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--yellow); }
-  .xp-track {
-    width: 200px; height: 10px;
-    background: var(--border);
-    border-radius: 5px;
-    overflow: hidden;
-    border: 1px solid var(--yellow);
-  }
-  .xp-fill {
-    height: 100%; width: 0;
-    background: linear-gradient(90deg, var(--pink), var(--purple));
-    border-radius: 5px;
-    animation: fillXP 2s 0.5s ease-out forwards;
-    box-shadow: 0 0 8px var(--pink);
-  }
-  @keyframes fillXP { to { width: 58%; } }
 
   /* ═══ SECTION TITLES ═══ */
   .section-title {
@@ -497,10 +474,6 @@
   <h1>SECURE INPUT<br><span>&amp; MEMORY LAB</span></h1>
   <p class="header-sub">patch the vuln. survive the audit.</p>
   <div class="coeff-badge">⚠ COEFF 2 — ZERO DROIT À L'ERREUR</div>
-  <div class="xp-bar">
-    <span class="xp-label">XP</span>
-    <div class="xp-track"><div class="xp-fill"></div></div>
-    <span class="xp-label">LVL 2</span>
   </div>
 </header>
 
