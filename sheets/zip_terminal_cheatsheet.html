@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fichiers ZIP — Terminal Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<style>
+  :root {
+    --bg:     #0a080f;
+    --bg2:    #0f0a1a;
+    --bg3:    #130f1f;
+    --card:   #100d18;
+    --border: #1e1530;
+    --neon:   #b54eff;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --orange: #ff6b00;
+    --text:   #ccc8e0;
+    --muted:  #5a4a70;
+    --white:  #f0eeff;
+    /* bridge vars pour common.css */
+    --primary:     #b54eff;
+    --primary-rgb: 181, 78, 255;
+    --pre-bg:      #07050e;
+    --pre-lh:      1.9;
+    --code-alpha:  0.1;
+    --h1-size:     clamp(14px, 2.5vw, 22px);
+    --h1-lh:       1.7;
+    --h1-mobile:   12px;
+    --glow1:       0.5;
+    --analogy-bg:  linear-gradient(135deg, #0d0a15, #0a080f);
+  }
+
+  .section-title::before { color: var(--pink); }
+
+  /* Syntax highlighting */
+  .cmd   { color: var(--neon); font-weight: bold; }
+  .flag  { color: var(--cyan); }
+  .arg   { color: var(--yellow); }
+  .str   { color: var(--green); }
+  .cmt   { color: var(--muted); font-style: italic; }
+  .ok    { color: var(--green); }
+  .err   { color: var(--pink); }
+  .out   { color: var(--cyan); }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — Terminal Linux ✦</span>
+  <h1>FICHIERS ZIP<br><span>DANS LE TERMINAL</span></h1>
+  <p class="header-sub">Décompresse. Travaille. Répète.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ C'EST QUOI ══════════════ -->
+  <div class="section-title">C'EST QUOI UN FICHIER ZIP ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">📦</span> DÉFINITION RAPIDE</div>
+    <p>Un fichier <strong style="color:var(--neon)">.zip</strong> est une <strong style="color:var(--neon)">archive compressée</strong> — un seul fichier qui contient un ou plusieurs fichiers/dossiers regroupés et compressés. À Holberton, les requirements des projets sont souvent fournis en <code>.zip</code> à décompresser dans ton terminal.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Un fichier ZIP c'est comme un <strong>coffre de butin</strong> dans un RPG. Tout est rangé à l'intérieur, compressé pour prendre moins de place. <code>unzip</code>, c'est l'action d'<strong>ouvrir le coffre</strong> et de poser chaque item dans ton inventaire (ton dossier de travail). <code>zip</code>, c'est <strong>remballer</strong> pour envoyer à quelqu'un.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════ INSTALLER UNZIP ══════════════ -->
+  <div class="section-title">INSTALLER LES OUTILS</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">⚙️</span> INSTALLER ZIP &amp; UNZIP</div>
+    <pre><code><span class="cmt"># Vérifier si unzip est déjà installé</span>
+<span class="cmd">which</span> <span class="arg">unzip</span>
+<span class="cmt"># → /usr/bin/unzip   (installé ✅)</span>
+<span class="cmt"># → rien             (pas installé ❌)</span>
+
+<span class="cmt"># Installer sur Ubuntu / Debian (sandbox Holberton)</span>
+sudo <span class="cmd">apt-get</span> <span class="flag">install</span> <span class="arg">zip unzip</span>
+
+<span class="cmt"># Vérifier la version</span>
+<span class="cmd">unzip</span> <span class="flag">-v</span>
+<span class="cmd">zip</span> <span class="flag">--version</span></code></pre>
+    <div class="tip">Sur les sandboxes Holberton, <code>unzip</code> est généralement déjà installé. Si tu reçois <code>command not found</code>, lance le <code>apt-get install</code> ci-dessus.</div>
+  </div>
+
+  <!-- ══════════════ WORKFLOW HOLBERTON ══════════════ -->
+  <div class="section-title">LE WORKFLOW HOLBERTON — PAS À PAS</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🚀</span> RECEVOIR UN ZIP ET TRAVAILLER DESSUS</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Télécharger le fichier zip (si depuis une URL)</h4>
+          <pre><code><span class="cmt"># Télécharger avec wget</span>
+<span class="cmd">wget</span> <span class="str">https://exemple.com/project.zip</span>
+
+<span class="cmt"># Ou avec curl</span>
+<span class="cmd">curl</span> <span class="flag">-O</span> <span class="str">https://exemple.com/project.zip</span>
+
+<span class="cmt"># Vérifier qu'il est bien là</span>
+<span class="cmd">ls</span> <span class="flag">-lh</span> <span class="arg">*.zip</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Regarder le contenu SANS décompresser</h4>
+          <pre><code><span class="cmt"># Lister le contenu du zip (aperçu)</span>
+<span class="cmd">unzip</span> <span class="flag">-l</span> <span class="arg">project.zip</span>
+
+<span class="cmt"># Exemple de sortie :</span>
+<span class="out">  Length      Date    Time    Name</span>
+<span class="out">---------  ---------- -----   ----</span>
+<span class="out">      512  2024-01-15 10:30   project/main.c</span>
+<span class="out">      128  2024-01-15 10:30   project/main.h</span>
+<span class="out">       64  2024-01-15 10:30   project/Makefile</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Décompresser le zip</h4>
+          <pre><code><span class="cmt"># Décompresser dans le dossier courant</span>
+<span class="cmd">unzip</span> <span class="arg">project.zip</span>
+
+<span class="cmt"># Décompresser dans un dossier spécifique (recommandé ✅)</span>
+<span class="cmd">unzip</span> <span class="arg">project.zip</span> <span class="flag">-d</span> <span class="arg">mon_projet/</span>
+
+<span class="cmt"># Décompresser sans demander de confirmation (écraser)</span>
+<span class="cmd">unzip</span> <span class="flag">-o</span> <span class="arg">project.zip</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Naviguer et travailler</h4>
+          <pre><code><span class="cmt"># Voir ce qui a été extrait</span>
+<span class="cmd">ls</span> <span class="flag">-la</span>
+
+<span class="cmt"># Aller dans le dossier du projet</span>
+<span class="cmd">cd</span> <span class="arg">mon_projet/</span>
+
+<span class="cmt"># Lister le contenu</span>
+<span class="cmd">ls</span>
+
+<span class="cmt"># Et c'est parti ! Compiler, coder, travailler...</span>
+<span class="cmd">gcc</span> <span class="flag">-Wall -Werror -Wextra -pedantic</span> <span class="arg">main.c -o prog</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ COMMANDES UNZIP ══════════════ -->
+  <div class="section-title">TOUTES LES COMMANDES UNZIP</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">📂</span> DÉCOMPRESSER — TOUTES LES OPTIONS</div>
+    <pre><code><span class="cmt"># Décompresser un zip dans le dossier courant</span>
+<span class="cmd">unzip</span> <span class="arg">fichier.zip</span>
+
+<span class="cmt"># Décompresser dans un dossier précis (le crée si besoin)</span>
+<span class="cmd">unzip</span> <span class="arg">fichier.zip</span> <span class="flag">-d</span> <span class="arg">/chemin/vers/dossier/</span>
+<span class="cmd">unzip</span> <span class="arg">fichier.zip</span> <span class="flag">-d</span> <span class="arg">~/holberton/projet_1/</span>
+
+<span class="cmt"># Lister le contenu sans extraire</span>
+<span class="cmd">unzip</span> <span class="flag">-l</span> <span class="arg">fichier.zip</span>
+
+<span class="cmt"># Mode silencieux (pas d'affichage des fichiers extraits)</span>
+<span class="cmd">unzip</span> <span class="flag">-q</span> <span class="arg">fichier.zip</span>
+
+<span class="cmt"># Écraser sans confirmation si fichiers existent déjà</span>
+<span class="cmd">unzip</span> <span class="flag">-o</span> <span class="arg">fichier.zip</span>
+
+<span class="cmt"># Ne PAS écraser les fichiers existants</span>
+<span class="cmd">unzip</span> <span class="flag">-n</span> <span class="arg">fichier.zip</span>
+
+<span class="cmt"># Extraire un seul fichier du zip</span>
+<span class="cmd">unzip</span> <span class="arg">fichier.zip</span> <span class="str">main.c</span>
+
+<span class="cmt"># Extraire avec mot de passe</span>
+<span class="cmd">unzip</span> <span class="flag">-P</span> <span class="str">motdepasse</span> <span class="arg">fichier.zip</span>
+
+<span class="cmt"># Tester l'intégrité du zip (sans extraire)</span>
+<span class="cmd">unzip</span> <span class="flag">-t</span> <span class="arg">fichier.zip</span></code></pre>
+  </div>
+
+  <!-- ══════════════ COMMANDES ZIP ══════════════ -->
+  <div class="section-title">CRÉER ET COMPRESSER — ZIP</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🗜️</span> COMPRESSER — TOUTES LES OPTIONS</div>
+    <pre><code><span class="cmt"># Créer un zip avec un fichier</span>
+<span class="cmd">zip</span> <span class="arg">archive.zip</span> <span class="str">fichier.c</span>
+
+<span class="cmt"># Créer un zip avec plusieurs fichiers</span>
+<span class="cmd">zip</span> <span class="arg">archive.zip</span> <span class="str">main.c main.h Makefile</span>
+
+<span class="cmt"># Compresser un dossier entier (-r = récursif)</span>
+<span class="cmd">zip</span> <span class="flag">-r</span> <span class="arg">archive.zip</span> <span class="str">mon_dossier/</span>
+
+<span class="cmt"># Compresser le dossier courant</span>
+<span class="cmd">zip</span> <span class="flag">-r</span> <span class="arg">archive.zip</span> <span class="str">.</span>
+
+<span class="cmt"># Compresser avec niveau de compression max (0=aucune, 9=max)</span>
+<span class="cmd">zip</span> <span class="flag">-9 -r</span> <span class="arg">archive.zip</span> <span class="str">mon_dossier/</span>
+
+<span class="cmt"># Ajouter un fichier à un zip existant</span>
+<span class="cmd">zip</span> <span class="arg">archive.zip</span> <span class="str">nouveau_fichier.c</span>
+
+<span class="cmt"># Supprimer un fichier d'un zip</span>
+<span class="cmd">zip</span> <span class="flag">-d</span> <span class="arg">archive.zip</span> <span class="str">fichier_a_supprimer.c</span>
+
+<span class="cmt"># Voir le contenu d'un zip</span>
+<span class="cmd">zip</span> <span class="flag">-sf</span> <span class="arg">archive.zip</span></code></pre>
+  </div>
+
+  <!-- ══════════════ TAR.GZ ══════════════ -->
+  <div class="section-title">TAR.GZ &amp; TAR — L'AUTRE FORMAT COURANT</div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🗃️</span> LES ARCHIVES TAR — TRÈS COURANT SUR LINUX</div>
+    <p style="margin-bottom:12px;">À Holberton et sur Linux en général, tu rencontreras souvent des <code>.tar.gz</code>, <code>.tgz</code> ou <code>.tar.xz</code>. Ce n'est pas du zip mais la logique est la même.</p>
+    <pre><code><span class="cmt"># ── EXTRAIRE ──────────────────────────────────────</span>
+
+<span class="cmt"># Extraire un .tar.gz dans le dossier courant</span>
+<span class="cmd">tar</span> <span class="flag">-xzf</span> <span class="arg">archive.tar.gz</span>
+
+<span class="cmt"># Extraire dans un dossier précis</span>
+<span class="cmd">tar</span> <span class="flag">-xzf</span> <span class="arg">archive.tar.gz</span> <span class="flag">-C</span> <span class="arg">mon_dossier/</span>
+
+<span class="cmt"># Extraire un .tar.xz (compression xz)</span>
+<span class="cmd">tar</span> <span class="flag">-xJf</span> <span class="arg">archive.tar.xz</span>
+
+<span class="cmt"># Extraire un .tar (sans compression)</span>
+<span class="cmd">tar</span> <span class="flag">-xf</span> <span class="arg">archive.tar</span>
+
+<span class="cmt"># Voir le contenu sans extraire</span>
+<span class="cmd">tar</span> <span class="flag">-tzf</span> <span class="arg">archive.tar.gz</span>
+
+<span class="cmt"># ── CRÉER ─────────────────────────────────────────</span>
+
+<span class="cmt"># Créer un .tar.gz d'un dossier</span>
+<span class="cmd">tar</span> <span class="flag">-czf</span> <span class="arg">archive.tar.gz</span> <span class="str">mon_dossier/</span></code></pre>
+
+    <table class="macro-table" style="margin-top:14px;">
+      <thead><tr><th>Flag tar</th><th>Signification</th></tr></thead>
+      <tbody>
+        <tr><td><span class="macro-name">-x</span></td><td>eXtraire</td></tr>
+        <tr><td><span class="macro-name">-c</span></td><td>Créer une archive</td></tr>
+        <tr><td><span class="macro-name">-z</span></td><td>compression gzip (.gz)</td></tr>
+        <tr><td><span class="macro-name">-J</span></td><td>compression xz (.xz)</td></tr>
+        <tr><td><span class="macro-name">-f</span></td><td>nom du Fichier (toujours en dernier)</td></tr>
+        <tr><td><span class="macro-name">-t</span></td><td>lister (lisTer le contenu)</td></tr>
+        <tr><td><span class="macro-name">-v</span></td><td>mode Verbeux (affiche les fichiers)</td></tr>
+        <tr><td><span class="macro-name">-C</span></td><td>destination (Change de dossier)</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">Astuce mnémo pour <code>tar -xzf</code> : <strong>eXtraire Zip Fichier</strong>. Pour créer : <strong>Créer Zip Fichier</strong> = <code>tar -czf</code>.</div>
+  </div>
+
+  <!-- ══════════════ RECONNAITRE LES FORMATS ══════════════ -->
+  <div class="section-title">RECONNAITRE &amp; CHOISIR LE BON OUTIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔍</span> QUEL OUTIL POUR QUEL FORMAT ?</div>
+    <table class="macro-table">
+      <thead><tr><th>Extension</th><th>Commande pour extraire</th><th>Créer</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="macro-name">.zip</span></td>
+          <td><code>unzip fichier.zip</code></td>
+          <td><code>zip -r archive.zip dossier/</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">.tar.gz / .tgz</span></td>
+          <td><code>tar -xzf fichier.tar.gz</code></td>
+          <td><code>tar -czf archive.tar.gz dossier/</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">.tar.xz</span></td>
+          <td><code>tar -xJf fichier.tar.xz</code></td>
+          <td><code>tar -cJf archive.tar.xz dossier/</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">.tar.bz2</span></td>
+          <td><code>tar -xjf fichier.tar.bz2</code></td>
+          <td><code>tar -cjf archive.tar.bz2 dossier/</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">.tar</span></td>
+          <td><code>tar -xf fichier.tar</code></td>
+          <td><code>tar -cf archive.tar dossier/</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">.gz</span></td>
+          <td><code>gunzip fichier.gz</code></td>
+          <td><code>gzip fichier</code></td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">.7z</span></td>
+          <td><code>7z x fichier.7z</code></td>
+          <td><code>7z a archive.7z dossier/</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="tip">Tu ne sais pas quel format c'est ? La commande <code>file fichier.zip</code> te dit exactement le type réel d'un fichier, même si l'extension est fausse.</div>
+  </div>
+
+  <!-- ══════════════ ERREURS CLASSIQUES ══════════════ -->
+  <div class="section-title">ERREURS CLASSIQUES &amp; SOLUTIONS</div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🆘</span> PROBLÈMES FRÉQUENTS</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;"><code>command not found: unzip</code></strong>
+          <pre><code>sudo <span class="cmd">apt-get</span> <span class="flag">install</span> <span class="arg">unzip</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div>
+          <strong style="color:var(--cyan);font-size:16px;">Les fichiers s'extraient dans le mauvais dossier</strong>
+          <pre><code><span class="cmt"># Toujours utiliser -d pour choisir la destination</span>
+<span class="cmd">unzip</span> <span class="arg">project.zip</span> <span class="flag">-d</span> <span class="arg">~/holberton/mon_projet/</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot yellow"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:16px;">Le zip écrase mes fichiers existants</strong>
+          <pre><code><span class="cmt"># -n = Ne pas écraser les fichiers existants</span>
+<span class="cmd">unzip</span> <span class="flag">-n</span> <span class="arg">project.zip</span>
+<span class="cmt"># -o = Écraser sans demander (si tu veux tout remplacer)</span>
+<span class="cmd">unzip</span> <span class="flag">-o</span> <span class="arg">project.zip</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot green"></div>
+        <div>
+          <strong style="color:var(--green);font-size:16px;">Voir où sont extraits les fichiers</strong>
+          <pre><code><span class="cmt"># Lister d'abord sans extraire</span>
+<span class="cmd">unzip</span> <span class="flag">-l</span> <span class="arg">project.zip</span>
+<span class="cmt"># Puis extraire et voir en temps réel</span>
+<span class="cmd">unzip</span> <span class="flag">-v</span> <span class="arg">project.zip</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot pink"></div>
+        <div>
+          <strong style="color:var(--pink);font-size:16px;"><code>End-of-central-directory signature not found</code></strong>
+          <p style="font-size:14px;color:var(--muted);">Le fichier est corrompu ou ce n'est pas un vrai zip. Vérifie avec <code>file fichier.zip</code> — c'est peut-être un <code>.tar.gz</code> renommé en <code>.zip</code>.</p>
+          <pre><code><span class="cmd">file</span> <span class="arg">fichier.zip</span>   <span class="cmt"># révèle le vrai type</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot orange"></div>
+        <div>
+          <strong style="color:var(--orange);font-size:16px;">Permission denied après extraction</strong>
+          <pre><code><span class="cmt"># Donner les droits d'exécution aux scripts</span>
+<span class="cmd">chmod</span> <span class="flag">+x</span> <span class="arg">script.sh</span>
+<span class="cmt"># Ou tous les fichiers du dossier</span>
+<span class="cmd">chmod</span> <span class="flag">-R</span> <span class="arg">755</span> <span class="arg">mon_projet/</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ ══════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CHECKLIST HOLBERTON COMPLÈTE</div>
+    <pre><code><span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  RECEVOIR UN ZIP DE REQUIREMENTS — WORKFLOW COMPLET              ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+
+<span class="cmt"># 1. Regarder ce qu'il y a dans le zip (sans extraire)</span>
+<span class="cmd">unzip</span> <span class="flag">-l</span> <span class="arg">requirements.zip</span>
+
+<span class="cmt"># 2. Extraire proprement dans un dossier dédié</span>
+<span class="cmd">unzip</span> <span class="arg">requirements.zip</span> <span class="flag">-d</span> <span class="arg">mon_projet/</span>
+
+<span class="cmt"># 3. Aller dans le dossier</span>
+<span class="cmd">cd</span> <span class="arg">mon_projet/</span>
+
+<span class="cmt"># 4. Vérifier le contenu</span>
+<span class="cmd">ls</span> <span class="flag">-la</span>
+
+<span class="cmt"># 5. Et travailler !</span>
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  COMMANDES ESSENTIELLES EN UN COUP D'ŒIL                         ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+
+<span class="cmd">unzip</span> <span class="arg">fichier.zip</span>                   <span class="cmt"># extraire ici</span>
+<span class="cmd">unzip</span> <span class="arg">fichier.zip</span> <span class="flag">-d</span> <span class="arg">dossier/</span>       <span class="cmt"># extraire là-bas ✅</span>
+<span class="cmd">unzip</span> <span class="flag">-l</span> <span class="arg">fichier.zip</span>                 <span class="cmt"># voir le contenu</span>
+<span class="cmd">unzip</span> <span class="flag">-o</span> <span class="arg">fichier.zip</span>                 <span class="cmt"># écraser sans demander</span>
+<span class="cmd">zip</span> <span class="flag">-r</span> <span class="arg">archive.zip</span> <span class="str">dossier/</span>          <span class="cmt"># compresser un dossier</span>
+<span class="cmd">tar</span> <span class="flag">-xzf</span> <span class="arg">archive.tar.gz</span>              <span class="cmt"># extraire un .tar.gz</span>
+<span class="cmd">tar</span> <span class="flag">-xzf</span> <span class="arg">archive.tar.gz</span> <span class="flag">-C</span> <span class="arg">dossier/</span> <span class="cmt"># extraire là-bas ✅</span>
+<span class="cmd">file</span> <span class="arg">fichier.zip</span>                      <span class="cmt"># vrai type du fichier</span></code></pre>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <span>UNZIPPED &amp; READY</span> — EXTRACT, CODE, CONQUER<br><br>
+  Merci Sagal pour la suggestion 🎮 — <span>Holberton School</span>
+</footer>
+
+<a class="hub-btn" href="../index.html">
+  <span class="hub-icon">⌂</span>
+  HUB
+</a>
+</body>
+</html>
