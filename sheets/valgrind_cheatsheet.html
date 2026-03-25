@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Valgrind — Holberton Cheat Sheet</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
 <style>
   :root {
     --bg:     #0a080f;
@@ -19,6 +20,10 @@
     --text:   #ccc8e0;
     --muted:  #5a4a70;
     --white:  #f0eeff;
+    /* bridge vars pour common.css */
+    --bg2:         #100d18;
+    --primary:     #b54eff;
+    --primary-rgb: 181, 78, 255;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -886,5 +891,10 @@ valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose .
   <span>Holberton School</span> — Valgrind — Memory Error Detector
 </footer>
 
+
+<a class="hub-btn" href="../index.html">
+  <span class="hub-icon">⌂</span>
+  HUB
+</a>
 </body>
 </html>
