@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valgrind — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #0a080f;
+    --card:   #100d18;
+    --border: #1e1530;
+    --neon:   #b54eff;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --orange: #ff6b00;
+    --text:   #ccc8e0;
+    --muted:  #5a4a70;
+    --white:  #f0eeff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(181,78,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(181,78,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; position: relative; z-index: 1; }
+
+  header { text-align: center; padding: 60px 20px 40px; position: relative; z-index: 1; }
+  .tag { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--neon); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; display: block; }
+  header h1 { font-family: 'Press Start 2P', monospace; font-size: clamp(20px, 3.5vw, 34px); color: var(--white); line-height: 1.5; text-shadow: 0 0 20px rgba(181,78,255,0.5), 0 0 40px rgba(181,78,255,0.2); margin-bottom: 20px; }
+  header h1 span { color: var(--neon); }
+  .header-sub { font-size: 18px; color: var(--muted); letter-spacing: 2px; }
+
+  .section-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--neon); letter-spacing: 2px; margin: 50px 0 20px; display: flex; align-items: center; gap: 12px; }
+  .section-title::before { content: '▶'; color: var(--pink); font-size: 10px; animation: blink 1s step-end infinite; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--neon), transparent); }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--neon); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green .card-title  { color: var(--green); }
+  .card.pink .card-title   { color: var(--pink); }
+  .card.orange .card-title { color: var(--orange); }
+  .card-icon { font-size: 16px; }
+
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre { background: #07050e; border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; font-size: 13px; line-height: 1.9; margin-top: 12px; }
+  code { background: rgba(181,78,255,0.1); color: var(--neon); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  /* Valgrind output colors */
+  .vg-head  { color: var(--neon); font-weight: bold; }
+  .vg-ok    { color: var(--green); font-weight: bold; }
+  .vg-err   { color: var(--pink); font-weight: bold; }
+  .vg-warn  { color: var(--yellow); }
+  .vg-addr  { color: var(--cyan); }
+  .vg-info  { color: var(--muted); }
+  .vg-size  { color: var(--orange); }
+  .cmt      { color: var(--muted); font-style: italic; }
+
+  /* C syntax */
+  .kw   { color: var(--pink); }
+  .fn   { color: var(--cyan); }
+  .type { color: var(--neon); }
+  .str  { color: var(--green); }
+  .num  { color: var(--orange); }
+  .macro { color: var(--yellow); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .analogy { background: linear-gradient(135deg, #0d0a15, #0a080f); border: 1px solid var(--yellow); border-left: 4px solid var(--yellow); border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .analogy-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  .tip    { background: rgba(57,255,20,0.05);  border: 1px solid rgba(57,255,20,0.3);  border-left: 4px solid var(--green);  border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .warn   { background: rgba(255,45,120,0.05); border: 1px solid rgba(255,45,120,0.3); border-left: 4px solid var(--pink);   border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .clarif { background: rgba(181,78,255,0.07); border: 1px solid rgba(181,78,255,0.35);border-left: 4px solid var(--neon);   border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .quiz   { background: rgba(255,230,0,0.06);  border: 1px solid rgba(255,230,0,0.4);  border-left: 4px solid var(--yellow); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .tip::before    { content: '✅ '; }
+  .warn::before   { content: '⚠️ '; }
+  .clarif::before { content: '💡 '; }
+  .quiz::before   { content: '🎯 QUIZ — '; font-family: "Press Start 2P", monospace; font-size: 7px; color: var(--yellow); letter-spacing: 1px; }
+
+  /* ERROR TYPE CARDS */
+  .err-type { border-radius: 8px; padding: 18px 20px; margin-bottom: 14px; }
+  .err-type .err-name { font-family: 'Press Start 2P', monospace; font-size: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .err-type .err-desc { font-size: 14px; color: var(--text); margin-bottom: 10px; }
+  .err-type.definitely { background: rgba(255,45,120,0.08); border: 1px solid rgba(255,45,120,0.4); }
+  .err-type.definitely .err-name { color: var(--pink); }
+  .err-type.indirectly { background: rgba(255,107,0,0.08); border: 1px solid rgba(255,107,0,0.4); }
+  .err-type.indirectly .err-name { color: var(--orange); }
+  .err-type.possibly   { background: rgba(255,230,0,0.06); border: 1px solid rgba(255,230,0,0.4); }
+  .err-type.possibly   .err-name { color: var(--yellow); }
+  .err-type.reachable  { background: rgba(181,78,255,0.08); border: 1px solid rgba(181,78,255,0.4); }
+  .err-type.reachable  .err-name { color: var(--neon); }
+  .err-type.ok         { background: rgba(57,255,20,0.06);  border: 1px solid rgba(57,255,20,0.4); }
+  .err-type.ok         .err-name { color: var(--green); }
+
+  /* SCORE BADGE */
+  .score-badge { display: inline-flex; align-items: center; gap: 8px; border-radius: 6px; padding: 6px 14px; font-family: 'Press Start 2P', monospace; font-size: 8px; margin-bottom: 14px; }
+  .score-badge.perfect { background: rgba(57,255,20,0.1); border: 1px solid var(--green); color: var(--green); }
+  .score-badge.bad     { background: rgba(255,45,120,0.1); border: 1px solid var(--pink); color: var(--pink); }
+
+  .macro-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; font-size: 13px; margin-top: 12px; }
+  .macro-table th { background: var(--border); color: var(--neon); padding: 10px 14px; text-align: left; font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; }
+  .macro-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .macro-table tr:hover td { background: rgba(181,78,255,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; font-family: 'Share Tech Mono', monospace; }
+
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--bg); background: var(--neon); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  .skill-tree { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 24px; }
+  .skill-tree::before { content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(to bottom, var(--neon), var(--pink)); }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--neon); background: var(--bg); flex-shrink: 0; margin-left: -24px; margin-top: 3px; box-shadow: 0 0 8px var(--neon); }
+  .skill-dot.done   { background: var(--neon); }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.pink   { border-color: var(--pink);   box-shadow: 0 0 8px var(--pink);   background: var(--pink); }
+  .skill-dot.orange { border-color: var(--orange); box-shadow: 0 0 8px var(--orange); background: var(--orange); }
+
+  /* COMPARE */
+  .compare-label { font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .compare-label.bad  { color: var(--pink); }
+  .compare-label.good { color: var(--green); }
+
+  footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--muted); letter-spacing: 2px; position: relative; z-index: 1; }
+  footer span { color: var(--neon); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) { header h1 { font-size: 16px; } .section-title { font-size: 8px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — Memory Debugging ✦</span>
+  <h1><span>VALGRIND</span></h1>
+  <p class="header-sub">Zéro leak. Zéro erreur. Zéro compromis.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ C'EST QUOI VALGRIND ══════════════ -->
+  <div class="section-title">C'EST QUOI VALGRIND ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔬</span> DÉFINITION — COMPRENDRE L'OUTIL</div>
+    <p><strong style="color:var(--neon)">Valgrind</strong> est un framework d'analyse dynamique de programmes. Son outil principal, <strong style="color:var(--neon)">Memcheck</strong>, surveille <strong style="color:var(--cyan)">chaque accès mémoire</strong> de ton programme en temps réel et détecte les fuites mémoire, les accès invalides, les utilisations de mémoire non initialisée, etc.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Valgrind c'est un <strong>anti-triche invisible</strong> dans ton jeu. Il enveloppe ton programme entier et surveille <em>chaque</em> octet de mémoire que tu touches. Si tu accèdes à une zone interdite, si tu oublies de libérer une zone, si tu lis une valeur que tu n'as jamais écrite — il te le signale immédiatement avec l'adresse exacte et la pile d'appels.</p>
+    </div>
+
+    <div class="grid-3" style="margin-top:16px;">
+      <div style="background:rgba(181,78,255,0.05); border:1px solid rgba(181,78,255,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:22px; margin-bottom:6px;">🧠</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--neon); margin-bottom:6px;">MEMCHECK</div>
+        <p style="font-size:12px; color:var(--muted);">Outil principal. Détecte leaks et accès invalides</p>
+      </div>
+      <div style="background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:22px; margin-bottom:6px;">📊</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--cyan); margin-bottom:6px;">CALLGRIND</div>
+        <p style="font-size:12px; color:var(--muted);">Profiling de performance et comptage d'instructions</p>
+      </div>
+      <div style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:22px; margin-bottom:6px;">🏔️</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--green); margin-bottom:6px;">MASSIF</div>
+        <p style="font-size:12px; color:var(--muted);">Profiling du heap — suivre l'usage mémoire dans le temps</p>
+      </div>
+    </div>
+
+    <div class="quiz">À Holberton, on utilise presque exclusivement <strong>Memcheck</strong> (l'outil par défaut). Quand on dit "lancer Valgrind", on parle de Memcheck.</div>
+  </div>
+
+  <!-- ══════════════ INSTALLATION ══════════════ -->
+  <div class="section-title">INSTALLATION ET PRÉREQUIS</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">⚙️</span> INSTALLER ET PRÉPARER</div>
+    <pre><code><span class="cmt"># Installer Valgrind</span>
+sudo apt-get install valgrind
+
+<span class="cmt"># Vérifier la version</span>
+valgrind --version
+<span class="vg-ok">valgrind-3.18.1</span>
+
+<span class="cmt"># ⚠️ OBLIGATOIRE — Compiler avec -g pour avoir les numéros de lignes</span>
+gcc -Wall -Werror -Wextra <span class="vg-ok">-g</span> main.c -o prog
+
+<span class="cmt"># Sans -g, Valgrind signale les erreurs mais sans numéros de lignes :</span>
+<span class="vg-warn">==123== at 0x401130: main (in /home/user/prog)   ← adresse seulement</span>
+<span class="cmt"># Avec -g :</span>
+<span class="vg-ok">==123== at 0x401130: main (main.c:12)            ← ligne précise ✅</span></code></pre>
+    <div class="clarif"><strong style="color:var(--neon)">Valgrind ralentit l'exécution</strong> de 10 à 50x car il surveille chaque accès mémoire. C'est normal — c'est uniquement pour le debug, jamais en production.</div>
+  </div>
+
+  <!-- ══════════════ COMMANDES ESSENTIELLES ══════════════ -->
+  <div class="section-title">LES COMMANDES — DU BASIQUE AU COMPLET</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🚀</span> LANCER VALGRIND</div>
+    <pre><code><span class="cmt"># Commande de base (Memcheck implicite)</span>
+valgrind <span class="vg-warn">./prog</span>
+
+<span class="cmt"># ✅ Commande RECOMMANDÉE Holberton — la plus complète</span>
+valgrind <span class="vg-warn">--leak-check=full</span> <span class="vg-warn">--show-leak-kinds=all</span> <span class="vg-warn">--track-origins=yes</span> <span class="vg-warn">--verbose</span> <span class="vg-warn">./prog</span>
+
+<span class="cmt"># Avec des arguments (argv)</span>
+valgrind --leak-check=full ./prog <span class="vg-head">arg1 arg2</span>
+
+<span class="cmt"># Sauvegarder le rapport dans un fichier</span>
+valgrind --leak-check=full --log-file=<span class="vg-head">rapport.txt</span> ./prog
+
+<span class="cmt"># Spécifier l'outil explicitement</span>
+valgrind --tool=<span class="vg-head">memcheck</span> --leak-check=full ./prog</code></pre>
+
+    <div class="quiz">La commande exacte attendue à Holberton : <code>valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./prog</code> — à connaître par cœur.</div>
+  </div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🎛️</span> LES OPTIONS — TOUTES EXPLIQUÉES</div>
+    <table class="macro-table">
+      <thead><tr><th>Option</th><th>Ce qu'elle fait</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="macro-name">--leak-check=no</span></td>
+          <td>Pas de rapport de leaks (rapide, juste les erreurs d'accès)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--leak-check=summary</span></td>
+          <td>Résumé des leaks seulement (défaut)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--leak-check=full</span></td>
+          <td>✅ Rapport complet avec stack trace pour chaque leak</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--show-leak-kinds=all</span></td>
+          <td>✅ Affiche TOUS les types de leaks (definitely, indirectly, possibly, reachable)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--show-leak-kinds=definite</span></td>
+          <td>Affiche seulement les leaks certains</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--track-origins=yes</span></td>
+          <td>✅ Trace l'origine des valeurs non initialisées (plus lent mais précieux)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--verbose</span></td>
+          <td>✅ Mode verbeux — plus d'informations dans le rapport</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--error-exitcode=N</span></td>
+          <td>Retourne le code N si des erreurs sont détectées (utile en CI/CD)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--log-file=fichier.txt</span></td>
+          <td>Sauvegarder le rapport dans un fichier</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--suppressions=fichier</span></td>
+          <td>Ignorer certaines erreurs connues (bibliothèques tierces)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--tool=callgrind</span></td>
+          <td>Utiliser un autre outil que Memcheck</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">--num-callers=N</span></td>
+          <td>Nombre de frames à afficher dans la stack trace (défaut: 12)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════ LIRE LA SORTIE ══════════════ -->
+  <div class="section-title">LIRE LA SORTIE VALGRIND — DÉCRYPTER CHAQUE LIGNE</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">📄</span> ANATOMIE D'UNE SORTIE VALGRIND</div>
+    <pre><code><span class="vg-info">==12345==</span> <span class="cmt">← PID du processus (change à chaque exécution)</span>
+<span class="vg-info">==12345==</span> Memcheck, a memory error detector
+<span class="vg-info">==12345==</span> Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+<span class="vg-info">==12345==</span> Using Valgrind-3.18.1 and LibVEX; ...
+<span class="vg-info">==12345==</span>
+
+<span class="cmt"># ── SI TON PROGRAMME A DES ARGUMENTS ──────────────────</span>
+<span class="vg-head">==12345== Command: ./prog arg1 arg2</span>
+
+<span class="cmt"># ── UNE ERREUR D'ACCÈS INVALIDE ────────────────────────</span>
+<span class="vg-err">==12345== Invalid read of size 4</span>               <span class="cmt">← type d'erreur + taille</span>
+<span class="vg-info">==12345==</span>    at <span class="vg-addr">0x401155: main (main.c:12)</span>      <span class="cmt">← où (fichier:ligne)</span>
+<span class="vg-info">==12345==</span>  Address <span class="vg-addr">0x5204040</span> is 0 bytes after a block of size <span class="vg-size">16</span> alloc'd
+<span class="vg-info">==12345==</span>    at <span class="vg-addr">0x4848899: malloc (in .../vgpreload_memcheck...)</span>
+<span class="vg-info">==12345==</span>    by <span class="vg-addr">0x401140: main (main.c:8)</span>        <span class="cmt">← où le malloc a été fait</span>
+
+<span class="cmt"># ── LE HEAP SUMMARY ────────────────────────────────────</span>
+<span class="vg-head">==12345== HEAP SUMMARY:</span>
+<span class="vg-info">==12345==</span>     in use at exit: <span class="vg-err">40 bytes in 1 blocks</span>   <span class="cmt">← mémoire non libérée</span>
+<span class="vg-info">==12345==</span>   total heap usage: <span class="vg-warn">3 allocs, 2 frees</span>, <span class="vg-size">72 bytes allocated</span>
+<span class="cmt">                              ↑ 3 malloc, 2 free → 1 oublié !</span>
+
+<span class="cmt"># ── LE LEAK SUMMARY ────────────────────────────────────</span>
+<span class="vg-head">==12345== LEAK SUMMARY:</span>
+<span class="vg-err">==12345==    definitely lost: 40 bytes in 1 blocks</span>   <span class="cmt">← leak certain</span>
+<span class="vg-warn">==12345==    indirectly lost: 0 bytes in 0 blocks</span>
+<span class="vg-warn">==12345==      possibly lost: 0 bytes in 0 blocks</span>
+<span class="vg-info">==12345==    still reachable: 0 bytes in 0 blocks</span>
+<span class="vg-info">==12345==         suppressed: 0 bytes in 0 blocks</span>
+
+<span class="cmt"># ── L'ERROR SUMMARY ────────────────────────────────────</span>
+<span class="vg-err">==12345== ERROR SUMMARY: 2 errors from 2 contexts</span>   <span class="cmt">← résumé final</span>
+
+<span class="cmt"># ── RÉSULTAT PARFAIT ───────────────────────────────────</span>
+<span class="vg-ok">==12345== All heap blocks were freed -- no leaks are possible</span>
+<span class="vg-ok">==12345== ERROR SUMMARY: 0 errors from 0 contexts</span>   <span class="cmt">← ✅ parfait !</span></code></pre>
+
+    <div class="clarif"><strong style="color:var(--neon)">Le PID (==12345==)</strong> préfixe chaque ligne. C'est le numéro du processus — il change à chaque lancement. C'est normal, c'est juste Valgrind qui identifie son processus de monitoring.</div>
+  </div>
+
+  <!-- ══════════════ TYPES DE LEAKS ══════════════ -->
+  <div class="section-title">LES 4 TYPES DE LEAKS — LES COMPRENDRE TOUS</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔴</span> DEFINITELY LOST VS REACHABLE VS POSSIBLE</div>
+
+    <div class="err-type definitely">
+      <div class="err-name">💀 DEFINITELY LOST</div>
+      <div class="err-desc">La mémoire a été allouée mais <strong>aucun pointeur ne pointe plus vers elle</strong>. Elle est définitivement perdue — impossible à libérer même si tu voulais. <strong>C'est le leak le plus grave, le seul inacceptable à Holberton.</strong></div>
+      <pre><code><span class="kw">void</span> <span class="fn">func</span>() {
+    <span class="type">int</span> *p = malloc(<span class="num">40</span>);
+    <span class="cmt">/* p sort de scope → adresse perdue → DEFINITELY LOST */</span>
+}
+<span class="vg-err">definitely lost: 40 bytes in 1 blocks</span></code></pre>
+    </div>
+
+    <div class="err-type indirectly">
+      <div class="err-name">🟠 INDIRECTLY LOST</div>
+      <div class="err-desc">Mémoire perdue à cause d'un <strong>definitely lost</strong> parent. Le bloc est accessible seulement depuis un bloc déjà perdu. Si tu fixes le definitely lost, l'indirectly lost disparaît aussi.</div>
+      <pre><code><span class="kw">typedef struct</span> { <span class="type">int</span> *data; } Node;
+Node *n = malloc(<span class="kw">sizeof</span>(Node));
+n->data = malloc(<span class="num">10</span>);
+<span class="cmt">/* Si on perd n → n->data est INDIRECTLY LOST */</span>
+<span class="vg-warn">indirectly lost: 10 bytes in 1 blocks</span></code></pre>
+    </div>
+
+    <div class="err-type possibly">
+      <div class="err-name">🟡 POSSIBLY LOST</div>
+      <div class="err-desc">Valgrind a trouvé un pointeur vers <strong>l'intérieur</strong> d'un bloc malloc (pas vers son début). Peut être un vrai leak ou un pointeur arithmétique intentionnel. Rare en C simple.</div>
+      <pre><code><span class="type">int</span> *arr = malloc(<span class="num">5</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+arr++;  <span class="cmt">/* ptr ne pointe plus sur le début ! */</span>
+<span class="cmt">/* free(arr) serait faux → POSSIBLY LOST */</span>
+<span class="vg-warn">possibly lost: 16 bytes in 1 blocks</span></code></pre>
+    </div>
+
+    <div class="err-type reachable">
+      <div class="err-name">🟣 STILL REACHABLE</div>
+      <div class="err-desc">Mémoire encore accessible via un pointeur au moment de la fin du programme (variable globale, pointeur encore en scope). <strong>Pas un vrai leak</strong> — Holberton l'accepte généralement. Mais à éviter par bonne pratique.</div>
+      <pre><code><span class="type">int</span> *global = malloc(<span class="num">20</span>); <span class="cmt">/* variable globale */</span>
+<span class="kw">int</span> <span class="fn">main</span>() { <span class="kw">return</span> (<span class="num">0</span>); }  <span class="cmt">/* oubli de free(global) */</span>
+<span class="vg-info">still reachable: 20 bytes in 1 blocks</span></code></pre>
+    </div>
+
+    <div class="err-type ok">
+      <div class="err-name">✅ RÉSULTAT PARFAIT (0 bytes)</div>
+      <div class="err-desc">Tout a été libéré proprement. C'est le seul résultat acceptable pour un projet Holberton.</div>
+      <pre><code><span class="vg-ok">All heap blocks were freed -- no leaks are possible
+ERROR SUMMARY: 0 errors from 0 contexts</span></code></pre>
+    </div>
+
+    <div class="quiz">Question classique de quiz : <strong>Quelle différence entre "definitely lost" et "still reachable" ?</strong> → Definitely lost = plus aucun pointeur vers le bloc. Still reachable = un pointeur existe encore mais <code>free()</code> n'a pas été appelé.</div>
+  </div>
+
+  <!-- ══════════════ TYPES D'ERREURS ══════════════ -->
+  <div class="section-title">LES ERREURS MÉMOIRE DÉTECTÉES PAR VALGRIND</div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">💥</span> INVALID READ / INVALID WRITE</div>
+    <p style="margin-bottom:12px;">Accès à une adresse mémoire invalide — hors des limites d'un bloc, après un free, ou via un pointeur nul.</p>
+    <pre><code><span class="cmt">/* Cas 1 : lecture hors limites (buffer overflow) */</span>
+<span class="type">int</span> *arr = malloc(<span class="num">5</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="type">int</span> x = arr[<span class="num">5</span>];  <span class="cmt">/* index 5 hors des 5 éléments (0 à 4) ! */</span>
+<span class="vg-err">==123== Invalid read of size 4</span>
+<span class="vg-info">==123==</span>    at 0x401155: main (main.c:6)
+<span class="vg-info">==123==</span>  Address 0x5204054 is 0 bytes after a block of size <span class="vg-size">20</span> alloc'd
+
+<span class="cmt">/* Cas 2 : écriture après free (use-after-free) */</span>
+free(arr);
+arr[<span class="num">0</span>] = <span class="num">42</span>;  <span class="cmt">/* écriture sur mémoire libérée ! */</span>
+<span class="vg-err">==123== Invalid write of size 4</span>
+<span class="vg-info">==123==</span>    at 0x401160: main (main.c:9)
+<span class="vg-info">==123==</span>  Address 0x5204040 is 0 bytes inside a block of size 20 <span class="vg-err">free'd</span></code></pre>
+    <div class="clarif"><strong style="color:var(--neon)">Lire le "size N"</strong> — c'est la taille de l'accès en octets : size 1 = char, size 4 = int, size 8 = long/pointeur. Ça t'aide à deviner le type impliqué.</div>
+  </div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">❓</span> USE OF UNINITIALISED VALUE</div>
+    <p style="margin-bottom:12px;">Lecture d'une variable dont la valeur n'a jamais été assignée. Valgrind détecte aussi quand une décision (if/while) dépend d'une valeur non initialisée.</p>
+    <pre><code><span class="type">int</span> x;              <span class="cmt">/* déclarée mais pas initialisée */</span>
+<span class="kw">if</span> (x > <span class="num">0</span>)          <span class="cmt">/* lecture de garbage ! */</span>
+    printf(<span class="str">"positif\n"</span>);
+
+<span class="vg-err">==123== Conditional jump or move depends on uninitialised value(s)</span>
+<span class="vg-info">==123==</span>    at 0x401140: main (main.c:4)
+
+<span class="cmt">/* Avec --track-origins=yes, Valgrind te dit où x a été créé */</span>
+<span class="vg-warn">==123==  Uninitialised value was created by a stack allocation</span>
+<span class="vg-info">==123==</span>    at 0x401130: main (main.c:2)  ← ligne de déclaration</span></code></pre>
+    <div class="tip"><code>--track-origins=yes</code> est crucial pour ce type d'erreur — sans lui, Valgrind signale où la valeur est <em>utilisée</em>, mais pas où elle a été <em>créée</em>.</div>
+  </div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">♻️</span> INVALID FREE / DOUBLE FREE</div>
+    <pre><code><span class="cmt">/* Double free — libérer deux fois le même bloc */</span>
+<span class="type">int</span> *p = malloc(<span class="num">40</span>);
+free(p);
+free(p);   <span class="cmt">/* ❌ */</span>
+
+<span class="vg-err">==123== Invalid free() / delete / delete[] / realloc()</span>
+<span class="vg-info">==123==</span>    at 0x484B27F: free (vg_replace_malloc.c:872)
+<span class="vg-info">==123==</span>    by 0x401155: main (main.c:5)
+<span class="vg-info">==123==</span>  Address 0x5204040 is 0 bytes inside a block of size 40 <span class="vg-err">free'd</span>
+<span class="vg-info">==123==</span>    at 0x484B27F: free (...)
+<span class="vg-info">==123==</span>    by 0x401150: main (main.c:4)  ← premier free ici</span>
+
+<span class="cmt">/* Free sur une variable non-malloc (stack) */</span>
+<span class="type">int</span> x = <span class="num">5</span>;
+free(&x);   <span class="cmt">/* ❌ x est sur la stack ! */</span>
+
+<span class="vg-err">==123== Invalid free() / delete / delete[] / realloc()</span>
+<span class="vg-info">==123==</span>  Address 0x... is on thread 1's stack</span></code></pre>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔗</span> INVALID READ/WRITE SIZE — MISMATCHED FREE</div>
+    <pre><code><span class="cmt">/* Mauvais appel de free (new/delete mismatch — plus courant en C++) */</span>
+
+<span class="cmt">/* En C — oubli du \0 dans un malloc de string */</span>
+<span class="type">char</span> *s = malloc(<span class="num">5</span>);   <span class="cmt">/* 5 chars mais "hello" fait 6 avec \0 */</span>
+strcpy(s, <span class="str">"hello"</span>);    <span class="cmt">/* écrit hors limites ! */</span>
+
+<span class="vg-err">==123== Invalid write of size 1</span>
+<span class="vg-info">==123==</span>    at 0x...: strcpy (in .../mc_replace_strmem.c)
+<span class="vg-info">==123==</span>    by 0x401150: main (main.c:4)
+<span class="vg-info">==123==</span>  Address 0x5204045 is 0 bytes after a block of size <span class="vg-size">5</span> alloc'd</code></pre>
+    <div class="warn">Le piège classique à Holberton : <code>malloc(strlen(str))</code> au lieu de <code>malloc(strlen(str) + 1)</code>. Valgrind le détecte avec "Invalid write of size 1".</div>
+  </div>
+
+  <!-- ══════════════ LIRE LE HEAP SUMMARY ══════════════ -->
+  <div class="section-title">LIRE LE HEAP SUMMARY — COMPTER LES ALLOCS/FREES</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🧮</span> COMPRENDRE LE HEAP SUMMARY</div>
+    <pre><code><span class="vg-head">HEAP SUMMARY:</span>
+    in use at exit: <span class="vg-size">72 bytes in 3 blocks</span>     <span class="cmt">← mémoire non libérée en fin de prog</span>
+  total heap usage: <span class="vg-warn">5 allocs, 2 frees</span>, <span class="vg-size">1,024 bytes allocated</span>
+<span class="cmt">                    ↑ 5 malloc    ↑ 2 free → 3 malloc non libérés → 3 leaks !</span></code></pre>
+
+    <div class="grid-2" style="margin-top:12px;">
+      <div>
+        <div class="compare-label bad">❌ MAUVAIS — leaks présents</div>
+        <pre><code><span class="vg-head">HEAP SUMMARY:</span>
+  in use at exit: <span class="vg-err">40 bytes in 1 blocks</span>
+  total heap usage: <span class="vg-warn">3 allocs, 2 frees</span>
+<span class="vg-head">LEAK SUMMARY:</span>
+<span class="vg-err">  definitely lost: 40 bytes</span></code></pre>
+      </div>
+      <div>
+        <div class="compare-label good">✅ PARFAIT — 0 leak</div>
+        <pre><code><span class="vg-head">HEAP SUMMARY:</span>
+  in use at exit: <span class="vg-ok">0 bytes in 0 blocks</span>
+  total heap usage: <span class="vg-ok">3 allocs, 3 frees</span>
+<span class="vg-ok">All heap blocks were freed --
+no leaks are possible</span></code></pre>
+      </div>
+    </div>
+
+    <div class="quiz"><strong>Règle mathématique :</strong> nombre de <code>free()</code> doit égaler le nombre de <code>malloc()</code>. Si "5 allocs, 3 frees" → 2 leaks garantis. Le nombre dans "in use at exit" doit être 0.</div>
+  </div>
+
+  <!-- ══════════════ CALLOC / REALLOC ══════════════ -->
+  <div class="section-title">CALLOC ET REALLOC — AUSSI TRACKÉS PAR VALGRIND</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🔄</span> VALGRIND SURVEILLE TOUTES LES ALLOCATIONS</div>
+    <p style="margin-bottom:12px;">Valgrind trace <strong style="color:var(--neon)">toutes</strong> les fonctions d'allocation — pas seulement <code>malloc</code>. Chaque appel compte dans le HEAP SUMMARY.</p>
+    <table class="macro-table">
+      <thead><tr><th>Fonction</th><th>Comptée comme</th><th>Nécessite</th></tr></thead>
+      <tbody>
+        <tr><td><span class="macro-name">malloc(size)</span></td><td>1 alloc</td><td>1 <code>free()</code></td></tr>
+        <tr><td><span class="macro-name">calloc(n, size)</span></td><td>1 alloc</td><td>1 <code>free()</code></td></tr>
+        <tr><td><span class="macro-name">realloc(ptr, size)</span></td><td>1 alloc + 1 free implicite</td><td>1 <code>free()</code> final</td></tr>
+        <tr><td><span class="macro-name">strdup(str)</span></td><td>1 alloc (malloc interne)</td><td>1 <code>free()</code></td></tr>
+      </tbody>
+    </table>
+
+    <pre><code><span class="cmt">/* calloc — alloue ET initialise à 0 */</span>
+<span class="type">int</span> *arr = calloc(<span class="num">5</span>, <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="cmt">/* Valgrind : 1 alloc de 20 bytes */</span>
+free(arr);   <span class="cmt">/* ✅ 1 free → 0 leak */</span>
+
+<span class="cmt">/* realloc — le piège classique */</span>
+<span class="type">int</span> *p = malloc(<span class="num">10</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+p = realloc(p, <span class="num">20</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));   <span class="cmt">/* ❌ SI realloc retourne NULL */</span>
+<span class="cmt">/* → p vaut NULL, l'ancien bloc est perdu → DEFINITELY LOST */</span>
+
+<span class="cmt">/* Fix — toujours utiliser un tmp avec realloc */</span>
+<span class="type">int</span> *tmp = realloc(p, <span class="num">20</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="kw">if</span> (tmp == <span class="kw">NULL</span>) { free(p); <span class="kw">return</span> (<span class="kw">NULL</span>); }  <span class="cmt">/* ✅ */</span>
+p = tmp;
+<span class="cmt">/* Heap summary : "2 allocs, 2 frees" ← realloc = 1 free + 1 alloc */</span></code></pre>
+
+    <div class="quiz"><strong>Question piège :</strong> Si tu fais 1 malloc + 1 realloc + 1 free, combien d'allocs/frees dans le HEAP SUMMARY ? → <strong>"2 allocs, 2 frees"</strong> — realloc libère l'ancien bloc et en alloue un nouveau.</div>
+  </div>
+
+  <!-- ══════════════ CAS PRATIQUES ══════════════ -->
+  <div class="section-title">CAS PRATIQUES — BUGS ET LEURS SORTIES VALGRIND</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🐛</span> CAS 1 — OUBLI DE FREE SUR UNE LINKED LIST</div>
+    <div class="score-badge bad">💀 DEFINITELY LOST</div>
+    <pre><code><span class="cmt">/* Code bugué — free_list manquant */</span>
+<span class="type">node_t</span> *head = <span class="kw">NULL</span>;
+<span class="fn">add_node</span>(&head, <span class="num">1</span>);
+<span class="fn">add_node</span>(&head, <span class="num">2</span>);
+<span class="fn">add_node</span>(&head, <span class="num">3</span>);
+<span class="kw">return</span> (<span class="num">0</span>);   <span class="cmt">/* ❌ oubli de free_list(head) */</span>
+
+<span class="cmt">/* Sortie Valgrind */</span>
+<span class="vg-head">HEAP SUMMARY:</span>
+    in use at exit: <span class="vg-err">48 bytes in 3 blocks</span>
+  total heap usage: <span class="vg-warn">3 allocs, 0 frees</span>, 48 bytes allocated
+
+<span class="vg-head">LEAK SUMMARY:</span>
+<span class="vg-err">   definitely lost: 16 bytes in 1 blocks</span>   <span class="cmt">← le head (perdu en 1er)</span>
+<span class="vg-warn">   indirectly lost: 32 bytes in 2 blocks</span>   <span class="cmt">← les 2 nœuds suivants</span>
+
+<span class="cmt">/* Fix : */</span>
+<span class="fn">free_list</span>(head);
+<span class="kw">return</span> (<span class="num">0</span>);   <span class="cmt">/* ✅ */</span></code></pre>
+  </div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🐛</span> CAS 2 — MALLOC SANS +1 POUR \0</div>
+    <div class="score-badge bad">💥 INVALID WRITE</div>
+    <pre><code><span class="cmt">/* Code bugué */</span>
+<span class="type">char</span> *s = malloc(strlen(<span class="str">"hello"</span>));   <span class="cmt">/* 5 bytes, mais besoin de 6 */</span>
+strcpy(s, <span class="str">"hello"</span>);                   <span class="cmt">/* écrit le \0 hors limites */</span>
+
+<span class="vg-err">==123== Invalid write of size 1</span>
+<span class="vg-info">==123==</span>    at 0x...: strcpy (mc_replace_strmem.c)
+<span class="vg-info">==123==</span>    by 0x401150: main (main.c:5)
+<span class="vg-info">==123==</span>  Address is 0 bytes after a block of size <span class="vg-size">5</span> alloc'd
+
+<span class="cmt">/* Fix : */</span>
+<span class="type">char</span> *s = malloc(strlen(<span class="str">"hello"</span>) + <span class="num">1</span>);  <span class="cmt">/* ✅ +1 pour \0 */</span></code></pre>
+  </div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🐛</span> CAS 3 — VARIABLE NON INITIALISÉE</div>
+    <div class="score-badge bad">❓ UNINITIALISED VALUE</div>
+    <pre><code><span class="cmt">/* Code bugué */</span>
+<span class="type">int</span> result;                  <span class="cmt">/* non initialisée */</span>
+<span class="kw">if</span> (argc > <span class="num">1</span>)
+    result = atoi(argv[<span class="num">1</span>]);
+printf(<span class="str">"%d\n"</span>, result);      <span class="cmt">/* si argc == 1, result = garbage ! */</span>
+
+<span class="vg-err">==123== Use of uninitialised value of size 4</span>
+<span class="vg-info">==123==</span>    at 0x...: printf (...)
+<span class="vg-info">==123==</span>    by 0x401160: main (main.c:6)
+<span class="vg-warn">==123==  Uninitialised value was created by a stack allocation</span>
+<span class="vg-info">==123==</span>    at 0x401130: main (main.c:2)    ← ligne de déclaration
+
+<span class="cmt">/* Fix : */</span>
+<span class="type">int</span> result = <span class="num">0</span>;              <span class="cmt">/* ✅ toujours initialiser */</span></code></pre>
+  </div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🐛</span> CAS 4 — LIBÉRATION PARTIELLE D'UNE STRUCT</div>
+    <div class="score-badge bad">💀 DEFINITELY LOST</div>
+    <pre><code><span class="kw">typedef struct</span> {
+    <span class="type">char</span> *name;   <span class="cmt">/* mallocé séparément */</span>
+    <span class="type">int</span>   age;
+} user_t;
+
+user_t *u = malloc(<span class="kw">sizeof</span>(user_t));
+u->name = malloc(<span class="num">20</span>);
+strcpy(u->name, <span class="str">"Alice"</span>);
+
+free(u);   <span class="cmt">/* ❌ oubli de free(u->name) avant ! */</span>
+
+<span class="vg-err">==123== definitely lost: 20 bytes in 1 blocks</span>   <span class="cmt">← u->name perdu</span>
+<span class="vg-info">==123==</span>    at 0x401170: main (main.c:10)
+
+<span class="cmt">/* Fix — toujours libérer dans l'ordre inverse */</span>
+free(u->name);   <span class="cmt">/* ✅ 1. libérer les champs d'abord */</span>
+free(u);         <span class="cmt">/* ✅ 2. libérer la struct ensuite */</span></code></pre>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🐛</span> CAS 5 — REALLOC SANS TMP (le leak invisible)</div>
+    <div class="score-badge bad">💀 DEFINITELY LOST</div>
+    <pre><code><span class="cmt">/* Code bugué — realloc direct sans variable temporaire */</span>
+<span class="type">int</span> *arr = malloc(<span class="num">5</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+arr = realloc(arr, <span class="num">10</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));  <span class="cmt">/* ❌ si realloc retourne NULL */</span>
+<span class="cmt">/* arr vaut NULL, l'ancien bloc est inaccessible → DEFINITELY LOST */</span>
+<span class="cmt">/* ET on ne peut même plus faire free(arr) car arr == NULL */</span>
+
+<span class="vg-head">HEAP SUMMARY:</span>
+    in use at exit: <span class="vg-err">20 bytes in 1 blocks</span>   <span class="cmt">← l'ancien bloc perdu</span>
+<span class="vg-head">LEAK SUMMARY:</span>
+<span class="vg-err">   definitely lost: 20 bytes in 1 blocks</span>
+
+<span class="cmt">/* Fix — TOUJOURS utiliser un tmp */</span>
+<span class="type">int</span> *arr = malloc(<span class="num">5</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="type">int</span> *tmp = realloc(arr, <span class="num">10</span> * <span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="kw">if</span> (tmp == <span class="kw">NULL</span>)
+{
+    free(arr);       <span class="cmt">/* ✅ arr est encore valide si realloc échoue */</span>
+    <span class="kw">return</span> (<span class="kw">NULL</span>);
+}
+arr = tmp;           <span class="cmt">/* ✅ seulement si succès */</span>
+free(arr);</code></pre>
+    <div class="warn">Ce bug est particulièrement vicieux car il n'apparaît que si le système manque de mémoire — difficile à reproduire. Prends l'habitude systématique d'utiliser un tmp avec realloc.</div>
+  </div>
+
+  <!-- ══════════════ BONNES PRATIQUES ══════════════ -->
+  <div class="section-title">BONNES PRATIQUES — PASSER VALGRIND À COUP SÛR</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🏆</span> LES RÈGLES D'OR POUR UN VALGRIND PROPRE</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;">1 malloc = 1 free — sans exception</strong>
+          <p style="font-size:14px;color:var(--muted);">Chaque bloc alloué doit être libéré exactement une fois. Ni deux fois (double free), ni zéro fois (leak).</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot green"></div>
+        <div>
+          <strong style="color:var(--green);font-size:16px;">Toujours +1 pour les strings</strong>
+          <p style="font-size:14px;color:var(--muted);"><code>malloc(strlen(str) + 1)</code> — sans le +1, le <code>\0</code> écrit hors limites et Valgrind le détecte.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div>
+          <strong style="color:var(--cyan);font-size:16px;">Libérer dans l'ordre inverse d'allocation</strong>
+          <p style="font-size:14px;color:var(--muted);">Pour une struct avec des champs mallocés : libérer les champs d'abord, la struct en dernier. Pour une liste : libérer nœud par nœud, jamais juste le head.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot yellow"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:16px;">Gérer les chemins d'erreur</strong>
+          <p style="font-size:14px;color:var(--muted);">Si malloc échoue au milieu d'une fonction, libérer ce qui a déjà été alloué avant de retourner NULL.</p>
+          <pre><code><span class="type">node_t</span> *n = malloc(<span class="kw">sizeof</span>(<span class="type">node_t</span>));
+<span class="kw">if</span> (!n) <span class="kw">return</span> (<span class="kw">NULL</span>);
+n->name = malloc(<span class="num">20</span>);
+<span class="kw">if</span> (!n->name) {
+    free(n);         <span class="cmt">/* ✅ libérer ce qui est déjà alloué */</span>
+    <span class="kw">return</span> (<span class="kw">NULL</span>);
+}</code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot pink"></div>
+        <div>
+          <strong style="color:var(--pink);font-size:16px;">Initialiser toutes les variables</strong>
+          <p style="font-size:14px;color:var(--muted);">Déclarer avec une valeur initiale : <code>int x = 0;</code>, <code>char *p = NULL;</code>. Valgrind détecte les lectures de variables non initialisées.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot purple" style="border-color:var(--neon); box-shadow: 0 0 8px var(--neon); background:var(--neon);"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;">Ne jamais accéder hors des limites</strong>
+          <p style="font-size:14px;color:var(--muted);">Un tableau de N éléments : indices valides de 0 à N-1. <code>arr[N]</code> est invalide — Valgrind le voit.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ QUIZ RÉCAP ══════════════ -->
+  <div class="section-title">QUIZ — LES QUESTIONS TYPIQUES DU JEUDI</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🎯</span> 10 QUESTIONS / RÉPONSES POUR ÊTRE INCOLLABLE</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q1 — Que détecte Valgrind ?</strong>
+          <p style="font-size:14px;color:var(--text);">Les fuites mémoire, les accès invalides (invalid read/write), l'utilisation de valeurs non initialisées, les double free et les free invalides.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q2 — Pourquoi compiler avec -g ?</strong>
+          <p style="font-size:14px;color:var(--text);">Sans <code>-g</code>, Valgrind affiche des adresses hexadécimales sans noms de fichiers ni numéros de lignes, rendant le rapport inutilisable pour déboguer.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q3 — Quelle est la différence entre "definitely lost" et "still reachable" ?</strong>
+          <p style="font-size:14px;color:var(--text);">"Definitely lost" : aucun pointeur ne pointe plus vers le bloc — irrécupérable. "Still reachable" : un pointeur existe encore mais <code>free()</code> n'a pas été appelé.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q4 — Que signifie "3 allocs, 2 frees" dans le HEAP SUMMARY ?</strong>
+          <p style="font-size:14px;color:var(--text);">Trois appels à malloc/calloc/realloc ont été faits, mais seulement deux <code>free()</code> ont été appelés. Il reste 1 bloc non libéré. Selon si un pointeur pointe encore vers lui, ce sera "definitely lost" ou "still reachable".</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q5 — Quel résultat est attendu par Holberton ?</strong>
+          <p style="font-size:14px;color:var(--text);"><code>All heap blocks were freed -- no leaks are possible</code> ET <code>ERROR SUMMARY: 0 errors from 0 contexts</code>. Attention : certains "still reachable" liés aux buffers internes de stdio (<code>printf</code>, etc.) peuvent apparaître et sont tolérés par Holberton. Le "definitely lost" lui, est toujours inacceptable.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q6 — À quoi sert --track-origins=yes ?</strong>
+          <p style="font-size:14px;color:var(--text);">Il trace l'origine des valeurs non initialisées — Valgrind indique non seulement où la valeur est <em>utilisée</em>, mais aussi où la variable a été <em>créée</em> (déclarée sans initialisation). Sans cette option, tu sais qu'une valeur est non initialisée, mais pas où elle a été déclarée.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q7 — Qu'est-ce qu'un "Invalid read of size 4" ?</strong>
+          <p style="font-size:14px;color:var(--text);">Lecture de 4 octets (un int) à une adresse invalide : hors des limites d'un malloc, après un free (use-after-free), ou via un pointeur NULL/non initialisé. Le "size N" indique la taille de l'accès : 1=char, 4=int, 8=pointeur/long.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q8 — Valgrind peut-il trouver des bugs dans du code sans malloc ?</strong>
+          <p style="font-size:14px;color:var(--text);">Oui — il détecte aussi l'utilisation de variables locales non initialisées (stack), les lectures hors limites de tableaux locaux, et les accès invalides en général. La détection de mémoire ne se limite pas au heap.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q9 — Qu'est-ce qu'un "indirectly lost" ?</strong>
+          <p style="font-size:14px;color:var(--text);">Mémoire accessible seulement depuis un bloc "definitely lost". Par exemple, les nœuds d'une linked list dont le head est perdu. Corriger le "definitely lost" parent élimine automatiquement l'"indirectly lost".</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q10 — Quel est l'outil par défaut de Valgrind ?</strong>
+          <p style="font-size:14px;color:var(--text);"><strong>Memcheck</strong> — c'est l'outil implicite quand tu lances <code>valgrind ./prog</code>. Les autres outils doivent être spécifiés avec <code>--tool=</code>. Les principaux : <strong>Callgrind</strong> (performance), <strong>Massif</strong> (usage heap), <strong>Helgrind</strong> (data races en multi-thread).</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q11 — À quoi sert Helgrind ?</strong>
+          <p style="font-size:14px;color:var(--text);"><strong>Helgrind</strong> détecte les <strong>data races</strong> dans les programmes multi-threadés — situations où deux threads accèdent à la même donnée sans synchronisation. On l'utilise avec <code>valgrind --tool=helgrind ./prog</code>. Différent de Memcheck qui lui se concentre sur la mémoire.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;">Q12 — Que fait --error-exitcode=1 ?</strong>
+          <p style="font-size:14px;color:var(--text);">Valgrind retourne le code de sortie 1 si des erreurs sont détectées, au lieu du code de sortie du programme. Utilisé dans les scripts de vérification automatique (CI/CD) à Holberton pour qu'un projet "fail" automatiquement si Valgrind trouve des erreurs.</p>
+          <pre><code>valgrind --leak-check=full --error-exitcode=<span class="num">1</span> ./prog
+echo $?   <span class="cmt"># → 1 si erreurs, 0 si clean</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ FINAL ══════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CARTE MENTALE COMPLÈTE</div>
+    <pre><code><span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  COMMANDE HOLBERTON STANDARD                                     ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+gcc -g -Wall -Werror -Wextra main.c -o prog
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./prog
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  LES 4 TYPES DE LEAKS (du plus grave au moins grave)             ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="vg-err">definitely lost</span>  → plus aucun pointeur vers le bloc   ← inacceptable !
+<span class="vg-warn">indirectly lost</span>  → accessible via un "definitely lost" ← corriger le parent
+<span class="vg-warn">possibly lost</span>    → pointeur vers l'intérieur d'un bloc ← rare en C simple
+<span class="vg-info">still reachable</span>  → pointeur existe mais pas de free()  ← acceptable (mais éviter)
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  LES TYPES D'ERREURS MÉMOIRE                                     ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="vg-err">Invalid read/write of size N</span>    → accès hors limites ou après free
+<span class="vg-err">Use of uninitialised value</span>      → variable lue sans avoir été initialisée
+<span class="vg-err">Invalid free()</span>                  → double free ou free d'une variable stack
+<span class="vg-err">Conditional jump on uninit...</span>   → if/while basé sur valeur non initialisée
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  RÉSULTAT PARFAIT ATTENDU PAR HOLBERTON                          ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="vg-ok">in use at exit: 0 bytes in 0 blocks</span>
+<span class="vg-ok">All heap blocks were freed -- no leaks are possible</span>
+<span class="vg-ok">ERROR SUMMARY: 0 errors from 0 contexts</span>
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  RÈGLES D'OR                                                     ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="cmt"># ✅ 1 malloc = 1 free — sans exception</span>
+<span class="cmt"># ✅ malloc(strlen(s) + 1) pour les strings — toujours +1</span>
+<span class="cmt"># ✅ Libérer champs AVANT la struct</span>
+<span class="cmt"># ✅ realloc → toujours utiliser un tmp, jamais p = realloc(p, ...)</span>
+<span class="cmt"># ✅ Gérer les chemins d'erreur (free ce qui est déjà alloué)</span>
+<span class="cmt"># ✅ Initialiser toutes les variables à la déclaration</span>
+<span class="cmt"># ✅ Indices de 0 à N-1 — jamais arr[N]</span>
+<span class="cmt"># ✅ calloc/strdup/realloc comptent aussi comme des allocs</span>
+<span class="cmt"># ❌ Double free → crash + invalid free Valgrind</span>
+<span class="cmt"># ❌ Free sur variable locale (stack) → invalid free</span>
+<span class="cmt"># ❌ Lire/écrire après free → invalid read/write</span>
+<span class="cmt"># ❌ "definitely lost" JAMAIS acceptable — "still reachable" parfois toléré</span></code></pre>
+  </div>
+
+</div>
+
+<footer>
+  <span>0 LEAKS — 0 ERRORS</span> — MALLOC WITH CARE. FREE WITH HONOR.<br><br>
+  <span>Holberton School</span> — Valgrind — Memory Error Detector
+</footer>
+
+</body>
+</html>
