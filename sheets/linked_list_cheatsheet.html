@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linked List — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #0f0a05;
+    --card:   #181005;
+    --border: #2e1f08;
+    --neon:   #ff6b00;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --text:   #e0d0c0;
+    --muted:  #705040;
+    --white:  #fff5ee;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(255,107,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,107,0,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; position: relative; z-index: 1; }
+
+  header { text-align: center; padding: 60px 20px 40px; position: relative; z-index: 1; }
+  .tag { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--neon); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; display: block; }
+  header h1 { font-family: 'Press Start 2P', monospace; font-size: clamp(14px, 2.5vw, 22px); color: var(--white); line-height: 1.7; text-shadow: 0 0 20px rgba(255,107,0,0.5), 0 0 40px rgba(255,107,0,0.2); margin-bottom: 20px; }
+  header h1 span { color: var(--neon); }
+  .header-sub { font-size: 18px; color: var(--muted); letter-spacing: 2px; }
+
+  .section-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--neon); letter-spacing: 2px; margin: 50px 0 20px; display: flex; align-items: center; gap: 12px; }
+  .section-title::before { content: '▶'; color: var(--pink); font-size: 10px; animation: blink 1s step-end infinite; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--neon), transparent); }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+
+  .card-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--neon); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green .card-title  { color: var(--green); }
+  .card.pink .card-title   { color: var(--pink); }
+  .card.purple .card-title { color: var(--purple); }
+  .card-icon { font-size: 16px; }
+
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre { background: #0e0800; border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; font-size: 13px; line-height: 1.8; margin-top: 12px; }
+  code { background: rgba(255,107,0,0.1); color: var(--neon); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  .kw   { color: var(--pink); }
+  .fn   { color: var(--neon); }
+  .type { color: var(--purple); }
+  .str  { color: var(--cyan); }
+  .num  { color: var(--yellow); }
+  .cmt  { color: var(--muted); font-style: italic; }
+  .ok   { color: var(--green); }
+  .hi   { color: var(--yellow); font-weight: bold; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .analogy { background: linear-gradient(135deg, #150c03, #0f0800); border: 1px solid var(--yellow); border-left: 4px solid var(--yellow); border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .analogy-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  .tip  { background: rgba(57,255,20,0.05); border: 1px solid rgba(57,255,20,0.3); border-left: 4px solid var(--green); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .warn { background: rgba(255,45,120,0.05); border: 1px solid rgba(255,45,120,0.3); border-left: 4px solid var(--pink); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .clarif { background: rgba(181,78,255,0.07); border: 1px solid rgba(181,78,255,0.35); border-left: 4px solid var(--purple); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .tip::before    { content: '✅ '; }
+  .warn::before   { content: '⚠️ '; }
+  .clarif::before { content: '💡 '; }
+
+  .macro-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; font-size: 13px; margin-top: 12px; }
+  .macro-table th { background: var(--border); color: var(--neon); padding: 10px 14px; text-align: left; font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; }
+  .macro-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .macro-table tr:hover td { background: rgba(255,107,0,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; }
+
+  .level-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--border); border: 1px solid var(--purple); border-radius: 4px; padding: 4px 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--purple); margin-bottom: 16px; }
+
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--bg); background: var(--neon); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  .skill-tree { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 24px; }
+  .skill-tree::before { content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(to bottom, var(--neon), var(--purple)); }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--neon); background: var(--bg); flex-shrink: 0; margin-left: -24px; margin-top: 3px; box-shadow: 0 0 8px var(--neon); }
+  .skill-dot.done   { background: var(--neon); }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.pink   { border-color: var(--pink);   box-shadow: 0 0 8px var(--pink);   background: var(--pink); }
+  .skill-dot.purple { border-color: var(--purple); box-shadow: 0 0 8px var(--purple); background: var(--purple); }
+
+  /* LINKED LIST VISUAL */
+  .ll-visual { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 16px 0; overflow-x: auto; padding: 8px 0; }
+  .ll-node { display: flex; flex-direction: column; align-items: center; }
+  .ll-box { display: flex; border: 2px solid var(--neon); border-radius: 6px; overflow: hidden; background: var(--card); }
+  .ll-data { padding: 10px 14px; font-family: 'Share Tech Mono', monospace; font-size: 15px; color: var(--neon); font-weight: bold; border-right: 1px solid var(--border); min-width: 50px; text-align: center; }
+  .ll-ptr { padding: 10px 10px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--purple); min-width: 40px; text-align: center; }
+  .ll-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 6px; }
+  .ll-arrow { font-size: 24px; color: var(--yellow); padding: 0 4px; margin-bottom: 20px; }
+  .ll-null { padding: 10px 14px; border: 2px solid var(--pink); border-radius: 6px; font-family: 'Share Tech Mono', monospace; font-size: 14px; color: var(--pink); font-weight: bold; margin-bottom: 20px; }
+
+  .ll-box.head-node { border-color: var(--yellow); }
+  .ll-box.head-node .ll-data { color: var(--yellow); }
+
+  /* HEAD LABEL */
+  .ll-head-label { font-family: 'Press Start 2P', monospace; font-size: 6px; color: var(--yellow); margin-bottom: 6px; }
+
+  footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--muted); letter-spacing: 2px; position: relative; z-index: 1; }
+  footer span { color: var(--neon); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) { header h1 { font-size: 12px; } .section-title { font-size: 8px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — C Programming ✦</span>
+  <h1>LINKED<br><span>LISTS</span></h1>
+  <p class="header-sub">Des nœuds. Des pointeurs. Une chaîne.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ C'EST QUOI ══════════════ -->
+  <div class="section-title">C'EST QUOI UNE LINKED LIST ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔗</span> DÉFINITION — PARTIR DE ZÉRO</div>
+    <p>Une <strong style="color:var(--neon)">linked list</strong> (liste chaînée) est une structure de données où chaque élément — appelé <strong style="color:var(--neon)">nœud (node)</strong> — contient deux choses : une <strong style="color:var(--cyan)">donnée</strong> et un <strong style="color:var(--purple)">pointeur vers le nœud suivant</strong>. Les nœuds sont éparpillés dans le heap, liés entre eux par ces pointeurs.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Imagine une <strong>quête en chaîne dans un RPG</strong> : le PNJ A te dit "va voir le PNJ B", le PNJ B te dit "va voir le PNJ C", et ainsi de suite jusqu'au dernier qui te dit "c'est terminé" (NULL). Chaque PNJ <strong>contient son info + l'adresse du suivant</strong>. Si tu veux insérer un nouveau PNJ entre A et B, tu changes juste les pointeurs — pas besoin de tout réorganiser.</p>
+    </div>
+
+    <p style="margin-top:14px; margin-bottom:10px; font-weight:700; color:var(--white);">Visualisation d'une linked list <code>[42 → 7 → 13 → NULL]</code> :</p>
+
+    <div class="ll-visual">
+      <div class="ll-node">
+        <div class="ll-head-label">HEAD ▼</div>
+        <div class="ll-box head-node">
+          <div class="ll-data">42</div>
+          <div class="ll-ptr">next*</div>
+        </div>
+        <div class="ll-label">node 1</div>
+      </div>
+      <div class="ll-arrow">→</div>
+      <div class="ll-node">
+        <div class="ll-head-label" style="color:transparent;">_</div>
+        <div class="ll-box">
+          <div class="ll-data">7</div>
+          <div class="ll-ptr">next*</div>
+        </div>
+        <div class="ll-label">node 2</div>
+      </div>
+      <div class="ll-arrow">→</div>
+      <div class="ll-node">
+        <div class="ll-head-label" style="color:transparent;">_</div>
+        <div class="ll-box">
+          <div class="ll-data">13</div>
+          <div class="ll-ptr">next*</div>
+        </div>
+        <div class="ll-label">node 3</div>
+      </div>
+      <div class="ll-arrow">→</div>
+      <div class="ll-node">
+        <div class="ll-head-label" style="color:transparent;">_</div>
+        <div class="ll-null">NULL</div>
+      </div>
+    </div>
+
+    <div class="clarif"><strong style="color:var(--purple)">HEAD</strong> est le seul pointeur que tu gardes. C'est le point d'entrée de ta liste. Si tu perds <code>head</code>, tu perds toute la liste (les nœuds existent encore en mémoire mais sont inaccessibles → memory leak).</div>
+  </div>
+
+  <!-- ══════════════ TABLEAU vs LINKED LIST ══════════════ -->
+  <div class="section-title">TABLEAU vs LINKED LIST — QUAND CHOISIR ?</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">⚖️</span> COMPARAISON COMPLÈTE</div>
+    <table class="macro-table">
+      <thead>
+        <tr><th>Critère</th><th style="color:var(--cyan);">Tableau (array)</th><th style="color:var(--neon);">Linked List</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="macro-name">Taille</span></td>
+          <td style="color:var(--cyan);">Fixe à la déclaration</td>
+          <td style="color:var(--neon);">✅ Dynamique, grandit/rétrécit</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">Accès à l'élément N</span></td>
+          <td style="color:var(--cyan);">✅ Instantané : <code>arr[3]</code></td>
+          <td>❌ Doit parcourir depuis HEAD</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">Insertion en début</span></td>
+          <td>❌ Décaler tout → O(n)</td>
+          <td style="color:var(--neon);">✅ Changer HEAD → O(1)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">Insertion en milieu</span></td>
+          <td>❌ Décaler → O(n)</td>
+          <td style="color:var(--neon);">✅ Changer 2 pointeurs → O(1)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">Suppression</span></td>
+          <td>❌ Décaler → O(n)</td>
+          <td style="color:var(--neon);">✅ Changer 1 pointeur → O(1)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">Mémoire</span></td>
+          <td style="color:var(--cyan);">✅ Contiguë, compacte</td>
+          <td>❌ Overhead du pointeur (8 bytes/nœud)</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">Cache CPU</span></td>
+          <td style="color:var(--cyan);">✅ Très rapide (localité)</td>
+          <td>❌ Nœuds éparpillés → cache miss</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">Taille connue à l'avance ?</span></td>
+          <td style="color:var(--cyan);">✅ Oui → utilise un tableau</td>
+          <td style="color:var(--neon);">✅ Non → utilise une linked list</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════ STRUCTURE ══════════════ -->
+  <div class="section-title">DÉCLARER LA STRUCTURE D'UN NŒUD</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🧱</span> LA STRUCT NODE — LA BASE DE TOUT</div>
+    <pre><code><span class="cmt">/* Convention Holberton : tag _s, typedef _t */</span>
+
+<span class="kw">typedef struct</span> <span class="type">node_s</span>
+{
+    <span class="type">int</span>            n;      <span class="cmt">/* la donnée (peut être n'importe quel type) */</span>
+    <span class="kw">struct</span> <span class="type">node_s</span> *next;  <span class="cmt">/* pointeur vers le nœud suivant */</span>
+} <span class="type">node_t</span>;
+
+<span class="cmt">/* ⚠️ On DOIT écrire struct node_s *next (pas node_t *next)
+   car le typedef n'est pas encore connu à ce stade */</span>
+
+<span class="cmt">/* Le dernier nœud a next = NULL — c'est la sentinelle de fin */</span></code></pre>
+
+    <div class="clarif"><strong style="color:var(--purple)">Pourquoi <code>struct node_s *next</code> et pas <code>node_t *next</code> ?</strong> Parce que dans une struct, on ne peut pas utiliser un typedef qui n'est pas encore défini. On utilise le tag complet <code>struct node_s</code> qui, lui, est déjà connu à ce stade de la déclaration.</div>
+
+    <p style="margin-top:14px; font-size:15px;">Chaque nœud en mémoire ressemble à ça :</p>
+    <pre><code><span class="cmt">  Adresse 0x100        Adresse 0x200       Adresse 0x300</span>
+  ┌──────────┬───────┐ ┌──────────┬───────┐ ┌──────────┬───────┐
+  │  n = 42  │ 0x200 │→│  n = 7   │ 0x300 │→│  n = 13  │ NULL  │
+  └──────────┴───────┘ └──────────┴───────┘ └──────────┴───────┘
+     data      next        data      next       data      next
+  <span class="cmt">  (les nœuds sont éparpillés dans le HEAP, pas contigus)</span></code></pre>
+  </div>
+
+  <!-- ══════════════ CRÉER UN NŒUD ══════════════ -->
+  <div class="section-title">CRÉER ET AJOUTER DES NŒUDS</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🆕</span> CRÉER UN NŒUD — NEW_NODE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="type">node_t</span> *<span class="fn">new_node</span>(<span class="type">int</span> n)
+{
+    <span class="type">node_t</span> *node;
+
+    node = malloc(<span class="kw">sizeof</span>(<span class="type">node_t</span>));
+    <span class="kw">if</span> (node == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);           <span class="cmt">/* toujours vérifier malloc ! */</span>
+    node->n    = n;              <span class="cmt">/* assigner la donnée */</span>
+    node->next = <span class="kw">NULL</span>;          <span class="cmt">/* le nouveau nœud pointe vers rien */</span>
+    <span class="kw">return</span> (node);
+}</code></pre>
+  </div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">➕</span> ADD EN DÉBUT — ADD_NODE (le plus simple)</div>
+    <p style="margin-bottom:12px;">Ajouter en début de liste est <strong style="color:var(--green)">O(1)</strong> — la plus rapide des insertions.</p>
+    <pre><code><span class="type">node_t</span> *<span class="fn">add_node</span>(<span class="type">node_t</span> **head, <span class="type">int</span> n)
+{
+    <span class="type">node_t</span> *node = <span class="fn">new_node</span>(n);
+
+    <span class="kw">if</span> (node == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+
+    node->next = *head;  <span class="cmt">/* le nouveau pointe vers l'ancien head */</span>
+    *head = node;        <span class="cmt">/* head devient le nouveau nœud */</span>
+    <span class="kw">return</span> (node);
+}
+
+<span class="cmt">/* ⚠️ node_t **head = pointeur VERS le pointeur head
+   On a besoin de ** pour MODIFIER head depuis la fonction
+   (sinon on modifie une copie locale) */</span></code></pre>
+
+    <p style="margin-top:12px; margin-bottom:8px; font-size:14px; color:var(--muted);">Visualisation — ajouter 99 en tête :</p>
+    <pre><code><span class="cmt">Avant :  head → [42|*] → [7|*] → [13|NULL]
+
+Étapes :
+1. Créer node [99|*]
+2. node->next = head        → [99|*] → [42|*] → [7|*] → [13|NULL]
+3. head = node              → head pointe maintenant sur [99]
+
+Après :  head → [99|*] → [42|*] → [7|*] → [13|NULL]</span></code></pre>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">➕</span> ADD EN FIN — ADD_NODE_END</div>
+    <p style="margin-bottom:12px;">Ajouter à la fin nécessite de parcourir toute la liste jusqu'au dernier nœud — <strong style="color:var(--neon)">O(n)</strong>.</p>
+    <pre><code><span class="type">node_t</span> *<span class="fn">add_node_end</span>(<span class="type">node_t</span> **head, <span class="type">int</span> n)
+{
+    <span class="type">node_t</span> *node = <span class="fn">new_node</span>(n);
+    <span class="type">node_t</span> *tmp;
+
+    <span class="kw">if</span> (node == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+
+    <span class="kw">if</span> (*head == <span class="kw">NULL</span>)         <span class="cmt">/* liste vide → le nœud devient head */</span>
+    {
+        *head = node;
+        <span class="kw">return</span> (node);
+    }
+    tmp = *head;
+    <span class="kw">while</span> (tmp->next != <span class="kw">NULL</span>)  <span class="cmt">/* parcourir jusqu'au dernier */</span>
+        tmp = tmp->next;
+    tmp->next = node;           <span class="cmt">/* l'ancien dernier pointe vers le nouveau */</span>
+    <span class="kw">return</span> (node);
+}</code></pre>
+  </div>
+
+  <!-- ══════════════ PARCOURIR ══════════════ -->
+  <div class="section-title">PARCOURIR UNE LINKED LIST</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🔍</span> TRAVERSER LA LISTE — LE PATTERN DE BASE</div>
+    <pre><code><span class="cmt">/* Afficher tous les nœuds */</span>
+<span class="type">void</span> <span class="fn">print_list</span>(<span class="type">node_t</span> *head)
+{
+    <span class="type">node_t</span> *current = head;  <span class="cmt">/* on travaille sur une copie du pointeur */</span>
+
+    <span class="kw">while</span> (current != <span class="kw">NULL</span>)
+    {
+        printf(<span class="str">"%d\n"</span>, current->n);
+        current = current->next; <span class="cmt">/* avancer au nœud suivant */</span>
+    }
+}
+
+<span class="cmt">/* Compter les nœuds */</span>
+<span class="type">size_t</span> <span class="fn">list_len</span>(<span class="type">node_t</span> *head)
+{
+    <span class="type">size_t</span>  len = <span class="num">0</span>;
+    <span class="type">node_t</span> *current = head;
+
+    <span class="kw">while</span> (current != <span class="kw">NULL</span>)
+    {
+        len++;
+        current = current->next;
+    }
+    <span class="kw">return</span> (len);
+}
+
+<span class="cmt">/* Chercher un élément */</span>
+<span class="type">node_t</span> *<span class="fn">search</span>(<span class="type">node_t</span> *head, <span class="type">int</span> target)
+{
+    <span class="kw">while</span> (head != <span class="kw">NULL</span>)
+    {
+        <span class="kw">if</span> (head->n == target)
+            <span class="kw">return</span> (head);     <span class="cmt">/* trouvé ! retourner le nœud */</span>
+        head = head->next;
+    }
+    <span class="kw">return</span> (<span class="kw">NULL</span>);             <span class="cmt">/* pas trouvé */</span>
+}</code></pre>
+    <div class="clarif"><strong style="color:var(--purple)">Le pattern universel :</strong> <code>node_t *tmp = head; while (tmp != NULL) { ... tmp = tmp->next; }</code>. Mémorise ce pattern — c'est la base de 90% des opérations sur les linked lists.</div>
+  </div>
+
+  <!-- ══════════════ SUPPRIMER ══════════════ -->
+  <div class="section-title">SUPPRIMER DES NŒUDS</div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🗑️</span> FREE — LIBÉRER CORRECTEMENT</div>
+    <pre><code><span class="cmt">/* Supprimer le premier nœud (pop front) */</span>
+<span class="type">node_t</span> *<span class="fn">pop_front</span>(<span class="type">node_t</span> **head)
+{
+    <span class="type">node_t</span> *tmp;
+
+    <span class="kw">if</span> (*head == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);          <span class="cmt">/* liste vide */</span>
+    tmp = *head;               <span class="cmt">/* sauvegarder le nœud à supprimer */</span>
+    *head = (*head)->next;     <span class="cmt">/* head passe au suivant */</span>
+    free(tmp);                 <span class="cmt">/* libérer l'ancien head */</span>
+    <span class="kw">return</span> (*head);
+}
+
+<span class="cmt">/* Libérer TOUTE la liste — INDISPENSABLE pour valgrind ✅ */</span>
+<span class="type">void</span> <span class="fn">free_list</span>(<span class="type">node_t</span> *head)
+{
+    <span class="type">node_t</span> *tmp;
+
+    <span class="kw">while</span> (head != <span class="kw">NULL</span>)
+    {
+        tmp  = head->next;  <span class="cmt">/* sauvegarder le suivant AVANT de free */</span>
+        free(head);         <span class="cmt">/* libérer le nœud actuel */</span>
+        head = tmp;         <span class="cmt">/* avancer */</span>
+    }
+}
+
+<span class="cmt">/* Supprimer un nœud par valeur */</span>
+<span class="type">void</span> <span class="fn">delete_node</span>(<span class="type">node_t</span> **head, <span class="type">int</span> n)
+{
+    <span class="type">node_t</span> *tmp = *head;
+    <span class="type">node_t</span> *prev = <span class="kw">NULL</span>;
+
+    <span class="kw">while</span> (tmp != <span class="kw">NULL</span> && tmp->n != n)
+    {
+        prev = tmp;
+        tmp  = tmp->next;
+    }
+    <span class="kw">if</span> (tmp == <span class="kw">NULL</span>) <span class="kw">return</span>;   <span class="cmt">/* pas trouvé */</span>
+    <span class="kw">if</span> (prev == <span class="kw">NULL</span>)            <span class="cmt">/* c'était le head */</span>
+        *head = tmp->next;
+    <span class="kw">else</span>
+        prev->next = tmp->next;  <span class="cmt">/* court-circuiter le nœud */</span>
+    free(tmp);
+}</code></pre>
+    <div class="warn">Dans <code>free_list</code>, toujours sauvegarder <code>head->next</code> dans <code>tmp</code> AVANT de <code>free(head)</code>. Sinon tu accèdes à de la mémoire déjà libérée → undefined behavior.</div>
+  </div>
+
+  <!-- ══════════════ 3 BOSS ══════════════ -->
+  <div class="section-title">LES 3 BOSS — EXEMPLES PROGRESSIFS</div>
+
+  <!-- BOSS 1 -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🐣</span> BOSS 1 — CRÉER ET AFFICHER UNE LISTE</div>
+    <div class="level-badge">⚔️ LVL 1 — FACILE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="kw">typedef struct</span> <span class="type">node_s</span> {
+    <span class="type">int</span>            n;
+    <span class="kw">struct</span> <span class="type">node_s</span> *next;
+} <span class="type">node_t</span>;
+
+<span class="type">node_t</span> *<span class="fn">add_node</span>(<span class="type">node_t</span> **head, <span class="type">int</span> n)
+{
+    <span class="type">node_t</span> *node = malloc(<span class="kw">sizeof</span>(<span class="type">node_t</span>));
+    <span class="kw">if</span> (!node) <span class="kw">return</span> (<span class="kw">NULL</span>);
+    node->n    = n;
+    node->next = *head;
+    *head = node;
+    <span class="kw">return</span> (node);
+}
+
+<span class="type">void</span> <span class="fn">print_list</span>(<span class="type">node_t</span> *head)
+{
+    <span class="kw">while</span> (head)
+    {
+        printf(<span class="str">"[%d] → "</span>, head->n);
+        head = head->next;
+    }
+    printf(<span class="str">"NULL\n"</span>);
+}
+
+<span class="type">void</span> <span class="fn">free_list</span>(<span class="type">node_t</span> *head)
+{
+    <span class="type">node_t</span> *tmp;
+    <span class="kw">while</span> (head) { tmp = head->next; free(head); head = tmp; }
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    <span class="type">node_t</span> *head = <span class="kw">NULL</span>;  <span class="cmt">/* liste vide = NULL */</span>
+
+    <span class="fn">add_node</span>(&head, <span class="num">13</span>);
+    <span class="fn">add_node</span>(&head, <span class="num">7</span>);
+    <span class="fn">add_node</span>(&head, <span class="num">42</span>);
+    <span class="fn">print_list</span>(head);   <span class="cmt">/* [42] → [7] → [13] → NULL */</span>
+    <span class="fn">free_list</span>(head);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+  </div>
+
+  <!-- BOSS 2 -->
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> BOSS 2 — INVERSER UNE LISTE</div>
+    <div class="level-badge">🔥 LVL 2 — INTERMÉDIAIRE</div>
+    <pre><code><span class="cmt">/* Inverser la liste en place — O(n) temps, O(1) espace */</span>
+<span class="type">node_t</span> *<span class="fn">reverse_list</span>(<span class="type">node_t</span> **head)
+{
+    <span class="type">node_t</span> *prev    = <span class="kw">NULL</span>;
+    <span class="type">node_t</span> *current = *head;
+    <span class="type">node_t</span> *next;
+
+    <span class="kw">while</span> (current != <span class="kw">NULL</span>)
+    {
+        next           = current->next;  <span class="cmt">/* sauvegarder le suivant */</span>
+        current->next  = prev;           <span class="cmt">/* inverser le pointeur */</span>
+        prev           = current;        <span class="cmt">/* avancer prev */</span>
+        current        = next;           <span class="cmt">/* avancer current */</span>
+    }
+    *head = prev;  <span class="cmt">/* prev est maintenant le nouveau head */</span>
+    <span class="kw">return</span> (*head);
+}
+
+<span class="cmt">/* Visualisation étape par étape :
+   Avant  : head → [42] → [7] → [13] → NULL
+   iter 1 :  NULL ← [42]   [7] → [13] → NULL
+   iter 2 :  NULL ← [42] ← [7]   [13] → NULL
+   iter 3 :  NULL ← [42] ← [7] ← [13]
+   Après  : head → [13] → [7] → [42] → NULL */</span></code></pre>
+  </div>
+
+  <!-- BOSS FINAL -->
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">💀</span> BOSS FINAL — LISTE TRIÉE (INSERT SORTED)</div>
+    <div class="level-badge">💀 LVL 3 — HOLBERTON STYLE</div>
+    <pre><code><span class="cmt">/* Insérer un nœud en maintenant la liste triée */</span>
+<span class="type">node_t</span> *<span class="fn">insert_sorted</span>(<span class="type">node_t</span> **head, <span class="type">int</span> n)
+{
+    <span class="type">node_t</span> *node = malloc(<span class="kw">sizeof</span>(<span class="type">node_t</span>));
+    <span class="type">node_t</span> *tmp;
+
+    <span class="kw">if</span> (!node) <span class="kw">return</span> (<span class="kw">NULL</span>);
+    node->n    = n;
+    node->next = <span class="kw">NULL</span>;
+
+    <span class="cmt">/* Cas 1 : liste vide ou n plus petit que le head */</span>
+    <span class="kw">if</span> (*head == <span class="kw">NULL</span> || n <= (*head)->n)
+    {
+        node->next = *head;
+        *head = node;
+        <span class="kw">return</span> (node);
+    }
+    <span class="cmt">/* Cas 2 : chercher la bonne position */</span>
+    tmp = *head;
+    <span class="kw">while</span> (tmp->next != <span class="kw">NULL</span> && tmp->next->n < n)
+        tmp = tmp->next;
+    node->next = tmp->next;  <span class="cmt">/* insérer entre tmp et tmp->next */</span>
+    tmp->next  = node;
+    <span class="kw">return</span> (node);
+}
+
+<span class="cmt">/* Résultat :
+   insert_sorted(&head, 5) sur [1] → [3] → [7] → NULL
+   → [1] → [3] → [5] → [7] → NULL ✅ */</span></code></pre>
+  </div>
+
+  <!-- ══════════════ ERREURS CLASSIQUES ══════════════ -->
+  <div class="section-title">ERREURS CLASSIQUES — ❌ vs ✅</div>
+
+  <div class="grid-2">
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">❌</span> ERREURS FRÉQUENTES</div>
+      <pre><code><span class="cmt">/* 1. Oublier de sauvegarder next avant free */</span>
+free(head);
+head = head->next;  <span class="cmt">/* ❌ accès mémoire libérée */</span>
+
+<span class="cmt">/* 2. Modifier head directement (sans **) */</span>
+<span class="type">void</span> <span class="fn">add</span>(<span class="type">node_t</span> *head, <span class="type">int</span> n)
+{
+    head = new_node; <span class="cmt">/* ❌ modifie une copie locale */</span>
+}
+
+<span class="cmt">/* 3. Oublier de vérifier malloc */</span>
+node->n = n;  <span class="cmt">/* ❌ si malloc a retourné NULL */</span>
+
+<span class="cmt">/* 4. Oublier de free_list → valgrind pleure */</span>
+<span class="kw">return</span> (<span class="num">0</span>);  <span class="cmt">/* ❌ sans free_list(head) */</span>
+
+<span class="cmt">/* 5. Perdre le head */</span>
+head = head->next;  <span class="cmt">/* ❌ si c'est le seul pointeur */</span></code></pre>
+    </div>
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> CORRECT</div>
+      <pre><code><span class="cmt">/* 1. Sauvegarder next avant free */</span>
+tmp  = head->next;  <span class="cmt">/* ✅ sauvegarder d'abord */</span>
+free(head);
+head = tmp;
+
+<span class="cmt">/* 2. Passer le HEAD par double pointeur */</span>
+<span class="type">void</span> <span class="fn">add</span>(<span class="type">node_t</span> **head, <span class="type">int</span> n)
+{
+    *head = new_node; <span class="cmt">/* ✅ modifie le vrai head */</span>
+}
+
+<span class="cmt">/* 3. Toujours vérifier malloc */</span>
+<span class="kw">if</span> (!node) <span class="kw">return</span> (<span class="kw">NULL</span>);  <span class="cmt">/* ✅ */</span>
+node->n = n;
+
+<span class="cmt">/* 4. Toujours libérer */</span>
+<span class="fn">free_list</span>(head);
+<span class="kw">return</span> (<span class="num">0</span>);  <span class="cmt">/* ✅ valgrind content */</span>
+
+<span class="cmt">/* 5. Utiliser un tmp pour parcourir */</span>
+<span class="type">node_t</span> *tmp = head;  <span class="cmt">/* ✅ head est préservé */</span>
+tmp = tmp->next;</code></pre>
+    </div>
+  </div>
+
+  <!-- ══════════════ DOUBLE LINKED LIST ══════════════ -->
+  <div class="section-title">BONUS — DOUBLE LINKED LIST</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">🔗🔗</span> LISTE DOUBLEMENT CHAÎNÉE</div>
+    <p style="margin-bottom:12px;">Chaque nœud a deux pointeurs : <code>next</code> (suivant) <strong>et</strong> <code>prev</code> (précédent). On peut parcourir dans les deux sens.</p>
+    <pre><code><span class="kw">typedef struct</span> <span class="type">dnode_s</span>
+{
+    <span class="type">int</span>             n;
+    <span class="kw">struct</span> <span class="type">dnode_s</span> *next;  <span class="cmt">/* → suivant */</span>
+    <span class="kw">struct</span> <span class="type">dnode_s</span> *prev;  <span class="cmt">/* ← précédent */</span>
+} <span class="type">dnode_t</span>;</code></pre>
+
+    <p style="margin-top:12px; margin-bottom:8px; font-size:14px; color:var(--muted);">Visualisation :</p>
+    <pre><code><span class="cmt">  NULL ← [42|*↔*] ↔ [7|*↔*] ↔ [13|*↔*] → NULL
+          head                    tail</span></code></pre>
+
+    <table class="macro-table" style="margin-top:14px;">
+      <thead><tr><th>Type</th><th>Avantages</th><th>Inconvénients</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="macro-name">Singly (simple)</span></td>
+          <td>Moins de mémoire, plus simple</td>
+          <td>Parcours dans un seul sens</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">Doubly (double)</span></td>
+          <td>Parcours dans les 2 sens, suppression O(1)</td>
+          <td>2× plus de pointeurs à gérer</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ ══════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CARTE MENTALE COMPLÈTE</div>
+    <pre><code><span class="cmt">/*
+ *  LA STRUCTURE DE BASE
+ *  ────────────────────────────────────────────────────────
+ *  typedef struct node_s {
+ *      int            n;
+ *      struct node_s *next;   ← struct node_s PAS node_t !
+ *  } node_t;
+ *
+ *  node_t *head = NULL;       ← liste vide = NULL
+ *
+ *  LE PATTERN UNIVERSEL DE PARCOURS
+ *  ────────────────────────────────────────────────────────
+ *  node_t *tmp = head;
+ *  while (tmp != NULL)
+ *  {
+ *      [... faire quelque chose avec tmp->n ...]
+ *      tmp = tmp->next;
+ *  }
+ *
+ *  LES OPÉRATIONS CLÉS
+ *  ────────────────────────────────────────────────────────
+ *  Ajouter en tête   → O(1) — changer head
+ *  Ajouter en fin    → O(n) — parcourir jusqu'à NULL
+ *  Rechercher        → O(n) — parcourir et comparer
+ *  Supprimer         → O(n) — trouver + court-circuiter
+ *  Libérer tout      → free_list(head) — OBLIGATOIRE valgrind
+ *
+ *  LES RÈGLES D'OR
+ *  ────────────────────────────────────────────────────────
+ *  1. Ne JAMAIS perdre le pointeur head
+ *  2. Toujours utiliser **head pour modifier head en fonction
+ *  3. Toujours sauvegarder tmp->next AVANT de free(tmp)
+ *  4. Toujours vérifier malloc != NULL
+ *  5. Toujours appeler free_list(head) avant return dans main
+ *  6. head = NULL → liste vide (toujours initialiser à NULL)
+ */</span></code></pre>
+  </div>
+
+</div>
+
+<footer>
+  <span>LIST TRAVERSED</span> — NODE BY NODE, POINTER BY POINTER<br><br>
+  Merci Noham pour la suggestion 🔗 — <span>Holberton School</span>
+</footer>
+
+</body>
+</html>

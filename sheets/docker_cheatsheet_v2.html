@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker — Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #0f080a;
+    --card:   #180d10;
+    --border: #2e1520;
+    --neon:   #ff2d78;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text:   #e0c8ce;
+    --muted:  #704050;
+    --white:  #fff0f3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(255,45,120,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,45,120,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; position: relative; z-index: 1; }
+
+  header { text-align: center; padding: 60px 20px 40px; position: relative; z-index: 1; }
+  .tag { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--neon); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; display: block; }
+  header h1 { font-family: 'Press Start 2P', monospace; font-size: clamp(20px, 3.5vw, 36px); color: var(--white); line-height: 1.5; text-shadow: 0 0 20px rgba(255,45,120,0.5), 0 0 40px rgba(255,45,120,0.2); margin-bottom: 20px; }
+  header h1 span { color: var(--neon); }
+  .header-sub { font-size: 18px; color: var(--muted); letter-spacing: 2px; }
+
+  .section-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--neon); letter-spacing: 2px; margin: 50px 0 20px; display: flex; align-items: center; gap: 12px; }
+  .section-title::before { content: '▶'; color: var(--cyan); font-size: 10px; animation: blink 1s step-end infinite; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--neon), transparent); }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--neon); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green .card-title  { color: var(--green); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.orange .card-title { color: var(--orange); }
+  .card-icon { font-size: 16px; }
+
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre { background: #0e0508; border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; font-size: 13px; line-height: 1.9; margin-top: 12px; }
+  code { background: rgba(255,45,120,0.1); color: var(--neon); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  .cmd  { color: var(--neon); font-weight: bold; }
+  .flag { color: var(--cyan); }
+  .arg  { color: var(--yellow); }
+  .str  { color: var(--green); }
+  .cmt  { color: var(--muted); font-style: italic; }
+  .ok   { color: var(--green); }
+  .kw   { color: var(--purple); }
+  .df-instr { color: var(--neon); font-weight: bold; }
+  .df-arg   { color: var(--yellow); }
+  .df-str   { color: var(--green); }
+  .df-cmt   { color: var(--muted); font-style: italic; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .analogy { background: linear-gradient(135deg, #150a0d, #0f0508); border: 1px solid var(--yellow); border-left: 4px solid var(--yellow); border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .analogy-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  .tip  { background: rgba(57,255,20,0.05); border: 1px solid rgba(57,255,20,0.3); border-left: 4px solid var(--green); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .warn { background: rgba(255,45,120,0.07); border: 1px solid rgba(255,45,120,0.4); border-left: 4px solid var(--neon); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .tip::before  { content: '✅ '; }
+  .warn::before { content: '⚠️ '; }
+
+  /* CLARIFICATION BOX */
+  .clarif { background: rgba(181,78,255,0.07); border: 1px solid rgba(181,78,255,0.35); border-left: 4px solid var(--purple); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .clarif::before { content: '💡 '; }
+
+  .macro-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; font-size: 13px; margin-top: 12px; }
+  .macro-table th { background: var(--border); color: var(--neon); padding: 10px 14px; text-align: left; font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; }
+  .macro-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .macro-table tr:hover td { background: rgba(255,45,120,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; font-family: 'Share Tech Mono', monospace; }
+
+  .level-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--border); border: 1px solid var(--purple); border-radius: 4px; padding: 4px 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--purple); margin-bottom: 16px; }
+
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--bg); background: var(--neon); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  .skill-tree { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 24px; }
+  .skill-tree::before { content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(to bottom, var(--neon), var(--purple)); }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--neon); background: var(--bg); flex-shrink: 0; margin-left: -24px; margin-top: 3px; box-shadow: 0 0 8px var(--neon); }
+  .skill-dot.done   { background: var(--neon); }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.purple { border-color: var(--purple); box-shadow: 0 0 8px var(--purple); background: var(--purple); }
+  .skill-dot.orange { border-color: var(--orange); box-shadow: 0 0 8px var(--orange); background: var(--orange); }
+
+  /* FLOW */
+  .flow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0; margin: 16px 0; }
+  .flow-box { background: var(--border); border: 1px solid var(--neon); border-radius: 6px; padding: 10px 14px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--neon); text-align: center; line-height: 1.6; }
+  .flow-box.cyan   { border-color: var(--cyan);   color: var(--cyan); }
+  .flow-box.green  { border-color: var(--green);  color: var(--green); }
+  .flow-box.yellow { border-color: var(--yellow); color: var(--yellow); }
+  .flow-box.purple { border-color: var(--purple); color: var(--purple); }
+  .flow-arrow { font-size: 18px; color: var(--muted); padding: 0 8px; }
+
+  /* LIFECYCLE */
+  .lifecycle { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+  .lc-box { border-radius: 6px; padding: 8px 14px; font-family: 'Share Tech Mono', monospace; font-size: 12px; text-align: center; line-height: 1.5; }
+  .lc-box.created  { background: rgba(255,230,0,0.1);  border: 1px solid var(--yellow); color: var(--yellow); }
+  .lc-box.running  { background: rgba(57,255,20,0.1);  border: 1px solid var(--green);  color: var(--green); }
+  .lc-box.stopped  { background: rgba(255,107,0,0.1);  border: 1px solid var(--orange); color: var(--orange); }
+  .lc-box.deleted  { background: rgba(255,45,120,0.1); border: 1px solid var(--neon);   color: var(--neon); }
+  .lc-arrow { font-size: 12px; color: var(--muted); padding: 0 2px; font-family: 'Share Tech Mono', monospace; }
+
+  footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--muted); letter-spacing: 2px; position: relative; z-index: 1; }
+  footer span { color: var(--neon); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) { header h1 { font-size: 16px; } .section-title { font-size: 8px; } .flow { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Dev & DevOps — Conteneurisation ✦</span>
+  <h1><span>DOCKER</span></h1>
+  <p class="header-sub">Build. Ship. Run. Anywhere.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ C'EST QUOI ══════════════ -->
+  <div class="section-title">C'EST QUOI DOCKER ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🐳</span> DÉFINITION — POUR LES DÉBUTANTS</div>
+    <p><strong style="color:var(--neon)">Docker</strong> permet d'emballer ton application avec <strong style="color:var(--neon)">tout son environnement</strong> (dépendances, config, OS minimal) dans une boîte portable appelée <strong style="color:var(--cyan)">conteneur</strong>. Cette boîte tourne de façon <strong style="color:var(--green)">identique sur n'importe quelle machine</strong>.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Sans Docker, ton programme c'est comme un jeu qui ne marche que <strong>sur ta machine</strong> — "ça marche chez moi !" Un conteneur Docker c'est comme une <strong>cartouche de jeu</strong> : elle contient tout le nécessaire pour tourner, peu importe la console. Tu la copies, elle marche partout, à l'identique.</p>
+    </div>
+
+    <div class="grid-2" style="margin-top:16px;">
+      <div style="background:rgba(255,45,120,0.05); border:1px solid rgba(255,45,120,0.3); border-radius:8px; padding:16px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--neon); margin-bottom:10px;">📄 IMAGE</div>
+        <p style="font-size:14px; margin-bottom:6px;"><strong style="color:var(--white)">La recette.</strong> Un snapshot figé, en lecture seule, qui décrit l'environnement complet.</p>
+        <p style="font-size:13px; color:var(--muted)">→ Comme un ISO de jeu. Elle ne tourne pas toute seule.</p>
+      </div>
+      <div style="background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.3); border-radius:8px; padding:16px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--cyan); margin-bottom:10px;">📦 CONTENEUR</div>
+        <p style="font-size:14px; margin-bottom:6px;"><strong style="color:var(--white)">L'instance en cours.</strong> C'est une image qu'on a lancée — elle tourne, consomme de la RAM.</p>
+        <p style="font-size:13px; color:var(--muted)">→ Comme la partie en cours. Tu peux en lancer plusieurs depuis la même image.</p>
+      </div>
+    </div>
+
+    <div class="clarif" style="margin-top:14px;"><strong style="color:var(--purple)">Image ≠ Conteneur.</strong> Une image est statique (stockée sur disque). Un conteneur est dynamique (en mémoire, en train de tourner). On <strong>crée un conteneur à partir d'une image</strong>. On peut créer 10 conteneurs depuis la même image.</div>
+
+    <div style="margin-top:16px;">
+      <div class="flow">
+        <div class="flow-box yellow">Dockerfile<br><span style="font-size:5px;color:var(--muted);">la recette</span></div>
+        <div class="flow-arrow">→<br><span style="font-size:9px;color:var(--muted);">docker build</span></div>
+        <div class="flow-box">Image<br><span style="font-size:5px;color:var(--muted);">snapshot</span></div>
+        <div class="flow-arrow">→<br><span style="font-size:9px;color:var(--muted);">docker run</span></div>
+        <div class="flow-box cyan">Conteneur<br><span style="font-size:5px;color:var(--muted);">en vie</span></div>
+        <div class="flow-arrow">→<br><span style="font-size:9px;color:var(--muted);">docker stop</span></div>
+        <div class="flow-box" style="border-color:var(--orange);color:var(--orange);">Arrêté<br><span style="font-size:5px;color:var(--muted);">sur disque</span></div>
+        <div class="flow-arrow">→<br><span style="font-size:9px;color:var(--muted);">docker rm</span></div>
+        <div class="flow-box" style="border-color:var(--muted);color:var(--muted);">Supprimé<br><span style="font-size:5px;">disparu</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STOP VS RM ══════════════ -->
+  <div class="section-title">STOP VS RM — LA CONFUSION #1 DES DÉBUTANTS</div>
+
+  <div class="card pink fade-in" style="border-color: rgba(255,45,120,0.4);">
+    <div class="card-title"><span class="card-icon">🚨</span> COMPRENDRE STOP ET RM</div>
+
+    <p style="margin-bottom:14px;">C'est <strong style="color:var(--neon)">la confusion la plus fréquente</strong> chez les débutants Docker. Voici la différence :</p>
+
+    <div class="grid-2">
+      <div style="background:rgba(255,107,0,0.07); border:1px solid rgba(255,107,0,0.4); border-radius:8px; padding:16px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--orange); margin-bottom:10px;">docker stop</div>
+        <p style="font-size:15px; margin-bottom:8px;"><strong style="color:var(--white)">Éteint le conteneur.</strong></p>
+        <p style="font-size:14px; color:var(--muted);">Comme <strong style="color:var(--text)">éteindre ton PC</strong> — il n'est plus allumé, mais il existe encore. Tu peux le rallumer avec <code>docker start</code>.</p>
+        <pre><code><span class="cmd">docker stop</span> <span class="arg">mon_conteneur</span>
+<span class="cmt"># Conteneur éteint mais EXISTE encore</span>
+<span class="cmt"># Visible dans : docker ps -a</span></code></pre>
+      </div>
+      <div style="background:rgba(255,45,120,0.07); border:1px solid rgba(255,45,120,0.4); border-radius:8px; padding:16px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--neon); margin-bottom:10px;">docker rm</div>
+        <p style="font-size:15px; margin-bottom:8px;"><strong style="color:var(--white)">Supprime le conteneur.</strong></p>
+        <p style="font-size:14px; color:var(--muted);">Comme <strong style="color:var(--text)">jeter le PC à la poubelle</strong> — il n'existe plus du tout. L'image reste, mais ce conteneur précis est parti.</p>
+        <pre><code><span class="cmd">docker rm</span> <span class="arg">mon_conteneur</span>
+<span class="cmt"># ⚠️ Doit être arrêté d'abord</span>
+<span class="cmd">docker rm</span> <span class="flag">-f</span> <span class="arg">mon_conteneur</span>
+<span class="cmt"># Force stop + rm en une commande</span></code></pre>
+      </div>
+    </div>
+
+    <div class="lifecycle" style="margin-top:16px;">
+      <div class="lc-box created">Created<br><span style="font-size:10px;">docker create</span></div>
+      <div class="lc-arrow">→ docker start →</div>
+      <div class="lc-box running">Running ▶<br><span style="font-size:10px;">docker run</span></div>
+      <div class="lc-arrow">→ docker stop →</div>
+      <div class="lc-box stopped">Stopped ■<br><span style="font-size:10px;">existe encore</span></div>
+      <div class="lc-arrow">→ docker rm →</div>
+      <div class="lc-box deleted">Deleted ✗<br><span style="font-size:10px;">disparu</span></div>
+    </div>
+
+    <div class="clarif"><strong style="color:var(--purple)">Règle d'or :</strong> Pour tout supprimer proprement → <code>docker stop MON_CONT</code> puis <code>docker rm MON_CONT</code>. Ou en une seule commande : <code>docker rm -f MON_CONT</code>.</div>
+  </div>
+
+  <!-- ══════════════ INSTALLATION ══════════════ -->
+  <div class="section-title">INSTALLATION</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">⚙️</span> INSTALLER DOCKER SUR UBUNTU/DEBIAN</div>
+    <pre><code><span class="cmt"># Méthode rapide — script officiel Docker</span>
+curl -fsSL https://get.docker.com <span class="flag">-o</span> get-docker.sh
+sudo sh get-docker.sh
+
+<span class="cmt"># ⚠️ IMPORTANT — Ajouter ton user au groupe docker</span>
+<span class="cmt"># Sans ça, tu devras taper sudo avant CHAQUE commande docker</span>
+sudo usermod <span class="flag">-aG</span> docker <span class="arg">$USER</span>
+newgrp docker      <span class="cmt"># ou déconnecte / reconnecte ta session</span>
+
+<span class="cmt"># Vérifier que tout fonctionne</span>
+<span class="cmd">docker</span> <span class="flag">--version</span>
+<span class="cmd">docker</span> run hello-world   <span class="cmt"># si tu vois "Hello from Docker!" → ✅</span></code></pre>
+    <div class="tip">Le <code>hello-world</code> télécharge une mini image et affiche un message. Si tu le vois, Docker est bien installé et fonctionnel.</div>
+  </div>
+
+  <!-- ══════════════ IMAGES ══════════════ -->
+  <div class="section-title">GÉRER LES IMAGES</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">📄</span> IMAGES — PULL, LIST, DELETE</div>
+    <pre><code><span class="cmt"># Chercher une image sur Docker Hub (hub.docker.com)</span>
+<span class="cmd">docker search</span> <span class="arg">ubuntu</span>
+
+<span class="cmt"># Télécharger une image depuis Docker Hub</span>
+<span class="cmd">docker pull</span> <span class="arg">ubuntu</span>             <span class="cmt"># dernière version (latest)</span>
+<span class="cmd">docker pull</span> <span class="arg">ubuntu:22.04</span>       <span class="cmt"># version précise (recommandé)</span>
+<span class="cmd">docker pull</span> <span class="arg">nginx:alpine</span>        <span class="cmt"># image légère basée Alpine</span>
+<span class="cmd">docker pull</span> <span class="arg">python:3.11-slim</span>   <span class="cmt"># Python allégé</span>
+
+<span class="cmt"># Lister toutes les images téléchargées en local</span>
+<span class="cmd">docker images</span>
+<span class="cmt"># Affiche : REPOSITORY | TAG | IMAGE ID | CREATED | SIZE</span>
+
+<span class="cmt"># Supprimer une image</span>
+<span class="cmd">docker rmi</span> <span class="arg">ubuntu</span>              <span class="cmt"># par nom</span>
+<span class="cmd">docker rmi</span> <span class="arg">a1b2c3d4e5f6</span>       <span class="cmt"># par ID</span>
+
+<span class="cmt"># Supprimer toutes les images non utilisées</span>
+<span class="cmd">docker image prune</span>              <span class="cmt"># images orphelines seulement</span>
+<span class="cmd">docker image prune</span> <span class="flag">-a</span>          <span class="cmt"># toutes celles non utilisées</span></code></pre>
+    <div class="warn">Tu ne peux pas supprimer une image si un conteneur l'utilise encore, même s'il est arrêté. Supprime d'abord le conteneur avec <code>docker rm</code>.</div>
+  </div>
+
+  <!-- ══════════════ CONTENEURS ══════════════ -->
+  <div class="section-title">CRÉER ET GÉRER DES CONTENEURS</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">📦</span> DOCKER RUN — LANCER UN CONTENEUR</div>
+    <p style="margin-bottom:12px;"><code>docker run</code> = télécharge l'image si absente + crée + démarre le conteneur en une commande.</p>
+    <pre><code><span class="cmt"># Lancer Ubuntu en mode interactif avec un terminal bash</span>
+<span class="cmd">docker run</span> <span class="flag">-it</span> <span class="arg">ubuntu bash</span>
+<span class="cmt"># -i = garde stdin ouvert (interactif)</span>
+<span class="cmt"># -t = alloue un terminal (TTY)</span>
+<span class="cmt"># → Tu te retrouves DANS le conteneur, comme un SSH</span>
+
+<span class="cmt"># Lancer en arrière-plan (detached, sans bloquer le terminal)</span>
+<span class="cmd">docker run</span> <span class="flag">-d</span> <span class="arg">nginx</span>
+<span class="cmt"># → retourne l'ID du conteneur, ton terminal reste libre</span>
+
+<span class="cmt"># Nommer son conteneur (TOUJOURS le faire !)</span>
+<span class="cmd">docker run</span> <span class="flag">--name</span> <span class="arg">mon_serveur</span> <span class="flag">-d</span> <span class="arg">nginx</span>
+<span class="cmt"># → plus facile que de retenir l'ID</span>
+
+<span class="cmt"># Exposer un port : -p PORT_MACHINE:PORT_CONTENEUR</span>
+<span class="cmd">docker run</span> <span class="flag">-p</span> <span class="arg">8080:80</span> <span class="arg">nginx</span>
+<span class="cmt"># → http://localhost:8080 → port 80 du conteneur nginx</span>
+
+<span class="cmt"># Monter un dossier local dans le conteneur</span>
+<span class="cmd">docker run</span> <span class="flag">-v</span> <span class="arg">$(pwd):/app</span> <span class="flag">-it</span> <span class="arg">ubuntu bash</span>
+<span class="cmt"># → ton dossier courant est visible dans /app du conteneur</span>
+
+<span class="cmt"># Auto-suppression après arrêt (parfait pour les tests)</span>
+<span class="cmd">docker run</span> <span class="flag">--rm</span> <span class="arg">ubuntu echo "test"</span>
+<span class="cmt"># → se lance, affiche "test", se supprime tout seul</span>
+
+<span class="cmt"># Tout combiné — cas réel</span>
+<span class="cmd">docker run</span> <span class="flag">-d --name</span> <span class="arg">web</span> <span class="flag">-p</span> <span class="arg">8080:80</span> <span class="flag">-v</span> <span class="arg">$(pwd):/usr/share/nginx/html</span> <span class="arg">nginx</span></code></pre>
+  </div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🎮</span> GÉRER LES CONTENEURS AU QUOTIDIEN</div>
+    <pre><code><span class="cmt"># ── LISTER ─────────────────────────────────────────────</span>
+<span class="cmd">docker ps</span>           <span class="cmt"># conteneurs EN COURS seulement</span>
+<span class="cmd">docker ps</span> <span class="flag">-a</span>        <span class="cmt"># TOUS (en cours + arrêtés) ← le plus utile</span>
+
+<span class="cmt"># ── DÉMARRER / ARRÊTER ─────────────────────────────────</span>
+<span class="cmd">docker start</span>  <span class="arg">mon_conteneur</span>   <span class="cmt"># rallumer un conteneur arrêté</span>
+<span class="cmd">docker stop</span>   <span class="arg">mon_conteneur</span>   <span class="cmt"># éteindre proprement (attend l'arrêt)</span>
+<span class="cmd">docker kill</span>   <span class="arg">mon_conteneur</span>   <span class="cmt"># forcer l'arrêt immédiat (urgent)</span>
+<span class="cmd">docker restart</span> <span class="arg">mon_conteneur</span>  <span class="cmt"># stop + start en une commande</span>
+
+<span class="cmt"># ── ENTRER DANS UN CONTENEUR EN VIE ────────────────────</span>
+<span class="cmd">docker exec</span> <span class="flag">-it</span> <span class="arg">mon_conteneur bash</span>
+<span class="cmt"># Ouvre un shell DANS le conteneur pendant qu'il tourne</span>
+<span class="cmt"># → comme faire SSH dans le conteneur</span>
+<span class="cmt"># → si bash n'existe pas (image alpine) : utilise sh</span>
+<span class="cmd">docker exec</span> <span class="flag">-it</span> <span class="arg">mon_conteneur sh</span>
+
+<span class="cmt"># Lancer une commande sans ouvrir de shell</span>
+<span class="cmd">docker exec</span> <span class="arg">mon_conteneur ls /app</span>
+
+<span class="cmt"># ── LOGS ET MONITORING ─────────────────────────────────</span>
+<span class="cmd">docker logs</span> <span class="arg">mon_conteneur</span>          <span class="cmt"># voir tous les logs</span>
+<span class="cmd">docker logs</span> <span class="flag">-f</span> <span class="arg">mon_conteneur</span>       <span class="cmt"># logs en temps réel (Ctrl+C pour quitter)</span>
+<span class="cmd">docker logs</span> <span class="flag">--tail 50</span> <span class="arg">mon_conteneur</span> <span class="cmt"># 50 dernières lignes seulement</span>
+<span class="cmd">docker stats</span>                         <span class="cmt"># CPU/RAM de TOUS les conteneurs</span>
+<span class="cmd">docker inspect</span> <span class="arg">mon_conteneur</span>        <span class="cmt"># toutes les infos en JSON</span>
+
+<span class="cmt"># ── COPIER DES FICHIERS ────────────────────────────────</span>
+<span class="cmd">docker cp</span> <span class="arg">mon_conteneur:/app/fichier.txt .</span>   <span class="cmt"># conteneur → local</span>
+<span class="cmd">docker cp</span> <span class="arg">fichier.txt mon_conteneur:/app/</span>    <span class="cmt"># local → conteneur</span>
+
+<span class="cmt"># ── SUPPRIMER ──────────────────────────────────────────</span>
+<span class="cmd">docker rm</span> <span class="arg">mon_conteneur</span>             <span class="cmt"># ⚠️ doit être arrêté</span>
+<span class="cmd">docker rm</span> <span class="flag">-f</span> <span class="arg">mon_conteneur</span>          <span class="cmt"># force stop + rm</span>
+<span class="cmd">docker rm</span> <span class="arg">$(docker ps -aq)</span>          <span class="cmt"># supprimer TOUS les arrêtés</span></code></pre>
+  </div>
+
+  <!-- ══════════════ DOCKERFILE ══════════════ -->
+  <div class="section-title">DOCKERFILE — ÉCRIRE SA PROPRE IMAGE</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">📋</span> LES INSTRUCTIONS — EXPLIQUÉES POUR DÉBUTANTS</div>
+    <pre><code><span class="df-cmt"># Dockerfile — chaque ligne est une instruction</span>
+<span class="df-cmt"># chaque instruction crée une "couche" (layer) dans l'image</span>
+
+<span class="df-instr">FROM</span>    <span class="df-arg">ubuntu:22.04</span>
+<span class="df-cmt"># OBLIGATOIRE en 1er — image de base sur laquelle on s'appuie</span>
+
+<span class="df-instr">RUN</span>     <span class="df-str">apt-get update && apt-get install -y gcc make</span>
+<span class="df-cmt"># Exécute une commande AU MOMENT DU BUILD (construction de l'image)</span>
+<span class="df-cmt"># Chaque RUN = une nouvelle couche = met en cache séparément</span>
+
+<span class="df-instr">WORKDIR</span> <span class="df-arg">/app</span>
+<span class="df-cmt"># Définit le dossier de travail par défaut</span>
+<span class="df-cmt"># Toutes les commandes suivantes s'exécutent depuis /app</span>
+
+<span class="df-instr">COPY</span>    <span class="df-str">. /app</span>
+<span class="df-cmt"># Copie les fichiers locaux VERS l'image</span>
+<span class="df-cmt"># "." = tout le dossier courant → vers /app dans l'image</span>
+
+<span class="df-instr">ENV</span>     <span class="df-arg">PORT=8080</span>
+<span class="df-cmt"># Définit une variable d'environnement dans le conteneur</span>
+
+<span class="df-instr">EXPOSE</span>  <span class="df-arg">8080</span>
+<span class="df-cmt"># Documente que le conteneur écoute sur ce port</span>
+<span class="df-cmt"># ⚠️ C'est seulement de la documentation — le port n'est pas ouvert</span>
+<span class="df-cmt"># Il faut quand même -p au docker run pour y accéder</span>
+
+<span class="df-instr">CMD</span>     <span class="df-str">["./mon_prog"]</span>
+<span class="df-cmt"># Commande lancée quand on fait "docker run"</span>
+<span class="df-cmt"># Peut être écrasée par l'utilisateur : docker run image AUTRE_CMD</span></code></pre>
+
+    <div class="clarif"><strong style="color:var(--purple)">CMD vs ENTRYPOINT :</strong> <code>CMD</code> définit la commande par défaut — l'utilisateur peut la remplacer (<code>docker run image bash</code>). <code>ENTRYPOINT</code> est fixe, l'utilisateur ne peut pas la changer (seulement lui ajouter des arguments). Pour débuter, utilise <code>CMD</code>.</div>
+  </div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🏗️</span> EXEMPLE CONCRET — PROJET C HOLBERTON</div>
+    <pre><code><span class="df-cmt"># Dockerfile à la racine de ton projet</span>
+
+<span class="df-instr">FROM</span>    <span class="df-arg">ubuntu:22.04</span>
+
+<span class="df-instr">RUN</span>     <span class="df-str">apt-get update && apt-get install -y \
+        gcc \
+        make \
+        valgrind \
+        && rm -rf /var/lib/apt/lists/*</span>
+<span class="df-cmt"># Le && rm nettoie le cache apt → image plus légère</span>
+
+<span class="df-instr">WORKDIR</span> <span class="df-arg">/project</span>
+
+<span class="df-instr">COPY</span>    <span class="df-str">. .</span>
+<span class="df-cmt"># Copie tout le dossier courant vers /project</span>
+
+<span class="df-instr">RUN</span>     <span class="df-str">gcc -Wall -Werror -Wextra -pedantic main.c -o prog</span>
+
+<span class="df-instr">CMD</span>     <span class="df-str">["./prog"]</span></code></pre>
+
+    <pre><code><span class="cmt"># Pour construire et tester ce Dockerfile :</span>
+<span class="cmd">docker build</span> <span class="flag">-t</span> <span class="arg">mon-projet</span> <span class="arg">.</span>         <span class="cmt"># construire l'image</span>
+<span class="cmd">docker run</span> <span class="flag">--rm</span> <span class="arg">mon-projet</span>             <span class="cmt"># lancer (se supprime après)</span>
+<span class="cmd">docker run</span> <span class="flag">--rm -it</span> <span class="arg">mon-projet bash</span>   <span class="cmt"># entrer dedans pour tester</span></code></pre>
+  </div>
+
+  <!-- ══════════════ .DOCKERIGNORE ══════════════ -->
+  <div class="section-title">.DOCKERIGNORE — NE PAS TOUT COPIER</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🙈</span> LE .DOCKERIGNORE — MÊME LOGIQUE QUE .GITIGNORE</div>
+    <p style="margin-bottom:12px;">Quand tu fais <code>COPY . .</code>, Docker copie <strong style="color:var(--neon)">tout</strong> ton dossier. Le <code>.dockerignore</code> te permet d'<strong style="color:var(--neon)">exclure</strong> les fichiers inutiles ou sensibles pour garder une image légère.</p>
+    <pre><code><span class="cmt"># .dockerignore — à créer à la racine du projet</span>
+
+<span class="str">.git</span>              <span class="cmt"># historique git inutile dans l'image</span>
+<span class="str">.gitignore</span>
+<span class="str">*.o</span>               <span class="cmt"># binaires compilés</span>
+<span class="str">*.a</span>
+<span class="str">a.out</span>
+<span class="str">.env</span>              <span class="cmt"># variables d'environnement / secrets ⚠️</span>
+<span class="str">*.log</span>
+<span class="str">node_modules/</span>     <span class="cmt"># pour les projets Node.js</span>
+<span class="str">__pycache__/</span>      <span class="cmt"># pour les projets Python</span>
+<span class="str">README.md</span>
+<span class="str">Dockerfile</span>        <span class="cmt"># pas besoin dans l'image</span></code></pre>
+    <div class="tip">Un bon <code>.dockerignore</code> peut réduire la taille de ton image de plusieurs centaines de Mo. C'est une bonne pratique à toujours appliquer.</div>
+  </div>
+
+  <!-- ══════════════ BUILD ══════════════ -->
+  <div class="section-title">DOCKER BUILD — CONSTRUIRE UNE IMAGE</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔨</span> BUILD — TOUTES LES OPTIONS UTILES</div>
+    <pre><code><span class="cmt"># Construire depuis le dossier courant (Dockerfile présent)</span>
+<span class="cmd">docker build</span> <span class="arg">.</span>
+
+<span class="cmt"># Construire et nommer/tagger l'image</span>
+<span class="cmd">docker build</span> <span class="flag">-t</span> <span class="arg">mon-image</span> <span class="arg">.</span>
+<span class="cmd">docker build</span> <span class="flag">-t</span> <span class="arg">mon-image:1.0</span> <span class="arg">.</span>        <span class="cmt"># avec version</span>
+<span class="cmd">docker build</span> <span class="flag">-t</span> <span class="arg">mon-image:latest</span> <span class="arg">.</span>     <span class="cmt"># latest = version par défaut</span>
+
+<span class="cmt"># Reconstruire sans cache (si quelque chose ne se met pas à jour)</span>
+<span class="cmd">docker build</span> <span class="flag">--no-cache</span> <span class="flag">-t</span> <span class="arg">mon-image</span> <span class="arg">.</span>
+
+<span class="cmt"># Voir le détail de chaque étape</span>
+<span class="cmd">docker build</span> <span class="flag">--progress=plain</span> <span class="flag">-t</span> <span class="arg">mon-image</span> <span class="arg">.</span></code></pre>
+    <div class="clarif"><strong style="color:var(--purple)">Le cache Docker :</strong> Docker mémorise chaque étape (layer). Si tu rebuildes sans toucher à <code>RUN apt-get install</code>, il ne le refait pas. C'est pour ça que les builds suivants sont rapides. <code>--no-cache</code> force tout à refaire depuis zéro.</div>
+  </div>
+
+  <!-- ══════════════ VOLUMES ══════════════ -->
+  <div class="section-title">VOLUMES — PERSISTER LES DONNÉES</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">💾</span> POURQUOI LES VOLUMES ?</div>
+    <p style="margin-bottom:12px;"><strong style="color:var(--neon)">Problème :</strong> quand tu supprimes un conteneur (<code>docker rm</code>), tout ce qui était dedans disparaît. Les volumes permettent de sauvegarder les données en dehors du conteneur.</p>
+    <pre><code><span class="cmt"># ── BIND MOUNT — utiliser un dossier local (développement) ──</span>
+
+<span class="cmt"># Ton dossier local ↔ visible dans le conteneur</span>
+<span class="cmd">docker run</span> <span class="flag">-v</span> <span class="arg">$(pwd):/app</span> <span class="flag">-it</span> <span class="arg">ubuntu bash</span>
+<span class="cmt"># Modifie un fichier dans /app → modifié sur ta machine aussi !</span>
+<span class="cmt"># Parfait en dev pour ne pas rebuild à chaque changement</span>
+
+<span class="cmt"># ── VOLUME DOCKER — géré par Docker (production) ────────────</span>
+
+<span class="cmd">docker volume create</span> <span class="arg">mes-donnees</span>          <span class="cmt"># créer</span>
+<span class="cmd">docker volume ls</span>                             <span class="cmt"># lister</span>
+<span class="cmd">docker volume rm</span> <span class="arg">mes-donnees</span>               <span class="cmt"># supprimer</span>
+
+<span class="cmt"># Utiliser le volume dans un conteneur</span>
+<span class="cmd">docker run</span> <span class="flag">-v</span> <span class="arg">mes-donnees:/data</span> <span class="flag">-it</span> <span class="arg">ubuntu bash</span>
+<span class="cmt"># Les données dans /data survivent même si le conteneur est supprimé</span></code></pre>
+
+    <div class="grid-2" style="margin-top:12px;">
+      <div style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.3); border-radius:8px; padding:14px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--green); margin-bottom:8px;">BIND MOUNT (-v $(pwd):/app)</div>
+        <p style="font-size:13px; color:var(--muted);">✅ Parfait en <strong style="color:var(--text)">développement</strong> — modifie en local, effet immédiat dans le conteneur.</p>
+      </div>
+      <div style="background:rgba(181,78,255,0.05); border:1px solid rgba(181,78,255,0.3); border-radius:8px; padding:14px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--purple); margin-bottom:8px;">VOLUME DOCKER (-v nom:/data)</div>
+        <p style="font-size:13px; color:var(--muted);">✅ Parfait en <strong style="color:var(--text)">production</strong> — données persistantes gérées par Docker, indépendantes du système.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ DOCKER HUB ══════════════ -->
+  <div class="section-title">DOCKER HUB — PARTAGER SES IMAGES</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">☁️</span> PUSH SUR DOCKER HUB EN 4 ÉTAPES</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Créer un compte sur hub.docker.com puis se connecter</h4>
+          <pre><code><span class="cmd">docker login</span>
+<span class="cmt"># Entrer son username et mot de passe Docker Hub</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Tagger l'image avec ton username Docker Hub</h4>
+          <pre><code><span class="cmd">docker tag</span> <span class="arg">mon-image:1.0</span> <span class="arg">noham/mon-image:1.0</span>
+<span class="cmt"># Format : username/nom-image:version</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Pusher sur Docker Hub</h4>
+          <pre><code><span class="cmd">docker push</span> <span class="arg">noham/mon-image:1.0</span>
+<span class="cmt"># L'image est maintenant sur hub.docker.com/r/noham/mon-image</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>N'importe qui peut la télécharger</h4>
+          <pre><code><span class="cmd">docker pull</span> <span class="arg">noham/mon-image:1.0</span>
+<span class="cmd">docker run</span> <span class="arg">noham/mon-image:1.0</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ DOCKER COMPOSE ══════════════ -->
+  <div class="section-title">DOCKER COMPOSE — PLUSIEURS CONTENEURS</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🎼</span> ORCHESTRER PLUSIEURS CONTENEURS</div>
+    <p style="margin-bottom:12px;">Au lieu de lancer plusieurs <code>docker run</code> à la main, Docker Compose te permet de tout définir dans un seul fichier <code>docker-compose.yml</code> et de tout lancer en une commande.</p>
+    <pre><code><span class="df-cmt"># docker-compose.yml — exemple app web + base de données</span>
+
+<span class="kw">services:</span>
+
+  <span class="df-arg">web:</span>                        <span class="df-cmt"># nom du service (tu choisis)</span>
+    <span class="kw">build:</span> <span class="str">.</span>                  <span class="df-cmt"># construire depuis le Dockerfile local</span>
+    <span class="kw">ports:</span>
+      - <span class="str">"8080:5000"</span>           <span class="df-cmt"># port machine:port conteneur</span>
+    <span class="kw">volumes:</span>
+      - <span class="str">./app:/app</span>            <span class="df-cmt"># bind mount pour le dev</span>
+    <span class="kw">depends_on:</span>
+      - <span class="str">db</span>                    <span class="df-cmt"># attend que db soit prêt</span>
+
+  <span class="df-arg">db:</span>
+    <span class="kw">image:</span> <span class="str">postgres:15</span>        <span class="df-cmt"># image depuis Docker Hub</span>
+    <span class="kw">volumes:</span>
+      - <span class="str">pgdata:/var/lib/postgresql/data</span>
+    <span class="kw">environment:</span>
+      - <span class="str">POSTGRES_PASSWORD=secret</span>
+
+<span class="kw">volumes:</span>
+  <span class="df-arg">pgdata:</span>                     <span class="df-cmt"># volume nommé pour persister la DB</span></code></pre>
+
+    <pre><code><span class="cmt"># Commandes Docker Compose</span>
+<span class="cmd">docker compose up</span>              <span class="cmt"># lancer tout (bloque le terminal)</span>
+<span class="cmd">docker compose up</span> <span class="flag">-d</span>          <span class="cmt"># lancer en arrière-plan</span>
+<span class="cmd">docker compose up</span> <span class="flag">--build</span>    <span class="cmt"># rebuild les images avant de lancer</span>
+<span class="cmd">docker compose down</span>            <span class="cmt"># arrêter et supprimer les conteneurs</span>
+<span class="cmd">docker compose down</span> <span class="flag">-v</span>       <span class="cmt"># + supprimer les volumes</span>
+<span class="cmd">docker compose ps</span>              <span class="cmt"># état des services</span>
+<span class="cmd">docker compose logs</span> <span class="flag">-f</span>       <span class="cmt"># logs de tous les services</span>
+<span class="cmd">docker compose exec</span> <span class="arg">web bash</span> <span class="cmt"># shell dans le service 'web'</span></code></pre>
+  </div>
+
+  <!-- ══════════════ NETTOYAGE ══════════════ -->
+  <div class="section-title">NETTOYAGE — LIBÉRER DE L'ESPACE</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🧹</span> NETTOYER DOCKER</div>
+    <pre><code><span class="cmt"># Voir combien d'espace Docker utilise</span>
+<span class="cmd">docker system df</span>
+
+<span class="cmt"># Nettoyage sélectif</span>
+<span class="cmd">docker container prune</span>    <span class="cmt"># supprimer conteneurs arrêtés</span>
+<span class="cmd">docker image prune</span>        <span class="cmt"># supprimer images orphelines</span>
+<span class="cmd">docker image prune</span> <span class="flag">-a</span>    <span class="cmt"># supprimer toutes les images inutilisées</span>
+<span class="cmd">docker volume prune</span>       <span class="cmt"># supprimer volumes inutilisés</span>
+
+<span class="cmt"># Nettoyage total — tout d'un coup</span>
+<span class="cmd">docker system prune</span>       <span class="cmt"># conteneurs + images orphelines + réseaux</span>
+<span class="cmd">docker system prune</span> <span class="flag">-a</span>   <span class="cmt"># + toutes les images non utilisées</span></code></pre>
+    <div class="warn"><code>docker system prune -a</code> supprime tout ce qui n'est pas en cours d'utilisation. Utile pour libérer de l'espace, mais tu devras re-pull les images dont tu as besoin.</div>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ ══════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CARTE MENTALE COMPLÈTE</div>
+    <pre><code><span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  LES CONCEPTS EN UNE PHRASE                                      ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="cmt"># Image     = recette statique (sur disque, lecture seule)</span>
+<span class="cmt"># Conteneur = instance active d'une image (en mémoire, en vie)</span>
+<span class="cmt"># Dockerfile= script qui construit une image (RUN, COPY, CMD...)</span>
+<span class="cmt"># Volume    = stockage persistant lié à un conteneur</span>
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  STOP ≠ RM  —  NE JAMAIS CONFONDRE                               ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="cmt"># docker stop → éteint le conteneur (toujours récupérable)</span>
+<span class="cmt"># docker rm   → supprime définitivement le conteneur</span>
+<span class="cmt"># docker rmi  → supprime une IMAGE (pas un conteneur)</span>
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  WORKFLOW TYPE DÉBUTANT                                          ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="cmd">docker pull</span> <span class="arg">ubuntu</span>                           <span class="cmt"># 1. récupérer une image</span>
+<span class="cmd">docker run</span> <span class="flag">-it --name</span> <span class="arg">test</span> <span class="arg">ubuntu bash</span>      <span class="cmt"># 2. créer + entrer dedans</span>
+<span class="cmt"># [... faire des trucs dans le conteneur ...]</span>
+<span class="cmt"># exit  ← pour sortir du conteneur</span>
+<span class="cmd">docker start</span> <span class="arg">test</span>                            <span class="cmt"># 3. rallumer si besoin</span>
+<span class="cmd">docker exec</span> <span class="flag">-it</span> <span class="arg">test bash</span>                   <span class="cmt"># 4. re-entrer dedans</span>
+<span class="cmd">docker stop</span> <span class="arg">test</span>                             <span class="cmt"># 5. éteindre</span>
+<span class="cmd">docker rm</span> <span class="arg">test</span>                               <span class="cmt"># 6. supprimer quand fini</span>
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  RÈGLES D'OR                                                     ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="cmt"># ✅ Toujours nommer tes conteneurs avec --name</span>
+<span class="cmt"># ✅ Utilise --rm pour les conteneurs de test (nettoyage auto)</span>
+<span class="cmt"># ✅ Ajoute un .dockerignore à chaque projet</span>
+<span class="cmt"># ✅ Préfère ubuntu:22.04 à ubuntu:latest (version stable)</span>
+<span class="cmt"># ✅ Utilise -d pour les serveurs, -it pour les shells</span>
+<span class="cmt"># ❌ Ne jamais stocker de mots de passe dans le Dockerfile</span>
+<span class="cmt"># ❌ Ne pas confondre docker stop (éteindre) et docker rm (supprimer)</span></code></pre>
+  </div>
+
+</div>
+
+<footer>
+  <span>CONTAINER DEPLOYED</span> — BUILD ONCE, RUN ANYWHERE<br><br>
+  Merci Noham pour la suggestion 🐳 — <span>Holberton School</span>
+</footer>
+
+</body>
+</html>
