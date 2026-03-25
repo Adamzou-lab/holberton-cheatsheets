@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDB — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #050a0f;
+    --card:   #080d15;
+    --border: #0f2035;
+    --neon:   #4d9fff;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text:   #c0d0e0;
+    --muted:  #304050;
+    --white:  #eef6ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(77,159,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(77,159,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; position: relative; z-index: 1; }
+
+  header { text-align: center; padding: 60px 20px 40px; position: relative; z-index: 1; }
+  .tag { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--neon); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; display: block; }
+  header h1 { font-family: 'Press Start 2P', monospace; font-size: clamp(20px, 3.5vw, 34px); color: var(--white); line-height: 1.5; text-shadow: 0 0 20px rgba(77,159,255,0.6), 0 0 40px rgba(77,159,255,0.2); margin-bottom: 20px; }
+  header h1 span { color: var(--neon); }
+  .header-sub { font-size: 18px; color: var(--muted); letter-spacing: 2px; }
+
+  .section-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--neon); letter-spacing: 2px; margin: 50px 0 20px; display: flex; align-items: center; gap: 12px; }
+  .section-title::before { content: '▶'; color: var(--pink); font-size: 10px; animation: blink 1s step-end infinite; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--neon), transparent); }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--neon); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green .card-title  { color: var(--green); }
+  .card.pink .card-title   { color: var(--pink); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.orange .card-title { color: var(--orange); }
+  .card-icon { font-size: 16px; }
+
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre { background: #030810; border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; font-size: 13px; line-height: 1.9; margin-top: 12px; }
+  code { background: rgba(77,159,255,0.1); color: var(--neon); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  /* GDB specific syntax */
+  .gdb-prompt { color: var(--neon); font-weight: bold; }
+  .gdb-cmd    { color: var(--cyan); font-weight: bold; }
+  .gdb-arg    { color: var(--yellow); }
+  .gdb-out    { color: var(--green); }
+  .gdb-addr   { color: var(--purple); }
+  .gdb-val    { color: var(--orange); }
+  .gdb-err    { color: var(--pink); }
+  .cmt        { color: var(--muted); font-style: italic; }
+
+  /* C syntax */
+  .kw   { color: var(--pink); }
+  .fn   { color: var(--cyan); }
+  .type { color: var(--purple); }
+  .str  { color: var(--green); }
+  .num  { color: var(--orange); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .analogy { background: linear-gradient(135deg, #050c15, #030810); border: 1px solid var(--yellow); border-left: 4px solid var(--yellow); border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .analogy-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  .tip    { background: rgba(57,255,20,0.05);  border: 1px solid rgba(57,255,20,0.3);  border-left: 4px solid var(--green);  border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .warn   { background: rgba(255,45,120,0.05); border: 1px solid rgba(255,45,120,0.3); border-left: 4px solid var(--pink);   border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .clarif { background: rgba(181,78,255,0.07); border: 1px solid rgba(181,78,255,0.35);border-left: 4px solid var(--purple); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .tip::before    { content: '✅ '; }
+  .warn::before   { content: '⚠️ '; }
+  .clarif::before { content: '💡 '; }
+
+  .macro-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; font-size: 13px; margin-top: 12px; }
+  .macro-table th { background: var(--border); color: var(--neon); padding: 10px 14px; text-align: left; font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; }
+  .macro-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .macro-table tr:hover td { background: rgba(77,159,255,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; font-family: 'Share Tech Mono', monospace; }
+  .macro-table .short { color: var(--cyan); font-size: 11px; }
+
+  .level-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--border); border: 1px solid var(--purple); border-radius: 4px; padding: 4px 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--purple); margin-bottom: 16px; }
+
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--bg); background: var(--neon); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  .skill-tree { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 24px; }
+  .skill-tree::before { content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(to bottom, var(--neon), var(--purple)); }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--neon); background: var(--bg); flex-shrink: 0; margin-left: -24px; margin-top: 3px; box-shadow: 0 0 8px var(--neon); }
+  .skill-dot.done   { background: var(--neon); }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.pink   { border-color: var(--pink);   box-shadow: 0 0 8px var(--pink);   background: var(--pink); }
+  .skill-dot.purple { border-color: var(--purple); box-shadow: 0 0 8px var(--purple); background: var(--purple); }
+  .skill-dot.orange { border-color: var(--orange); box-shadow: 0 0 8px var(--orange); background: var(--orange); }
+
+  /* MEMORY VIEW */
+  .mem-block { background: #030810; border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 13px; line-height: 2; }
+
+  /* REGISTER TABLE */
+  .reg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  .reg-box { background: rgba(77,159,255,0.06); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; text-align: center; font-family: 'Share Tech Mono', monospace; }
+  .reg-name { font-size: 12px; color: var(--neon); font-weight: bold; display: block; }
+  .reg-desc { font-size: 11px; color: var(--muted); display: block; margin-top: 3px; }
+  @media (max-width: 600px) { .reg-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* SHORTCUT BADGE */
+  .shortcut { display: inline-block; background: rgba(255,230,0,0.1); border: 1px solid rgba(255,230,0,0.4); border-radius: 4px; padding: 1px 8px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--yellow); margin-left: 6px; }
+
+  /* CRASH TYPE BOXES */
+  .crash-box { border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; }
+  .crash-box.segfault { background: rgba(255,45,120,0.07); border: 1px solid rgba(255,45,120,0.35); }
+  .crash-box.leak     { background: rgba(255,107,0,0.07);  border: 1px solid rgba(255,107,0,0.35); }
+  .crash-box.undef    { background: rgba(181,78,255,0.07); border: 1px solid rgba(181,78,255,0.35); }
+  .crash-title { font-family: 'Press Start 2P', monospace; font-size: 7px; margin-bottom: 8px; }
+  .crash-box.segfault .crash-title { color: var(--pink); }
+  .crash-box.leak .crash-title     { color: var(--orange); }
+  .crash-box.undef .crash-title    { color: var(--purple); }
+
+  footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--muted); letter-spacing: 2px; position: relative; z-index: 1; }
+  footer span { color: var(--neon); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) { header h1 { font-size: 16px; } .section-title { font-size: 8px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — Debugging ✦</span>
+  <h1><span>GDB</span></h1>
+  <p class="header-sub">GNU Debugger — Traque les bugs. Lis la mémoire.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ C'EST QUOI GDB ══════════════ -->
+  <div class="section-title">C'EST QUOI GDB ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔬</span> DÉFINITION — POUR LES DÉBUTANTS</div>
+    <p><strong style="color:var(--neon)">GDB</strong> (GNU Debugger) est un outil qui te permet d'<strong style="color:var(--neon)">exécuter ton programme en mode ralenti</strong>, de l'arrêter à n'importe quelle ligne, d'inspecter les variables, la mémoire et la pile d'appels. C'est ton meilleur allié contre les segfaults et les bugs impossibles à trouver avec des <code>printf</code>.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>GDB c'est le <strong>mode debug d'un jeu</strong> — tu peux mettre le jeu en <strong>pause</strong> (breakpoint) à n'importe quel moment, avancer <strong>image par image</strong> (step), regarder la valeur de chaque variable comme si tu avais accès aux stats cachées, et même <strong>voyager dans le passé</strong> pour voir comment un bug s'est produit (backtrace).</p>
+    </div>
+
+    <div class="grid-3" style="margin-top:16px;">
+      <div style="background:rgba(77,159,255,0.05); border:1px solid rgba(77,159,255,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:24px; margin-bottom:6px;">⏸️</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--neon); margin-bottom:6px;">BREAKPOINT</div>
+        <p style="font-size:13px; color:var(--muted);">Pause le programme à une ligne précise</p>
+      </div>
+      <div style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:24px; margin-bottom:6px;">👁️</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--green); margin-bottom:6px;">INSPECT</div>
+        <p style="font-size:13px; color:var(--muted);">Lire variables, mémoire, registres</p>
+      </div>
+      <div style="background:rgba(255,230,0,0.05); border:1px solid rgba(255,230,0,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:24px; margin-bottom:6px;">🪜</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--yellow); margin-bottom:6px;">STEP</div>
+        <p style="font-size:13px; color:var(--muted);">Avancer ligne par ligne dans le code</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ INSTALLATION ══════════════ -->
+  <div class="section-title">ÉTAPE -1 — INSTALLER GDB</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">📦</span> INSTALLER GDB SUR UBUNTU/DEBIAN</div>
+    <pre><code><span class="cmt"># Vérifier si GDB est déjà installé</span>
+which gdb
+<span class="gdb-out"># /usr/bin/gdb   → déjà installé ✅</span>
+<span class="gdb-out"># (rien)         → pas installé, à installer</span>
+
+<span class="cmt"># Installer GDB</span>
+sudo apt-get update
+sudo apt-get install gdb
+
+<span class="cmt"># Vérifier la version</span>
+gdb --version
+<span class="gdb-out">GNU gdb (Ubuntu 12.1) 12.1 ...</span></code></pre>
+    <div class="tip">Sur les sandboxes Holberton, GDB est généralement pré-installé. Si tu obtiens <code>command not found</code>, lance le <code>apt-get install</code> ci-dessus.</div>
+  </div>
+
+  <!-- ══════════════ COMPILATION ══════════════ -->
+  <div class="section-title">ÉTAPE 0 — COMPILER AVEC -g</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">⚙️</span> COMPILER POUR GDB — LE FLAG -g</div>
+    <p style="margin-bottom:12px;">Sans <code>-g</code>, GDB ne peut pas afficher les noms de variables, les numéros de lignes ou le code source. C'est le premier réflexe à avoir.</p>
+    <pre><code><span class="cmt"># ❌ Sans -g : GDB travaille à l'aveugle (adresses hexadécimales seulement)</span>
+gcc -Wall -Werror -Wextra main.c -o prog
+
+<span class="cmt"># ✅ Avec -g : GDB voit le code source, les variables, les lignes</span>
+gcc -Wall -Werror -Wextra <span class="gdb-out">-g</span> main.c -o prog
+
+<span class="cmt"># Convention Holberton complète avec -g</span>
+gcc -Wall -Werror -Wextra -pedantic -std=gnu89 <span class="gdb-out">-g</span> main.c -o prog
+
+<span class="cmt"># Vérifier que les symboles de debug sont bien inclus</span>
+file prog
+<span class="gdb-out"># prog: ELF 64-bit ... with debug_info, not stripped ← ✅</span></code></pre>
+    <div class="warn">Le flag <code>-g</code> rend le binaire plus lourd et plus lent — ne jamais l'utiliser en production. C'est uniquement pour le debug en local.</div>
+  </div>
+
+  <!-- ══════════════ LANCER GDB ══════════════ -->
+  <div class="section-title">LANCER GDB</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🚀</span> DÉMARRER UNE SESSION GDB</div>
+    <pre><code><span class="cmt"># Lancer GDB avec ton programme</span>
+gdb ./prog
+
+<span class="cmt"># Lancer avec des arguments (argv)</span>
+gdb --args ./prog arg1 arg2
+
+<span class="cmt"># Lancer et exécuter directement (sans prompt interactif)</span>
+gdb -batch -ex run ./prog
+
+<span class="cmt"># Analyser un core dump (fichier de crash)</span>
+gdb ./prog core
+
+<span class="cmt"># Mode quiet (sans le message de bienvenue)</span>
+gdb -q ./prog</code></pre>
+
+    <div style="margin-top:14px; background:#030810; border:1px solid var(--border); border-radius:6px; padding:16px;">
+      <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--neon); margin-bottom:10px;">CE QUE TU VOIS AU DÉMARRAGE :</div>
+      <pre style="margin-top:0; border:none; padding:0; background:transparent;"><code><span class="gdb-out">GNU gdb (Ubuntu 12.1) 12.1
+Reading symbols from ./prog...
+</span><span class="gdb-prompt">(gdb)</span> <span class="cmt">← le prompt GDB, tu peux taper tes commandes ici</span></code></pre>
+    </div>
+
+    <div class="tip">Dans GDB, tu peux <strong>abréger toutes les commandes</strong> à leur forme courte. <code>break</code> → <code>b</code>, <code>run</code> → <code>r</code>, <code>next</code> → <code>n</code>, etc. Appuyer sur <strong>Entrée vide</strong> répète la dernière commande.</div>
+  </div>
+
+  <!-- ══════════════ COMMANDES DE BASE ══════════════ -->
+  <div class="section-title">LES COMMANDES FONDAMENTALES</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">▶️</span> EXÉCUTER ET CONTRÔLER LE PROGRAMME</div>
+    <pre><code><span class="cmt"># ── LANCER / ARRÊTER ───────────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span>                       <span class="cmt"># r — lancer le programme</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span> <span class="gdb-arg">arg1 arg2</span>             <span class="cmt"># lancer avec des arguments</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">quit</span>                      <span class="cmt"># q — quitter GDB</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">kill</span>                      <span class="cmt"># arrêter le programme en cours</span>
+
+<span class="cmt"># ── AVANCER DANS LE CODE ────────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">next</span>                      <span class="cmt"># n — ligne suivante (sans entrer dans les fonctions)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">step</span>                      <span class="cmt"># s — ligne suivante (ENTRE dans les fonctions)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">continue</span>                  <span class="cmt"># c — reprendre jusqu'au prochain breakpoint</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">finish</span>                    <span class="cmt"># fin — terminer la fonction courante et s'arrêter</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">until</span> <span class="gdb-arg">25</span>                 <span class="cmt"># avancer jusqu'à la ligne 25</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">next</span> <span class="gdb-arg">5</span>                   <span class="cmt"># avancer de 5 lignes</span></code></pre>
+
+    <div class="clarif"><strong style="color:var(--purple)">next vs step :</strong> <code>next</code> (n) exécute une fonction en entier sans y entrer. <code>step</code> (s) entre à l'intérieur de la fonction pour debugger ligne par ligne dedans. En débutant, commence par <code>next</code>.</div>
+  </div>
+
+  <!-- ══════════════ BREAKPOINTS ══════════════ -->
+  <div class="section-title">BREAKPOINTS — PAUSER LE PROGRAMME</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">⏸️</span> POSER ET GÉRER DES BREAKPOINTS</div>
+    <pre><code><span class="cmt"># ── CRÉER UN BREAKPOINT ────────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">break</span> <span class="gdb-arg">main</span>               <span class="cmt"># b main — pause au début de main()</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">break</span> <span class="gdb-arg">42</span>                 <span class="cmt"># b 42 — pause à la ligne 42</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">break</span> <span class="gdb-arg">main.c:42</span>          <span class="cmt"># pause ligne 42 du fichier main.c</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">break</span> <span class="gdb-arg">my_function</span>        <span class="cmt"># pause au début de my_function()</span>
+
+<span class="cmt"># ── BREAKPOINT CONDITIONNEL ─────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">break</span> <span class="gdb-arg">42</span> <span class="gdb-cmd">if</span> <span class="gdb-arg">i == 5</span>      <span class="cmt"># pause ligne 42 seulement si i vaut 5</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">break</span> <span class="gdb-arg">loop</span> <span class="gdb-cmd">if</span> <span class="gdb-arg">ptr == NULL</span> <span class="cmt"># pause si ptr est NULL</span>
+
+<span class="cmt"># ── GÉRER LES BREAKPOINTS ──────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info breakpoints</span>          <span class="cmt"># i b — voir tous les breakpoints</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">delete</span> <span class="gdb-arg">1</span>                  <span class="cmt"># d 1 — supprimer le breakpoint #1</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">delete</span>                    <span class="cmt"># supprimer TOUS les breakpoints</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">disable</span> <span class="gdb-arg">1</span>                <span class="cmt"># désactiver (sans supprimer)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">enable</span> <span class="gdb-arg">1</span>                 <span class="cmt"># réactiver</span>
+
+<span class="cmt"># Exemple — session typique de debugging</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">break</span> <span class="gdb-arg">main</span>
+<span class="gdb-out">Breakpoint 1 at 0x401130: file main.c, line 8.</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span>
+<span class="gdb-out">Breakpoint 1, main () at main.c:8
+8           int i = 0;</span>
+<span class="gdb-prompt">(gdb)</span> <span class="cmt">← programme pausé à la ligne 8 !</span></code></pre>
+  </div>
+
+  <!-- ══════════════ INSPECTER VARIABLES ══════════════ -->
+  <div class="section-title">INSPECTER LES VARIABLES ET LA MÉMOIRE</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">👁️</span> PRINT — LIRE LES VALEURS</div>
+    <pre><code><span class="cmt"># ── PRINT (p) — afficher une valeur ────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">i</span>                  <span class="cmt"># p i — valeur de la variable i</span>
+<span class="gdb-out">$1 = 42</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">ptr</span>               <span class="cmt"># afficher un pointeur</span>
+<span class="gdb-out">$2 = (int *) 0x602260</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">*ptr</span>              <span class="cmt"># déréférencer — valeur pointée</span>
+<span class="gdb-out">$3 = 7</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">str</span>               <span class="cmt"># afficher une string</span>
+<span class="gdb-out">$4 = 0x402010 "Hello"</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">arr[3]</span>            <span class="cmt"># valeur à l'index 3 d'un tableau</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">node->n</span>           <span class="cmt"># champ d'une struct via pointeur</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">2 + 2</span>             <span class="cmt"># GDB peut évaluer des expressions</span>
+
+<span class="cmt"># ── FORMATS D'AFFICHAGE ─────────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print/x</span> <span class="gdb-arg">i</span>               <span class="cmt"># en hexadécimal</span>
+<span class="gdb-out">$5 = 0x2a</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print/d</span> <span class="gdb-arg">i</span>               <span class="cmt"># en décimal (défaut)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print/b</span> <span class="gdb-arg">i</span>               <span class="cmt"># en binaire</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print/c</span> <span class="gdb-arg">65</span>              <span class="cmt"># comme caractère → 'A'</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print/s</span> <span class="gdb-arg">ptr</span>             <span class="cmt"># comme string (char*)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print/f</span> <span class="gdb-arg">x</span>               <span class="cmt"># comme float</span></code></pre>
+  </div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">🧠</span> DISPLAY ET WATCH — SURVEILLANCE AUTOMATIQUE</div>
+    <pre><code><span class="cmt"># display — affiche automatiquement à chaque step</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">display</span> <span class="gdb-arg">i</span>               <span class="cmt"># affiche i après chaque next/step</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">display</span> <span class="gdb-arg">*ptr</span>            <span class="cmt"># surveille la valeur pointée</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">undisplay</span> <span class="gdb-arg">1</span>             <span class="cmt"># arrêter la surveillance #1</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info display</span>            <span class="cmt"># voir les surveillances actives</span>
+
+<span class="cmt"># watch — pause quand la valeur CHANGE (watchpoint)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">watch</span> <span class="gdb-arg">i</span>                 <span class="cmt"># pause quand i est modifié</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">watch</span> <span class="gdb-arg">*ptr</span>              <span class="cmt"># pause quand *ptr change</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">rwatch</span> <span class="gdb-arg">i</span>                <span class="cmt"># pause quand i est LU</span>
+
+<span class="cmt"># Exemple : display i pendant une boucle</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">display</span> <span class="gdb-arg">i</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">next</span>
+<span class="gdb-out">1: i = 0
+9           while (i < 5)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">next</span>
+<span class="gdb-out">1: i = 1    ← i s'affiche automatiquement !</span></code></pre>
+    <div class="tip"><code>display</code> est ton meilleur ami pour les boucles — tu n'as pas à retaper <code>print i</code> à chaque step. Il affiche automatiquement.</div>
+  </div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🔭</span> PRINT AVANCÉ — STRUCTS, TYPES ET PLUS</div>
+    <pre><code><span class="cmt"># ── AFFICHER UNE STRUCT ENTIÈRE ────────────────────────</span>
+
+<span class="cmt"># Afficher tous les champs d'une struct via pointeur</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">*node</span>
+<span class="gdb-out">$1 = {n = 42, next = 0x602280}</span>
+
+<span class="cmt"># Afficher une variable struct (pas un pointeur)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">user</span>
+<span class="gdb-out">$2 = {name = 0x402010 "Alice", age = 25, next = 0x0}</span>
+
+<span class="cmt"># ── PTYPE — VOIR LE TYPE D'UNE VARIABLE ────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">ptype</span> <span class="gdb-arg">node</span>
+<span class="gdb-out">type = struct node_s {
+    int n;
+    struct node_s *next;
+} *</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">ptype</span> <span class="gdb-arg">i</span>
+<span class="gdb-out">type = int</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">ptype</span> <span class="gdb-arg">argv</span>
+<span class="gdb-out">type = char **</span>
+
+<span class="cmt"># ── WHATIS — TYPE COURT (sans les détails) ──────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">whatis</span> <span class="gdb-arg">node</span>
+<span class="gdb-out">type = node_t *</span>
+
+<span class="cmt"># ── AFFICHER UN TABLEAU COMPLET ─────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">*arr@5</span>           <span class="cmt"># afficher 5 éléments depuis arr</span>
+<span class="gdb-out">$3 = {1, 2, 3, 4, 5}</span></code></pre>
+    <div class="tip"><code>print *node</code> (avec l'étoile) est indispensable pour les structs — il déréférence le pointeur et affiche tous les champs d'un coup. Sans l'étoile, tu ne vois que l'adresse.</div>
+  </div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">💾</span> EXAMINE (x) — LIRE LA MÉMOIRE BRUTE</div>
+    <p style="margin-bottom:12px;">La commande <code>x</code> (examine) te permet de lire directement des octets en mémoire. Syntaxe : <code>x/NFS ADRESSE</code> où N=nombre, F=format, S=taille.</p>
+    <pre><code><span class="cmt"># x/NFS addr — N=nombre, F=format, S=taille d'unité</span>
+
+<span class="cmt"># ── FORMATS (F) ────────────────────────────────────────</span>
+<span class="cmt"># x=hex  d=decimal  s=string  i=instruction  c=char  b=binary</span>
+
+<span class="cmt"># ── TAILLES (S) ────────────────────────────────────────</span>
+<span class="cmt"># b=byte(1)  h=halfword(2)  w=word(4)  g=giant(8)</span>
+
+<span class="cmt"># Exemples concrets :</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">x/4xb</span> <span class="gdb-arg">ptr</span>               <span class="cmt"># 4 octets en hex depuis l'adresse ptr</span>
+<span class="gdb-out">0x602260: 0x48 0x65 0x6c 0x6c</span>   <span class="cmt">← "Hell"</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">x/s</span> <span class="gdb-arg">str</span>                 <span class="cmt"># lire une string depuis cette adresse</span>
+<span class="gdb-out">0x402010: "Hello World"</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">x/4dw</span> <span class="gdb-arg">arr</span>               <span class="cmt"># 4 ints depuis le début du tableau arr</span>
+<span class="gdb-out">0x7fff...: 1    2    3    4</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">x/10i</span> <span class="gdb-arg">main</span>              <span class="cmt"># 10 instructions assembleur de main</span>
+<span class="gdb-out">0x401130 &lt;main&gt;: push %rbp
+0x401131 &lt;main+1&gt;: mov %rsp,%rbp</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">x/1xg</span> <span class="gdb-arg">&i</span>                <span class="cmt"># 1 giant (8 bytes) à l'adresse de i</span></code></pre>
+  </div>
+
+  <!-- ══════════════ INFO COMMANDES ══════════════ -->
+  <div class="section-title">INSPECTER LE PROGRAMME ET LA PILE</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> INFO — TOUT SAVOIR SUR L'ÉTAT DU PROGRAMME</div>
+    <pre><code><span class="cmt"># ── VARIABLES ET PORTÉE ────────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info locals</span>              <span class="cmt"># TOUTES les variables locales de la fonction</span>
+<span class="gdb-out">i = 3
+ptr = 0x602260
+str = 0x402010 "hello"</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info args</span>                <span class="cmt"># les arguments de la fonction courante</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info variables</span>           <span class="cmt"># toutes les variables globales</span>
+
+<span class="cmt"># ── PILE D'APPELS ──────────────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">backtrace</span>                <span class="cmt"># bt — pile d'appels complète</span>
+<span class="gdb-out">#0  ft_strlen (str=0x0) at ft_strlen.c:7    ← fonction actuelle
+#1  0x00401155 in main () at main.c:12      ← qui a appelé</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">backtrace full</span>           <span class="cmt"># bt full — avec les variables locales</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">frame</span> <span class="gdb-arg">1</span>                  <span class="cmt"># aller dans le frame #1 (main)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">up</span>                       <span class="cmt"># remonter d'un frame</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">down</span>                     <span class="cmt"># descendre d'un frame</span>
+
+<span class="cmt"># ── REGISTRES ─────────────────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info registers</span>           <span class="cmt"># i r — tous les registres CPU</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info registers</span> <span class="gdb-arg">rax</span>      <span class="cmt"># un registre précis</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">$rsp</span>               <span class="cmt"># valeur du stack pointer</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">$rip</span>               <span class="cmt"># instruction pointer (ligne courante)</span>
+
+<span class="cmt"># ── CODE SOURCE ───────────────────────────────────────</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">list</span>                     <span class="cmt"># l — afficher les 10 lignes autour de la position</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">list</span> <span class="gdb-arg">main</span>               <span class="cmt"># code autour de main()</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">list</span> <span class="gdb-arg">1,50</span>               <span class="cmt"># lignes 1 à 50</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">where</span>                    <span class="cmt"># où suis-je ? (alias de backtrace)</span></code></pre>
+
+    <div class="clarif"><strong style="color:var(--purple)">Le backtrace (bt)</strong> est la commande la plus importante pour comprendre un crash. Il te montre exactement la chaîne d'appels qui a mené au bug : de <code>main()</code> jusqu'à la fonction fautive.</div>
+  </div>
+
+  <!-- ══════════════ REGISTRES ══════════════ -->
+  <div class="section-title">LES REGISTRES CPU — COMPRENDRE L'ESSENTIEL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">⚡</span> LES REGISTRES IMPORTANTS EN X86-64</div>
+    <div class="reg-grid">
+      <div class="reg-box">
+        <span class="reg-name">rip</span>
+        <span class="reg-desc">Instruction Pointer<br>Ligne en cours d'exécution</span>
+      </div>
+      <div class="reg-box">
+        <span class="reg-name">rsp</span>
+        <span class="reg-desc">Stack Pointer<br>Sommet de la pile</span>
+      </div>
+      <div class="reg-box">
+        <span class="reg-name">rbp</span>
+        <span class="reg-desc">Base Pointer<br>Base du frame courant</span>
+      </div>
+      <div class="reg-box">
+        <span class="reg-name">rax</span>
+        <span class="reg-desc">Return Value<br>Valeur de retour d'une fonction</span>
+      </div>
+      <div class="reg-box">
+        <span class="reg-name">rdi</span>
+        <span class="reg-desc">1er argument<br>passé à une fonction</span>
+      </div>
+      <div class="reg-box">
+        <span class="reg-name">rsi</span>
+        <span class="reg-desc">2ème argument<br>passé à une fonction</span>
+      </div>
+      <div class="reg-box">
+        <span class="reg-name">rdx</span>
+        <span class="reg-desc">3ème argument<br>passé à une fonction</span>
+      </div>
+      <div class="reg-box">
+        <span class="reg-name">rbx</span>
+        <span class="reg-desc">Registre général<br>sauvegardé</span>
+      </div>
+    </div>
+    <pre><code><span class="cmt"># Voir un registre précis</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">$rip</span>       <span class="cmt"># adresse de l'instruction courante</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">$rax</span>       <span class="cmt"># valeur de retour (après un call)</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info registers</span>   <span class="cmt"># tous les registres d'un coup</span></code></pre>
+  </div>
+
+  <!-- ══════════════ MODIFIER ══════════════ -->
+  <div class="section-title">MODIFIER DES VALEURS EN COURS D'EXÉCUTION</div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">✏️</span> SET — CHANGER UNE VALEUR À LA VOLÉE</div>
+    <p style="margin-bottom:12px;">GDB te permet de <strong style="color:var(--neon)">modifier des variables pendant l'exécution</strong> pour tester différents scénarios sans recompiler.</p>
+    <pre><code><span class="cmt"># Changer la valeur d'une variable</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">set variable</span> <span class="gdb-arg">i = 10</span>     <span class="cmt"># forcer i à 10</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">set var</span> <span class="gdb-arg">ptr = 0</span>         <span class="cmt"># mettre ptr à NULL</span>
+
+<span class="cmt"># Appeler une fonction manuellement</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">call</span> <span class="gdb-arg">printf("hello\n")</span>  <span class="cmt"># appeler printf depuis GDB</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">call</span> <span class="gdb-arg">ft_strlen("test")</span>  <span class="cmt"># tester une de tes fonctions</span>
+
+<span class="cmt"># Changer un registre</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">set</span> <span class="gdb-arg">$rax = 0</span>            <span class="cmt"># forcer la valeur de retour</span>
+
+<span class="cmt"># Retourner d'une fonction avec une valeur précise</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">return</span> <span class="gdb-arg">42</span>               <span class="cmt"># quitter la fonction et retourner 42</span></code></pre>
+  </div>
+
+  <!-- ══════════════ TUI MODE ══════════════ -->
+  <div class="section-title">MODE TUI — GDB AVEC INTERFACE VISUELLE</div>
+
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">🖥️</span> TUI — TEXT USER INTERFACE</div>
+    <p style="margin-bottom:12px;">Le mode TUI affiche <strong style="color:var(--neon)">le code source en temps réel</strong> dans une fenêtre séparée, avec une flèche qui indique la ligne courante. Bien plus confortable que de taper <code>list</code> à chaque fois.</p>
+    <pre><code><span class="cmt"># Activer le mode TUI au lancement</span>
+gdb -tui ./prog
+
+<span class="cmt"># Activer/désactiver pendant une session</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">tui enable</span>             <span class="cmt"># activer la fenêtre de code</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">tui disable</span>            <span class="cmt"># revenir au mode normal</span>
+
+<span class="cmt"># Raccourci clavier</span>
+Ctrl + X, puis A           <span class="cmt"># toggle TUI on/off</span>
+Ctrl + X, puis 2           <span class="cmt"># split : code + assembleur</span>
+
+<span class="cmt"># Naviguer dans la fenêtre TUI</span>
+<span class="cmt"># Les flèches ↑↓ scrollent dans le code source</span>
+<span class="cmt"># Ctrl+L rafraîchit l'affichage si l'écran est corrompu</span></code></pre>
+
+    <div style="background:#030810; border:1px solid var(--border); border-radius:6px; padding:16px; margin-top:12px; font-family:'Share Tech Mono',monospace; font-size:12px; line-height:1.8;">
+      <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--purple); margin-bottom:10px;">CE QUE TU VOIS EN MODE TUI :</div>
+      <div style="border:1px solid var(--border); border-radius:4px; padding:10px; margin-bottom:8px;">
+        <div style="color:var(--muted);">┌── main.c ──────────────────────────────────────────────────┐</div>
+        <div style="color:var(--muted);">│  8      int i = 0;                                         │</div>
+        <div style="color:var(--muted);">│  9      int arr[5] = {1, 2, 3, 4, 5};                      │</div>
+        <div><span style="color:var(--neon);">│</span><span style="color:var(--green);"> ►</span><span style="color:var(--neon);">10      while (i &lt; 5)                                       │</span></div>
+        <div style="color:var(--muted);">│  11     {                                                   │</div>
+        <div style="color:var(--muted);">│  12         arr[i] = arr[i] * 2;                            │</div>
+        <div style="color:var(--muted);">└────────────────────────────────────────────────────────────┘</div>
+      </div>
+      <div style="color:var(--muted); font-size:11px;">La flèche ► indique la ligne en cours d'exécution — elle bouge à chaque next/step</div>
+    </div>
+    <div class="tip">Le mode TUI est <strong>fortement recommandé</strong> pour les débutants — tu vois exactement où tu en es dans le code sans avoir à taper <code>list</code> en permanence. Lance toujours GDB avec <code>gdb -tui ./prog</code>.</div>
+  </div>
+
+  <!-- ══════════════ ERREURS GDB FRÉQUENTES ══════════════ -->
+  <div class="section-title">ERREURS GDB FRÉQUENTES — ET LEURS SOLUTIONS</div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🚨</span> MESSAGES D'ERREUR COURANTS</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:15px;"><code>No debugging symbols found</code></strong>
+          <pre><code><span class="gdb-err">Reading symbols from ./prog...
+(No debugging symbols found in ./prog)</span>
+<span class="cmt"># → Tu n'as pas compilé avec -g !</span>
+<span class="cmt"># Solution : recompiler avec -g</span>
+gcc -g main.c -o prog</code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot pink"></div>
+        <div>
+          <strong style="color:var(--pink);font-size:15px;"><code>No symbol table is loaded</code></strong>
+          <pre><code><span class="gdb-err">(gdb) break main
+No symbol table is loaded. Use the "file" command.</span>
+<span class="cmt"># → GDB a été lancé sans programme</span>
+<span class="cmt"># Solution : charger le programme</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">file</span> <span class="gdb-arg">./prog</span>
+<span class="cmt"># Ou relancer : gdb ./prog</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot yellow"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:15px;"><code>?? () dans le backtrace</code></strong>
+          <pre><code><span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">backtrace</span>
+<span class="gdb-out">#0  0x00007f8... in ?? ()
+#1  0x0000000... in ?? ()</span>
+<span class="cmt"># → Fonction sans symboles de debug (bibliothèque externe)</span>
+<span class="cmt"># → OU programme compilé sans -g</span>
+<span class="cmt"># → Recompile avec -g pour voir les noms</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div>
+          <strong style="color:var(--cyan);font-size:15px;"><code>Cannot access memory at address 0x0</code></strong>
+          <pre><code><span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">*ptr</span>
+<span class="gdb-err">Cannot access memory at address 0x0</span>
+<span class="cmt"># → ptr est NULL ! Tu essaies de déréférencer NULL</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">ptr</span>        <span class="cmt"># afficher l'adresse d'abord</span>
+<span class="gdb-out">$1 = (int *) 0x0   ← confirme que ptr = NULL</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot purple"></div>
+        <div>
+          <strong style="color:var(--purple);font-size:15px;"><code>Inferior 1 exited normally</code></strong>
+          <pre><code><span class="gdb-out">Inferior 1 (process 12345) exited normally.</span>
+<span class="cmt"># → Le programme a terminé sans crash — c'est normal !</span>
+<span class="cmt"># Relancer avec : run</span>
+<span class="cmt"># Ou poser un breakpoint AVANT de lancer</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ ANALYSER UN CRASH ══════════════ -->
+  <div class="section-title">ANALYSER UN CRASH — LES CAS COURANTS</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">💥</span> SEGFAULT — TROUVER LA CAUSE</div>
+
+    <div class="crash-box segfault">
+      <div class="crash-title">💀 SEGMENTATION FAULT</div>
+      <p style="font-size:14px;">Ton programme accède à une adresse mémoire invalide — pointeur NULL, pointeur non initialisé, tableau hors limites, stack overflow...</p>
+    </div>
+
+    <pre><code><span class="cmt"># Ton programme crash → lancer GDB</span>
+gdb ./prog
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span>
+<span class="gdb-out">Program received signal SIGSEGV, Segmentation fault.
+0x0000000000401145 in ft_strlen (str=0x0) at ft_strlen.c:7
+7           while (*str)</span>
+
+<span class="cmt"># → Le crash est à ft_strlen.c ligne 7, str vaut 0x0 (NULL) !</span>
+
+<span class="cmt"># Voir la pile d'appels pour comprendre qui a appelé ft_strlen</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">backtrace</span>
+<span class="gdb-out">#0  ft_strlen (str=0x0) at ft_strlen.c:7      ← la fonction crashée
+#1  0x00401165 in main () at main.c:12         ← main a appelé ft_strlen</span>
+
+<span class="cmt"># Aller dans main pour voir ce qui a été passé</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">frame</span> <span class="gdb-arg">1</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info locals</span>
+<span class="gdb-out">str = 0x0                                      ← str est NULL ! Voilà le bug.</span>
+
+<span class="cmt"># Checklist quand tu vois un segfault :</span>
+<span class="cmt"># 1. run → lire le message d'erreur (fichier + ligne)</span>
+<span class="cmt"># 2. backtrace → voir la chaîne d'appels</span>
+<span class="cmt"># 3. frame N → aller dans chaque frame</span>
+<span class="cmt"># 4. info locals / print VAR → trouver la valeur invalide</span></code></pre>
+  </div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">♾️</span> BOUCLE INFINIE — LE PROGRAMME NE RÉPOND PLUS</div>
+    <pre><code><span class="cmt"># Ton programme est bloqué (boucle infinie)</span>
+<span class="cmt"># → Lance GDB, run, puis Ctrl+C pour l'interrompre</span>
+
+gdb ./prog
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span>
+<span class="cmt"># [le programme tourne et ne revient pas...]</span>
+<span class="cmt"># Appuie sur Ctrl+C</span>
+<span class="gdb-out">^C
+Program received signal SIGINT, Interrupt.
+0x0000000000401155 in my_loop (head=0x602260) at main.c:23
+23          while (node != NULL)</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">backtrace</span>
+<span class="gdb-out">#0  my_loop (head=0x602260) at main.c:23</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">*node</span>
+<span class="gdb-out">$1 = {n = 42, next = 0x602260}   ← next pointe sur lui-même ! Cycle !</span>
+
+<span class="cmt"># → next pointe vers le nœud lui-même → boucle infinie
+# Solution : vérifier la logique d'ajout de nœuds
+# Quelque part, node->next = node au lieu de node->next = NULL</span></code></pre>
+    <div class="clarif"><strong style="color:var(--purple)">Ctrl+C dans GDB</strong> = interrompre le programme SANS le tuer. Tu peux ensuite inspecter l'état exact au moment où il était bloqué. C'est le moyen le plus rapide de localiser une boucle infinie.</div>
+  </div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">💥</span> DOUBLE FREE — CRASH ALÉATOIRE</div>
+    <pre><code><span class="gdb-out">Program received signal SIGABRT, Aborted.
+__GI_raise (sig=sig@entry=6) at ../sysdeps/unix/sysv/linux/raise.c:50</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">backtrace</span>
+<span class="gdb-out">#0  __GI_raise ...
+#1  __GI_abort ...
+#2  __libc_message ...
+#3  malloc_printerr ...          ← malloc détecte une corruption
+#4  free (mem=0x602260) at ...   ← le double free est ici
+#5  0x00401188 in main () at main.c:35</span>
+
+<span class="cmt"># SIGABRT = le système a détecté une corruption du heap
+# Causes : double free, écriture hors des limites d'un malloc...
+# → Utilise Valgrind pour identifier précisément le double free</span>
+
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">frame</span> <span class="gdb-arg">5</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info locals</span>            <span class="cmt"># voir les variables au moment du crash</span></code></pre>
+    <div class="warn">Pour les bugs liés au heap (double free, use-after-free), <strong>Valgrind</strong> est souvent plus efficace que GDB seul : <code>valgrind --leak-check=full ./prog</code>. GDB et Valgrind sont complémentaires.</div>
+  </div>
+
+  <!-- ══════════════ WORKFLOW COMPLET ══════════════ -->
+  <div class="section-title">WORKFLOW COMPLET — SESSION TYPE</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🎯</span> UNE SESSION GDB DE A À Z</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Compiler avec -g</h4>
+          <pre><code>gcc -Wall -Werror -Wextra -g main.c -o prog</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Lancer GDB et poser un breakpoint</h4>
+          <pre><code>gdb ./prog
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">break</span> <span class="gdb-arg">main</span>          <span class="cmt"># pause au début de main</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Lancer et inspecter</h4>
+          <pre><code><span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">list</span>                  <span class="cmt"># voir le code autour</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info locals</span>           <span class="cmt"># voir toutes les variables locales</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Avancer et surveiller</h4>
+          <pre><code><span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">display</span> <span class="gdb-arg">i</span>            <span class="cmt"># surveiller i</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">next</span>                  <span class="cmt"># avancer ligne par ligne</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">next</span>                  <span class="cmt"># Entrée seule = répéter next</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Entrer dans une fonction suspecte</h4>
+          <pre><code><span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">step</span>                  <span class="cmt"># entrer dans la fonction</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">print</span> <span class="gdb-arg">*ptr</span>           <span class="cmt"># inspecter le pointeur</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">finish</span>                <span class="cmt"># sortir de la fonction</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h4>Corriger et recommencer</h4>
+          <pre><code><span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">kill</span>                  <span class="cmt"># arrêter l'exécution</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span>                   <span class="cmt"># relancer depuis le début</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">quit</span>                  <span class="cmt"># quitter GDB</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TIPS AVANCÉS ══════════════ -->
+  <div class="section-title">TIPS ET ASTUCES UTILES</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">⚡</span> GAGNER DU TEMPS DANS GDB</div>
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div>
+          <strong style="color:var(--neon);font-size:16px;">Entrée vide = répéter la dernière commande</strong>
+          <p style="font-size:14px;color:var(--muted);">Appuyer sur <kbd style="background:var(--border);padding:2px 6px;border-radius:3px;color:var(--text);">Entrée</kbd> sans rien taper répète la dernière commande. Parfait pour avancer rapidement avec <code>next</code> ou <code>continue</code>.</p>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div>
+          <strong style="color:var(--cyan);font-size:16px;">Utilise les abréviations</strong>
+          <pre><code><span class="gdb-cmd">b</span>   = break    <span class="gdb-cmd">r</span>   = run      <span class="gdb-cmd">n</span>  = next
+<span class="gdb-cmd">s</span>   = step     <span class="gdb-cmd">c</span>   = continue <span class="gdb-cmd">p</span>  = print
+<span class="gdb-cmd">bt</span>  = backtrace <span class="gdb-cmd">l</span>  = list     <span class="gdb-cmd">q</span>  = quit
+<span class="gdb-cmd">i b</span> = info breakpoints        <span class="gdb-cmd">i l</span> = info locals
+<span class="gdb-cmd">d</span>   = delete   <span class="gdb-cmd">fin</span> = finish   <span class="gdb-cmd">k</span>  = kill</code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot green"></div>
+        <div>
+          <strong style="color:var(--green);font-size:16px;">Le fichier .gdbinit — automatise tes sessions</strong>
+          <p style="font-size:14px;color:var(--muted);">Crée un <code>.gdbinit</code> à la racine de ton projet pour ne plus retaper les mêmes commandes à chaque fois :</p>
+          <pre><code><span class="cmt"># .gdbinit — exécuté automatiquement au démarrage de GDB</span>
+set confirm off           <span class="cmt"># supprimer les confirmations</span>
+set print pretty on       <span class="cmt"># structs affichées joliment</span>
+set print array on        <span class="cmt"># tableaux sur plusieurs lignes</span>
+tui enable                <span class="cmt"># activer le mode TUI par défaut</span>
+break main                <span class="cmt"># poser un breakpoint sur main</span>
+run                       <span class="cmt"># lancer automatiquement</span></code></pre>
+          <div class="warn" style="margin-top:8px;">GDB peut refuser de charger un <code>.gdbinit</code> non sécurisé. Si tu vois un avertissement, ajoute dans <code>~/.gdbinit</code> : <code>set auto-load safe-path /</code></div>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot yellow"></div>
+        <div>
+          <strong style="color:var(--yellow);font-size:16px;">Chercher une adresse → quel symbole ?</strong>
+          <pre><code><span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info symbol</span> <span class="gdb-arg">0x401130</span>
+<span class="gdb-out">main in section .text   ← cette adresse correspond à main()</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot pink"></div>
+        <div>
+          <strong style="color:var(--pink);font-size:16px;">Passer des arguments avec run</strong>
+          <pre><code><span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span> <span class="gdb-arg">hello 42 "avec espace"</span>
+<span class="cmt"># Équivalent à ./prog hello 42 "avec espace"</span>
+
+<span class="cmt"># Avec redirection</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span> <span class="gdb-arg">< input.txt</span></code></pre>
+        </div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot purple"></div>
+        <div>
+          <strong style="color:var(--purple);font-size:16px;">Aide intégrée dans GDB</strong>
+          <pre><code><span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">help</span>                  <span class="cmt"># liste des catégories</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">help</span> <span class="gdb-arg">break</span>            <span class="cmt"># aide sur la commande break</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">help</span> <span class="gdb-arg">all</span>              <span class="cmt"># toutes les commandes</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ TABLEAU RÉCAP ══════════════ -->
+  <div class="section-title">TABLEAU RÉCAP — TOUTES LES COMMANDES</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">📊</span> RÉFÉRENCE RAPIDE COMPLÈTE</div>
+    <table class="macro-table">
+      <thead><tr><th>Commande</th><th>Abrév.</th><th>Ce que ça fait</th></tr></thead>
+      <tbody>
+        <tr><td><span class="macro-name">run [args]</span></td><td><span class="short">r</span></td><td>Lancer le programme (avec args optionnels)</td></tr>
+        <tr><td><span class="macro-name">quit</span></td><td><span class="short">q</span></td><td>Quitter GDB</td></tr>
+        <tr><td><span class="macro-name">kill</span></td><td><span class="short">k</span></td><td>Arrêter le programme en cours</td></tr>
+        <tr><td><span class="macro-name">break &lt;loc&gt;</span></td><td><span class="short">b</span></td><td>Poser un breakpoint (ligne, fonction, fichier:ligne)</td></tr>
+        <tr><td><span class="macro-name">break &lt;loc&gt; if &lt;cond&gt;</span></td><td></td><td>Breakpoint conditionnel</td></tr>
+        <tr><td><span class="macro-name">info breakpoints</span></td><td><span class="short">i b</span></td><td>Lister tous les breakpoints</td></tr>
+        <tr><td><span class="macro-name">delete [N]</span></td><td><span class="short">d</span></td><td>Supprimer le breakpoint N (ou tous)</td></tr>
+        <tr><td><span class="macro-name">next [N]</span></td><td><span class="short">n</span></td><td>Ligne suivante (sans entrer dans les fonctions)</td></tr>
+        <tr><td><span class="macro-name">step [N]</span></td><td><span class="short">s</span></td><td>Ligne suivante (entre dans les fonctions)</td></tr>
+        <tr><td><span class="macro-name">continue</span></td><td><span class="short">c</span></td><td>Reprendre jusqu'au prochain breakpoint</td></tr>
+        <tr><td><span class="macro-name">finish</span></td><td><span class="short">fin</span></td><td>Terminer la fonction courante et s'arrêter</td></tr>
+        <tr><td><span class="macro-name">until &lt;N&gt;</span></td><td></td><td>Avancer jusqu'à la ligne N</td></tr>
+        <tr><td><span class="macro-name">print &lt;expr&gt;</span></td><td><span class="short">p</span></td><td>Afficher la valeur d'une expression / variable</td></tr>
+        <tr><td><span class="macro-name">print/x /d /s /c</span></td><td></td><td>Afficher en hex / décimal / string / char</td></tr>
+        <tr><td><span class="macro-name">display &lt;expr&gt;</span></td><td></td><td>Afficher automatiquement après chaque step</td></tr>
+        <tr><td><span class="macro-name">watch &lt;var&gt;</span></td><td></td><td>Pause quand la variable change</td></tr>
+        <tr><td><span class="macro-name">x/NFS &lt;addr&gt;</span></td><td></td><td>Examiner N unités de mémoire brute</td></tr>
+        <tr><td><span class="macro-name">info locals</span></td><td><span class="short">i l</span></td><td>Toutes les variables locales du frame courant</td></tr>
+        <tr><td><span class="macro-name">info args</span></td><td></td><td>Arguments de la fonction courante</td></tr>
+        <tr><td><span class="macro-name">info registers</span></td><td><span class="short">i r</span></td><td>Tous les registres CPU</td></tr>
+        <tr><td><span class="macro-name">backtrace</span></td><td><span class="short">bt</span></td><td>Pile d'appels complète</td></tr>
+        <tr><td><span class="macro-name">frame &lt;N&gt;</span></td><td></td><td>Aller dans le frame N de la pile</td></tr>
+        <tr><td><span class="macro-name">list [loc]</span></td><td><span class="short">l</span></td><td>Afficher le code source autour de la position</td></tr>
+        <tr><td><span class="macro-name">set variable &lt;v&gt; = &lt;val&gt;</span></td><td></td><td>Modifier une variable à la volée</td></tr>
+        <tr><td><span class="macro-name">call &lt;func(args)&gt;</span></td><td></td><td>Appeler une fonction manuellement</td></tr>
+        <tr><td><span class="macro-name">print *struct_ptr</span></td><td></td><td>Afficher tous les champs d'une struct</td></tr>
+        <tr><td><span class="macro-name">print *arr@N</span></td><td></td><td>Afficher N éléments d'un tableau</td></tr>
+        <tr><td><span class="macro-name">ptype &lt;var&gt;</span></td><td></td><td>Afficher le type complet d'une variable</td></tr>
+        <tr><td><span class="macro-name">whatis &lt;var&gt;</span></td><td></td><td>Afficher le type court d'une variable</td></tr>
+        <tr><td><span class="macro-name">tui enable</span></td><td></td><td>Activer l'interface visuelle avec code source</td></tr>
+        <tr><td><span class="macro-name">help [cmd]</span></td><td></td><td>Aide sur une commande</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ FINAL ══════════════ -->
+  <div class="section-title">RÉSUMÉ — MÉTHODE ANTI-SEGFAULT</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🏆</span> CHECKLIST DÉBUTANT POUR TOUT BUG</div>
+    <pre><code><span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  ÉTAPE 0 — TOUJOURS compiler avec -g                             ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+gcc -g -Wall -Werror -Wextra main.c -o prog
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  FACE À UN CRASH (segfault, etc.)                                ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+gdb ./prog
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span>                    <span class="cmt"># laisser crasher</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">backtrace</span>              <span class="cmt"># voir où et comment</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">info locals</span>            <span class="cmt"># inspecter les variables locales</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">frame</span> <span class="gdb-arg">1</span>               <span class="cmt"># remonter d'un niveau</span>
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  POUR TRACER L'EXÉCUTION LIGNE PAR LIGNE                         ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">break</span> <span class="gdb-arg">main</span>            <span class="cmt"># pause au début</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">run</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">display</span> <span class="gdb-arg">ma_var</span>        <span class="cmt"># surveiller une variable</span>
+<span class="gdb-prompt">(gdb)</span> <span class="gdb-cmd">next</span>                   <span class="cmt"># [Entrée] pour répéter</span>
+
+<span class="cmt">╔══════════════════════════════════════════════════════════════════╗
+║  RÈGLES D'OR GDB                                                 ║
+╚══════════════════════════════════════════════════════════════════╝</span>
+<span class="cmt"># ✅ Toujours compiler avec -g avant de lancer GDB</span>
+<span class="cmt"># ✅ Lancer GDB avec -tui pour voir le code en temps réel</span>
+<span class="cmt"># ✅ Commencer par backtrace (bt) sur tout crash</span>
+<span class="cmt"># ✅ Utiliser info locals pour voir toutes les variables</span>
+<span class="cmt"># ✅ Utiliser print *ptr pour inspecter une struct entière</span>
+<span class="cmt"># ✅ Utiliser display pour surveiller une var dans une boucle</span>
+<span class="cmt"># ✅ Ctrl+C pour interrompre une boucle infinie</span>
+<span class="cmt"># ✅ Utiliser break conditionnel si la boucle a 1000 itérations</span>
+<span class="cmt"># ✅ Combiner GDB + Valgrind pour les bugs mémoire (double free...)</span>
+<span class="cmt"># ✅ Entrée vide = répéter → avancer vite</span>
+<span class="cmt"># ❌ Ne pas utiliser GDB sans -g → tu vois que des adresses hex</span>
+<span class="cmt"># ❌ Ne pas confondre next (reste dans la fonction) et step (y entre)</span></code></pre>
+  </div>
+
+</div>
+
+<footer>
+  <span>BUG HUNTED</span> — BREAK. INSPECT. CONQUER.<br><br>
+  <span>Holberton School</span> — GDB — GNU Debugger
+</footer>
+
+</body>
+</html>
