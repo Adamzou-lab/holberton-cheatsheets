@@ -436,7 +436,7 @@ footer span { color: var(--primary); }
 }
 .hub-icon { font-size: 14px; }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .hub-btn {
     top: auto;
     bottom: 24px;
