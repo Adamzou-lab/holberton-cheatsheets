@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hash Tables — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<style>
+  :root {
+    --bg:     #0a0f0a;
+    --card:   #101810;
+    --border: #1a2e1a;
+    --neon:   #39ff14;
+    --cyan:   #00f5ff;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text:   #c8e0c8;
+    --muted:  #4a6050;
+    --white:  #eef5ee;
+    /* bridge vars pour common.css */
+    --bg2:         #101810;
+    --primary:     #39ff14;
+    --primary-rgb: 57, 255, 20;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; position: relative; z-index: 1; }
+
+  header { text-align: center; padding: 60px 20px 40px; position: relative; z-index: 1; }
+  .tag { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--neon); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; display: block; }
+  header h1 { font-family: 'Press Start 2P', monospace; font-size: clamp(14px, 2.5vw, 22px); color: var(--white); line-height: 1.7; text-shadow: 0 0 20px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.2); margin-bottom: 20px; }
+  header h1 span { color: var(--neon); }
+  .header-sub { font-size: 18px; color: var(--muted); letter-spacing: 2px; }
+
+  .section-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--neon); letter-spacing: 2px; margin: 50px 0 20px; display: flex; align-items: center; gap: 12px; }
+  .section-title::before { content: '▶'; color: var(--pink); font-size: 10px; animation: blink 1s step-end infinite; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--neon), transparent); }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--neon); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.pink .card-title   { color: var(--pink); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.orange .card-title { color: var(--orange); }
+  .card-icon { font-size: 16px; }
+
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre { background: #060e06; border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; font-size: 13px; line-height: 1.8; margin-top: 12px; }
+  code { background: rgba(57,255,20,0.08); color: var(--neon); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  .kw    { color: var(--pink); }
+  .fn    { color: var(--neon); }
+  .type  { color: var(--purple); }
+  .str   { color: var(--cyan); }
+  .num   { color: var(--orange); }
+  .cmt   { color: var(--muted); font-style: italic; }
+  .macro { color: var(--yellow); }
+  .ok    { color: var(--neon); }
+  .err   { color: var(--pink); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .analogy { background: linear-gradient(135deg, #0a150a, #0a100a); border: 1px solid var(--yellow); border-left: 4px solid var(--yellow); border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .analogy-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  .tip    { background: rgba(57,255,20,0.05);  border: 1px solid rgba(57,255,20,0.3);  border-left: 4px solid var(--neon);   border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .warn   { background: rgba(255,45,120,0.05); border: 1px solid rgba(255,45,120,0.3); border-left: 4px solid var(--pink);   border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .clarif { background: rgba(181,78,255,0.07); border: 1px solid rgba(181,78,255,0.35);border-left: 4px solid var(--purple); border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .tip::before    { content: '✅ '; }
+  .warn::before   { content: '⚠️ '; }
+  .clarif::before { content: '💡 '; }
+
+  .macro-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; font-size: 13px; margin-top: 12px; }
+  .macro-table th { background: var(--border); color: var(--neon); padding: 10px 14px; text-align: left; font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; }
+  .macro-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .macro-table tr:hover td { background: rgba(57,255,20,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; }
+
+  .level-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--border); border: 1px solid var(--purple); border-radius: 4px; padding: 4px 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--purple); margin-bottom: 16px; }
+
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--bg); background: var(--neon); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  .skill-tree { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 24px; }
+  .skill-tree::before { content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(to bottom, var(--neon), var(--purple)); }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--neon); background: var(--bg); flex-shrink: 0; margin-left: -24px; margin-top: 3px; box-shadow: 0 0 8px var(--neon); }
+  .skill-dot.done   { background: var(--neon); }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.pink   { border-color: var(--pink);   box-shadow: 0 0 8px var(--pink);   background: var(--pink); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.purple { border-color: var(--purple); box-shadow: 0 0 8px var(--purple); background: var(--purple); }
+  .skill-dot.orange { border-color: var(--orange); box-shadow: 0 0 8px var(--orange); background: var(--orange); }
+
+  /* HASH TABLE VISUAL */
+  .ht-visual { background: #060e06; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 14px; font-family: 'Share Tech Mono', monospace; font-size: 13px; }
+  .ht-header { background: var(--border); padding: 8px 14px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--neon); letter-spacing: 1px; }
+  .ht-row { display: flex; border-bottom: 1px solid var(--border); align-items: stretch; }
+  .ht-row:last-child { border-bottom: none; }
+  .ht-idx { width: 50px; padding: 10px 12px; background: rgba(57,255,20,0.05); color: var(--muted); flex-shrink: 0; border-right: 1px solid var(--border); font-size: 12px; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+  .ht-cell { padding: 10px 14px; flex: 1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ht-entry { background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.4); border-radius: 4px; padding: 4px 10px; font-size: 12px; display: flex; gap: 6px; align-items: center; }
+  .ht-entry.collision { background: rgba(255,45,120,0.1); border-color: rgba(255,45,120,0.4); }
+  .ht-key   { color: var(--cyan); }
+  .ht-arrow { color: var(--muted); }
+  .ht-val   { color: var(--yellow); }
+  .ht-next  { color: var(--pink); font-size: 11px; }
+  .ht-empty { color: var(--muted); font-style: italic; font-size: 12px; }
+  .ht-null  { color: var(--pink); font-size: 12px; }
+
+  /* HASH FUNCTION VISUAL */
+  .hash-flow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0; margin: 14px 0; }
+  .hash-box { border-radius: 6px; padding: 10px 16px; font-family: 'Share Tech Mono', monospace; font-size: 13px; text-align: center; }
+  .hash-box.input  { background: rgba(0,245,255,0.1); border: 1px solid var(--cyan);   color: var(--cyan); }
+  .hash-box.func   { background: rgba(57,255,20,0.1); border: 1px solid var(--neon);   color: var(--neon); font-family: 'Press Start 2P', monospace; font-size: 7px; padding: 12px 16px; }
+  .hash-box.result { background: rgba(255,230,0,0.1); border: 1px solid var(--yellow); color: var(--yellow); font-weight: bold; font-size: 16px; }
+  .hash-arrow { font-size: 20px; color: var(--muted); padding: 0 10px; }
+
+  /* COMPARE */
+  .compare-label { font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; margin-bottom: 10px; }
+  .compare-label.bad  { color: var(--pink); }
+  .compare-label.good { color: var(--neon); }
+
+  footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--muted); letter-spacing: 2px; position: relative; z-index: 1; }
+  footer span { color: var(--neon); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) { header h1 { font-size: 12px; } .section-title { font-size: 8px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — C Programming ✦</span>
+  <h1>HASH<br><span>TABLES</span></h1>
+  <p class="header-sub">Clé → Hash → Index → Valeur. Instantané.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ C'EST QUOI ══════════════ -->
+  <div class="section-title">C'EST QUOI UNE HASH TABLE ?</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗄️</span> DÉFINITION — PARTIR DE ZÉRO</div>
+    <p>Une <strong style="color:var(--neon)">hash table</strong> (table de hachage) est une structure de données qui stocke des paires <strong style="color:var(--cyan)">clé → valeur</strong> et permet d'accéder à n'importe quelle valeur en <strong style="color:var(--neon)">O(1)</strong> — temps constant, peu importe la taille de la table. Elle utilise une <strong style="color:var(--yellow)">fonction de hachage</strong> pour convertir une clé (string, int...) en un index de tableau.</p>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Imagine un <strong>vestiaire de stade</strong>. Tu arrives avec ton manteau ("France"), le vestiairier prend ton nom, calcule un numéro de casier (la fonction de hachage), et range ton manteau directement dans ce casier. Quand tu veux récupérer "France", il recalcule le même numéro et va direct au bon casier — <strong>sans chercher dans tous les casiers</strong>. C'est ça O(1).</p>
+    </div>
+
+    <div class="grid-3" style="margin-top:16px;">
+      <div style="background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:22px; margin-bottom:6px;">🔑</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--cyan); margin-bottom:6px;">CLÉ (KEY)</div>
+        <p style="font-size:12px; color:var(--muted);">L'identifiant unique. Ex: <code>"name"</code>, <code>"age"</code></p>
+      </div>
+      <div style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:22px; margin-bottom:6px;">⚙️</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--neon); margin-bottom:6px;">HASH FUNCTION</div>
+        <p style="font-size:12px; color:var(--muted);">Convertit la clé en index. Doit être <strong style="color:var(--text)">déterministe</strong></p>
+      </div>
+      <div style="background:rgba(255,230,0,0.05); border:1px solid rgba(255,230,0,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-size:22px; margin-bottom:6px;">📦</div>
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--yellow); margin-bottom:6px;">VALEUR (VALUE)</div>
+        <p style="font-size:12px; color:var(--muted);">La donnée associée à la clé. Ex: <code>"Alice"</code>, <code>42</code></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ COMMENT ÇA MARCHE ══════════════ -->
+  <div class="section-title">COMMENT ÇA MARCHE — LE MÉCANISME COMPLET</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">⚙️</span> LE FLUX : CLÉ → INDEX → VALEUR</div>
+
+    <div class="hash-flow">
+      <div class="hash-box input">"name"<br><span style="font-size:10px; color:var(--muted);">la clé</span></div>
+      <div class="hash-arrow">→</div>
+      <div class="hash-box func">HASH<br>FUNCTION<br><span style="font-size:5px; color:var(--muted);">djb2 / sum...</span></div>
+      <div class="hash-arrow">→</div>
+      <div class="hash-box result">3<br><span style="font-size:10px; color:var(--muted);">l'index</span></div>
+      <div class="hash-arrow">→</div>
+      <div class="hash-box input" style="border-color:var(--yellow); color:var(--yellow); background:rgba(255,230,0,0.1);">array[3]<br><span style="font-size:10px; color:var(--muted);">la case</span></div>
+      <div class="hash-arrow">→</div>
+      <div class="hash-box result" style="border-color:var(--neon); color:var(--neon); background:rgba(57,255,20,0.1);">"Alice"<br><span style="font-size:10px; color:var(--muted);">la valeur</span></div>
+    </div>
+
+    <div class="steps" style="margin-top:16px;">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>SET — Stocker une paire clé/valeur</h4>
+          <pre><code><span class="cmt">ht_set(table, "name", "Alice")
+       ↓
+hash("name") % table_size = 3   ← calculer l'index
+       ↓
+table->array[3] = node{"name", "Alice"} ← stocker</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>GET — Récupérer une valeur</h4>
+          <pre><code><span class="cmt">ht_get(table, "name")
+       ↓
+hash("name") % table_size = 3   ← même calcul → même index
+       ↓
+table->array[3]->value = "Alice" ← accès direct O(1) !</span></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="clarif"><strong style="color:var(--purple)">Pourquoi O(1) ?</strong> La fonction de hachage calcule toujours le même index pour la même clé. Pas besoin de chercher — on sait directement où regarder. C'est comme connaître le numéro de casier par cœur.</div>
+  </div>
+
+  <!-- ══════════════ STRUCTURES ══════════════ -->
+  <div class="section-title">LES STRUCTURES — DÉCLARER UNE HASH TABLE</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🧱</span> LES 2 STRUCTS INDISPENSABLES</div>
+    <pre><code><span class="cmt">/* ── 1. Le nœud (une paire clé/valeur) ─────────────────────── */</span>
+<span class="kw">typedef struct</span> <span class="type">hash_node_s</span>
+{
+    <span class="type">char</span>              *key;    <span class="cmt">/* la clé   — une string */</span>
+    <span class="type">char</span>              *value;  <span class="cmt">/* la valeur — une string */</span>
+    <span class="kw">struct</span> <span class="type">hash_node_s</span> *next;   <span class="cmt">/* chaînage en cas de collision */</span>
+} <span class="type">hash_node_t</span>;
+
+<span class="cmt">/* ── 2. La table elle-même ──────────────────────────────────── */</span>
+<span class="kw">typedef struct</span> <span class="type">hash_table_s</span>
+{
+    <span class="type">unsigned long int</span>  size;   <span class="cmt">/* nombre de cases dans le tableau */</span>
+    <span class="type">hash_node_t</span>      **array;  <span class="cmt">/* tableau de pointeurs vers des nœuds */</span>
+} <span class="type">hash_table_t</span>;</code></pre>
+
+    <p style="margin-top:14px; margin-bottom:8px; font-size:14px; color:var(--muted);">Visualisation de la structure en mémoire :</p>
+    <pre><code><span class="cmt">  hash_table_t
+  ┌──────────┬──────────────────────────────────────────┐
+  │ size = 8 │ array (pointeur vers tableau de ptr)     │
+  └──────────┴──────────────────────────────────────────┘
+                │
+                ▼
+  array[0] → NULL
+  array[1] → NULL
+  array[2] → [key:"age"  | val:"25"  | next:NULL]
+  array[3] → [key:"name" | val:"Alice"| next:NULL]
+  array[4] → NULL
+  array[5] → [key:"city" | val:"Paris"| next:NULL]
+  array[6] → NULL
+  array[7] → NULL</span></code></pre>
+
+    <div class="clarif"><strong style="color:var(--purple)">hash_node_t **array</strong> : c'est un tableau de <em>pointeurs</em> vers des nœuds (pas les nœuds directement). Chaque case peut pointer vers NULL (vide) ou vers une linked list de nœuds (collision).</div>
+  </div>
+
+  <!-- ══════════════ HASH FUNCTION ══════════════ -->
+  <div class="section-title">LA FONCTION DE HACHAGE — LE CŒUR DU SYSTÈME</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">⚡</span> PROPRIÉTÉS D'UNE BONNE HASH FUNCTION</div>
+
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.3); border-radius:8px; padding:14px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--neon); margin-bottom:8px;">✅ QUALITÉS REQUISES</div>
+        <ul style="font-size:14px; list-style:none; line-height:2;">
+          <li>🎯 <strong style="color:var(--white)">Déterministe</strong> — même clé = même index</li>
+          <li>⚡ <strong style="color:var(--white)">Rapide</strong> — calcul en O(1)</li>
+          <li>📊 <strong style="color:var(--white)">Uniforme</strong> — distribue bien dans le tableau</li>
+          <li>🔢 <strong style="color:var(--white)">Index valide</strong> — résultat dans [0, size-1]</li>
+        </ul>
+      </div>
+      <div style="background:rgba(255,45,120,0.05); border:1px solid rgba(255,45,120,0.3); border-radius:8px; padding:14px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--pink); margin-bottom:8px;">❌ CE QU'IL NE FAUT PAS</div>
+        <ul style="font-size:14px; list-style:none; line-height:2;">
+          <li>💩 Concentrer les données dans peu de cases</li>
+          <li>💩 Retourner des indices hors du tableau</li>
+          <li>💩 Être trop lente à calculer</li>
+          <li>💩 Produire des résultats aléatoires</li>
+        </ul>
+      </div>
+    </div>
+
+    <pre><code><span class="cmt">/* ── FONCTION SIMPLE — somme des ASCII ─────────────────────── */</span>
+<span class="type">unsigned long int</span> <span class="fn">hash_simple</span>(<span class="kw">const</span> <span class="type">char</span> *key, <span class="type">unsigned long int</span> size)
+{
+    <span class="type">unsigned long int</span> hash = <span class="num">0</span>;
+
+    <span class="kw">while</span> (*key)
+        hash += *key++;        <span class="cmt">/* somme des valeurs ASCII */</span>
+    <span class="kw">return</span> (hash % size);      <span class="cmt">/* modulo pour rester dans le tableau */</span>
+}
+<span class="cmt">/* Problème : "ab" et "ba" donnent le même hash → trop de collisions */</span>
+
+<span class="cmt">/* ── FONCTION DJB2 — la référence (utilisée à Holberton) ─────── */</span>
+<span class="type">unsigned long int</span> <span class="fn">hash_djb2</span>(<span class="kw">const</span> <span class="type">unsigned char</span> *str)
+{
+    <span class="type">unsigned long int</span> hash = <span class="num">5381</span>;    <span class="cmt">/* valeur magique initiale */</span>
+    <span class="type">int</span>               c;
+
+    <span class="kw">while</span> ((c = *str++))
+        hash = ((hash << <span class="num">5</span>) + hash) + c;  <span class="cmt">/* hash * 33 + c */</span>
+    <span class="kw">return</span> (hash);
+}
+<span class="cmt">/* Utilisation : index = hash_djb2(key) % table->size */</span></code></pre>
+
+    <div class="tip">La fonction <strong>djb2</strong> est celle attendue à Holberton. Mémorise sa valeur initiale (<code>5381</code>) et sa formule (<code>hash * 33 + c</code>). Elle distribue très bien les clés et minimise les collisions.</div>
+  </div>
+
+  <!-- ══════════════ COLLISION ══════════════ -->
+  <div class="section-title">LES COLLISIONS — QUAND DEUX CLÉS ONT LE MÊME INDEX</div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">💥</span> C'EST QUOI UNE COLLISION ?</div>
+    <p style="margin-bottom:12px;">Une <strong style="color:var(--pink)">collision</strong> se produit quand deux clés différentes donnent le <strong style="color:var(--pink)">même index</strong> après hachage. C'est inévitable (pigeonhole principle) — une bonne table doit savoir les gérer.</p>
+
+    <pre><code><span class="cmt">/* Exemple de collision */</span>
+hash(<span class="str">"name"</span>) % <span class="num">8</span> = <span class="num">3</span>
+hash(<span class="str">"mane"</span>) % <span class="num">8</span> = <span class="num">3</span>   <span class="cmt">← même index ! collision !</span>
+
+<span class="cmt">/* Les deux doivent cohabiter à l'index 3 */</span></code></pre>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Deux joueurs arrivent au vestiaire — le vestiairier calcule le numéro de casier pour chacun, et tombe sur le <strong>même casier 3</strong>. Solution : il enchaîne les affaires avec un <strong>crochet supplémentaire</strong> dans le casier (linked list). Pour retrouver "name", il ouvre le casier 3 et parcourt la chaîne jusqu'à trouver le bon.</p>
+    </div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔗</span> SOLUTION : CHAINING — LISTES CHAÎNÉES</div>
+    <p style="margin-bottom:12px;">La méthode utilisée à Holberton — chaque case du tableau contient une <strong style="color:var(--neon)">linked list</strong> de nœuds. En cas de collision, on ajoute en tête de liste.</p>
+
+    <div class="ht-visual">
+      <div class="ht-header">HASH TABLE — CHAINING (taille = 8)</div>
+      <div class="ht-row">
+        <div class="ht-idx">0</div>
+        <div class="ht-cell"><span class="ht-null">NULL</span></div>
+      </div>
+      <div class="ht-row">
+        <div class="ht-idx">1</div>
+        <div class="ht-cell"><span class="ht-null">NULL</span></div>
+      </div>
+      <div class="ht-row">
+        <div class="ht-idx">2</div>
+        <div class="ht-cell">
+          <div class="ht-entry"><span class="ht-key">"age"</span><span class="ht-arrow">→</span><span class="ht-val">"25"</span></div>
+          <span class="ht-arrow">→ NULL</span>
+        </div>
+      </div>
+      <div class="ht-row">
+        <div class="ht-idx" style="color:var(--pink);">3</div>
+        <div class="ht-cell">
+          <div class="ht-entry collision"><span class="ht-key">"mane"</span><span class="ht-arrow">→</span><span class="ht-val">"Bob"</span></div>
+          <span class="ht-arrow">→</span>
+          <div class="ht-entry collision"><span class="ht-key">"name"</span><span class="ht-arrow">→</span><span class="ht-val">"Alice"</span></div>
+          <span class="ht-arrow">→ NULL</span>
+          <span style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--pink);">← COLLISION!</span>
+        </div>
+      </div>
+      <div class="ht-row">
+        <div class="ht-idx">4</div>
+        <div class="ht-cell"><span class="ht-null">NULL</span></div>
+      </div>
+      <div class="ht-row">
+        <div class="ht-idx">5</div>
+        <div class="ht-cell">
+          <div class="ht-entry"><span class="ht-key">"city"</span><span class="ht-arrow">→</span><span class="ht-val">"Paris"</span></div>
+          <span class="ht-arrow">→ NULL</span>
+        </div>
+      </div>
+      <div class="ht-row">
+        <div class="ht-idx">6</div>
+        <div class="ht-cell"><span class="ht-null">NULL</span></div>
+      </div>
+      <div class="ht-row">
+        <div class="ht-idx">7</div>
+        <div class="ht-cell"><span class="ht-null">NULL</span></div>
+      </div>
+    </div>
+
+    <div class="warn" style="margin-top:14px;">À l'index 3, <strong>"mane"</strong> a été ajouté <strong>en tête</strong> de la linked list, avant "name". C'est le comportement standard à Holberton : on insère toujours en tête (O(1)) et non en queue (O(n)).</div>
+  </div>
+
+  <!-- ══════════════ IMPLÉMENTATION COMPLÈTE ══════════════ -->
+  <div class="section-title">IMPLÉMENTATION COMPLÈTE EN C</div>
+
+  <!-- CREATE -->
+  <div class="card green fade-in" style="border-color:rgba(57,255,20,0.2);">
+    <div class="card-title"><span class="card-icon">🏗️</span> HT_CREATE — CRÉER UNE HASH TABLE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;string.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="type">hash_table_t</span> *<span class="fn">hash_table_create</span>(<span class="type">unsigned long int</span> size)
+{
+    <span class="type">hash_table_t</span>     *ht;
+    <span class="type">unsigned long int</span> i;
+
+    ht = malloc(<span class="kw">sizeof</span>(<span class="type">hash_table_t</span>));
+    <span class="kw">if</span> (ht == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+    ht->size  = size;
+    ht->array = malloc(<span class="kw">sizeof</span>(<span class="type">hash_node_t</span> *) * size);
+    <span class="kw">if</span> (ht->array == <span class="kw">NULL</span>)
+    {
+        free(ht);
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+    }
+    i = <span class="num">0</span>;
+    <span class="kw">while</span> (i < size)
+        ht->array[i++] = <span class="kw">NULL</span>;  <span class="cmt">/* initialiser toutes les cases à NULL */</span>
+    <span class="kw">return</span> (ht);
+}</code></pre>
+    <div class="tip">Initialiser chaque case à NULL est crucial — sinon tu lirais du garbage au lieu de NULL et penseras qu'une case est occupée alors qu'elle ne l'est pas.</div>
+  </div>
+
+  <!-- SET -->
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">✍️</span> HT_SET — INSÉRER / METTRE À JOUR</div>
+    <pre><code><span class="type">int</span> <span class="fn">hash_table_set</span>(<span class="type">hash_table_t</span> *ht, <span class="kw">const</span> <span class="type">char</span> *key, <span class="kw">const</span> <span class="type">char</span> *value)
+{
+    <span class="type">hash_node_t</span>       *node;
+    <span class="type">hash_node_t</span>       *tmp;
+    <span class="type">unsigned long int</span>  idx;
+
+    <span class="kw">if</span> (!ht || !key || !value)
+        <span class="kw">return</span> (<span class="num">0</span>);
+
+    idx = <span class="fn">key_index</span>((<span class="kw">const</span> <span class="type">unsigned char</span> *)key, ht->size); <span class="cmt">/* calculer l'index */</span>
+
+    <span class="cmt">/* ── Vérifier si la clé existe déjà → mise à jour ──────── */</span>
+    tmp = ht->array[idx];
+    <span class="kw">while</span> (tmp != <span class="kw">NULL</span>)
+    {
+        <span class="kw">if</span> (strcmp(tmp->key, key) == <span class="num">0</span>)   <span class="cmt">/* clé trouvée ! */</span>
+        {
+            free(tmp->value);
+            tmp->value = strdup(value);   <span class="cmt">/* mettre à jour la valeur */</span>
+            <span class="kw">return</span> (tmp->value != <span class="kw">NULL</span>);
+        }
+        tmp = tmp->next;
+    }
+
+    <span class="cmt">/* ── Créer un nouveau nœud ──────────────────────────────── */</span>
+    node = malloc(<span class="kw">sizeof</span>(<span class="type">hash_node_t</span>));
+    <span class="kw">if</span> (!node)
+        <span class="kw">return</span> (<span class="num">0</span>);
+    node->key   = strdup(key);    <span class="cmt">/* copier la clé */</span>
+    node->value = strdup(value);  <span class="cmt">/* copier la valeur */</span>
+    <span class="kw">if</span> (!node->key || !node->value)
+    {
+        free(node->key);
+        free(node->value);
+        free(node);
+        <span class="kw">return</span> (<span class="num">0</span>);
+    }
+
+    <span class="cmt">/* ── Insérer en TÊTE de liste ───────────────────────────── */</span>
+    node->next       = ht->array[idx];  <span class="cmt">/* le nouveau pointe vers l'ancien head */</span>
+    ht->array[idx]   = node;            <span class="cmt">/* le nouveau devient le head */</span>
+    <span class="kw">return</span> (<span class="num">1</span>);
+}</code></pre>
+    <div class="clarif"><strong style="color:var(--purple)">Pourquoi strdup ?</strong> On fait une copie de la clé et de la valeur plutôt que de stocker les pointeurs originaux. Ainsi la table est propriétaire de ses données et indépendante des variables de l'appelant.</div>
+  </div>
+
+  <!-- GET -->
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🔍</span> HT_GET — RÉCUPÉRER UNE VALEUR</div>
+    <pre><code><span class="type">char</span> *<span class="fn">hash_table_get</span>(<span class="kw">const</span> <span class="type">hash_table_t</span> *ht, <span class="kw">const</span> <span class="type">char</span> *key)
+{
+    <span class="type">hash_node_t</span>       *node;
+    <span class="type">unsigned long int</span>  idx;
+
+    <span class="kw">if</span> (!ht || !key)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+
+    idx  = <span class="fn">key_index</span>((<span class="kw">const</span> <span class="type">unsigned char</span> *)key, ht->size); <span class="cmt">/* même index */</span>
+    node = ht->array[idx];
+
+    <span class="kw">while</span> (node != <span class="kw">NULL</span>)
+    {
+        <span class="kw">if</span> (strcmp(node->key, key) == <span class="num">0</span>)  <span class="cmt">/* clé trouvée ! */</span>
+            <span class="kw">return</span> (node->value);
+        node = node->next;               <span class="cmt">/* parcourir la liste de collision */</span>
+    }
+    <span class="kw">return</span> (<span class="kw">NULL</span>);                        <span class="cmt">/* clé absente */</span>
+}</code></pre>
+    <div class="tip">Dans le cas idéal (pas de collision), <code>get</code> est O(1). En cas de collisions nombreuses, il devient O(n) sur la liste de collision. C'est pourquoi une bonne hash function est cruciale.</div>
+  </div>
+
+  <!-- PRINT -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🖨️</span> HT_PRINT — AFFICHER LA TABLE</div>
+    <pre><code><span class="type">void</span> <span class="fn">hash_table_print</span>(<span class="kw">const</span> <span class="type">hash_table_t</span> *ht)
+{
+    <span class="type">hash_node_t</span>       *node;
+    <span class="type">unsigned long int</span>  i;
+
+    <span class="kw">if</span> (!ht)
+        <span class="kw">return</span>;
+    printf(<span class="str">"{"</span>);
+    i = <span class="num">0</span>;
+    <span class="kw">while</span> (i < ht->size)
+    {
+        node = ht->array[i];
+        <span class="kw">while</span> (node != <span class="kw">NULL</span>)
+        {
+            printf(<span class="str">"'%s': '%s', "</span>, node->key, node->value);
+            node = node->next;
+        }
+        i++;
+    }
+    printf(<span class="str">"}\n"</span>);
+}</code></pre>
+  </div>
+
+  <!-- DELETE -->
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🗑️</span> HT_DELETE — LIBÉRER LA TABLE (VALGRIND !)</div>
+    <pre><code><span class="type">void</span> <span class="fn">hash_table_delete</span>(<span class="type">hash_table_t</span> *ht)
+{
+    <span class="type">hash_node_t</span>       *node;
+    <span class="type">hash_node_t</span>       *tmp;
+    <span class="type">unsigned long int</span>  i;
+
+    <span class="kw">if</span> (!ht)
+        <span class="kw">return</span>;
+    i = <span class="num">0</span>;
+    <span class="kw">while</span> (i < ht->size)
+    {
+        node = ht->array[i];
+        <span class="kw">while</span> (node != <span class="kw">NULL</span>)  <span class="cmt">/* libérer chaque nœud de la liste */</span>
+        {
+            tmp  = node->next;  <span class="cmt">/* sauvegarder next avant free ! */</span>
+            free(node->key);    <span class="cmt">/* libérer la clé */</span>
+            free(node->value);  <span class="cmt">/* libérer la valeur */</span>
+            free(node);         <span class="cmt">/* libérer le nœud */</span>
+            node = tmp;
+        }
+        i++;
+    }
+    free(ht->array);  <span class="cmt">/* libérer le tableau */</span>
+    free(ht);         <span class="cmt">/* libérer la table */</span>
+}</code></pre>
+    <div class="warn">Ordre de libération obligatoire : <strong>1) key → 2) value → 3) node → 4) array → 5) ht</strong>. Libérer dans le mauvais ordre = accès à de la mémoire déjà libérée → segfault + erreur Valgrind.</div>
+  </div>
+
+  <!-- ══════════════ KEY INDEX ══════════════ -->
+  <div class="section-title">KEY_INDEX — LA FONCTION HELPER</div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🔢</span> KEY_INDEX — COMBINER HASH + MODULO</div>
+    <pre><code><span class="cmt">/* Fonction helper utilisée par set et get */</span>
+<span class="type">unsigned long int</span> <span class="fn">key_index</span>(<span class="kw">const</span> <span class="type">unsigned char</span> *key,
+                             <span class="type">unsigned long int</span> size)
+{
+    <span class="kw">return</span> (<span class="fn">hash_djb2</span>(key) % size);
+    <span class="cmt">/* ↑ hash_djb2 donne un grand nombre
+       ↑ % size le ramène dans [0, size-1] */</span>
+}
+
+<span class="cmt">/* Exemple :
+   hash_djb2("name") = 2090756233
+   2090756233 % 1024 = 393
+   → "name" va dans table->array[393] */</span></code></pre>
+    <div class="clarif"><strong style="color:var(--purple)">Pourquoi le modulo ?</strong> La fonction djb2 retourne un <code>unsigned long int</code> potentiellement énorme. Le modulo (<code>%</code>) garantit que l'index est dans les limites du tableau [0, size-1].</div>
+  </div>
+
+  <!-- ══════════════ COMPLEXITÉ ══════════════ -->
+  <div class="section-title">COMPLEXITÉ — POURQUOI LES HASH TABLES SONT RAPIDES</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">⚡</span> ANALYSE DE COMPLEXITÉ</div>
+    <table class="macro-table">
+      <thead><tr><th>Opération</th><th>Cas moyen</th><th>Pire cas</th><th>Pourquoi</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="macro-name">set (insert)</span></td>
+          <td style="color:var(--neon);">O(1)</td>
+          <td style="color:var(--pink);">O(n)</td>
+          <td>Hash + insertion en tête = O(1). Pire cas = toutes les clés collisionnent</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">get (lookup)</span></td>
+          <td style="color:var(--neon);">O(1)</td>
+          <td style="color:var(--pink);">O(n)</td>
+          <td>Hash + accès direct = O(1). Pire cas = parcourir toute la liste</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">delete (node)</span></td>
+          <td style="color:var(--neon);">O(1)</td>
+          <td style="color:var(--pink);">O(n)</td>
+          <td>Hash + suppression = O(1) moyen</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">print (all)</span></td>
+          <td style="color:var(--yellow);">O(n+m)</td>
+          <td style="color:var(--yellow);">O(n+m)</td>
+          <td>n = taille table, m = nombre d'entrées — obligé de tout parcourir</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">delete (table)</span></td>
+          <td style="color:var(--yellow);">O(n+m)</td>
+          <td style="color:var(--yellow);">O(n+m)</td>
+          <td>Libérer chaque nœud de chaque liste</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="grid-2" style="margin-top:14px;">
+      <div style="background:rgba(57,255,20,0.05); border:1px solid rgba(57,255,20,0.3); border-radius:8px; padding:14px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--neon); margin-bottom:8px;">HASH TABLE vs TABLEAU</div>
+        <table style="width:100%; font-size:13px; font-family:'Share Tech Mono',monospace;">
+          <tr><td style="color:var(--muted);">Recherche</td><td style="color:var(--neon);">O(1)</td><td style="color:var(--pink);">O(n)</td></tr>
+          <tr><td style="color:var(--muted);">Insertion</td><td style="color:var(--neon);">O(1)</td><td style="color:var(--neon);">O(1)*</td></tr>
+          <tr><td style="color:var(--muted);">Suppression</td><td style="color:var(--neon);">O(1)</td><td style="color:var(--pink);">O(n)</td></tr>
+        </table>
+      </div>
+      <div style="background:rgba(181,78,255,0.05); border:1px solid rgba(181,78,255,0.3); border-radius:8px; padding:14px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:var(--purple); margin-bottom:8px;">HASH TABLE vs LINKED LIST</div>
+        <table style="width:100%; font-size:13px; font-family:'Share Tech Mono',monospace;">
+          <tr><td style="color:var(--muted);">Recherche</td><td style="color:var(--neon);">O(1)</td><td style="color:var(--pink);">O(n)</td></tr>
+          <tr><td style="color:var(--muted);">Insertion</td><td style="color:var(--neon);">O(1)</td><td style="color:var(--neon);">O(1)</td></tr>
+          <tr><td style="color:var(--muted);">Accès par clé</td><td style="color:var(--neon);">O(1)</td><td style="color:var(--pink);">O(n)</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ ERREURS CLASSIQUES ══════════════ -->
+  <div class="section-title">ERREURS CLASSIQUES — ❌ vs ✅</div>
+
+  <div class="grid-2">
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">❌</span> LES ERREURS FRÉQUENTES</div>
+      <pre><code><span class="cmt">/* 1. Stocker le pointeur original */</span>
+node->key = key;   <span class="cmt">/* ❌ si key change dehors */</span>
+<span class="cmt">/* → utiliser strdup(key) ✅ */</span>
+
+<span class="cmt">/* 2. Oublier le modulo */</span>
+idx = hash_djb2(key);   <span class="cmt">/* ❌ index hors tableau */</span>
+<span class="cmt">/* → idx = hash_djb2(key) % size ✅ */</span>
+
+<span class="cmt">/* 3. Comparer les pointeurs au lieu des valeurs */</span>
+<span class="kw">if</span> (node->key == key)   <span class="cmt">/* ❌ compare adresses */</span>
+<span class="cmt">/* → strcmp(node->key, key) == 0 ✅ */</span>
+
+<span class="cmt">/* 4. Libérer dans le mauvais ordre */</span>
+free(node);
+free(node->key);   <span class="cmt">/* ❌ node déjà libéré ! */</span>
+
+<span class="cmt">/* 5. Oublier d'init l'array à NULL */</span>
+ht->array = malloc(size * <span class="kw">sizeof</span>(...));
+<span class="cmt">/* ❌ contient du garbage → crash */</span></code></pre>
+    </div>
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> LES BONNES PRATIQUES</div>
+      <pre><code><span class="cmt">/* 1. Copier les strings */</span>
+node->key = strdup(key);   <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* 2. Toujours modulo */</span>
+idx = hash_djb2(key) % ht->size; <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* 3. Comparer les valeurs */</span>
+<span class="kw">if</span> (strcmp(node->key, key) == <span class="num">0</span>) <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* 4. Libérer dans l'ordre */</span>
+free(node->key);    <span class="cmt">/* ✅ 1. key */</span>
+free(node->value);  <span class="cmt">/* ✅ 2. value */</span>
+free(node);         <span class="cmt">/* ✅ 3. node */</span>
+
+<span class="cmt">/* 5. Initialiser à NULL */</span>
+<span class="kw">while</span> (i < size)
+    ht->array[i++] = <span class="kw">NULL</span>;  <span class="cmt">/* ✅ */</span></code></pre>
+    </div>
+  </div>
+
+  <!-- ══════════════ 3 BOSS ══════════════ -->
+  <div class="section-title">LES 3 BOSS — EXEMPLES PROGRESSIFS</div>
+
+  <!-- BOSS 1 -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🐣</span> BOSS 1 — UTILISER UNE HASH TABLE</div>
+    <div class="level-badge">⚔️ LVL 1 — FACILE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="macro">#include</span> <span class="str">"hash_tables.h"</span>
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    <span class="type">hash_table_t</span> *ht;
+    <span class="type">char</span>         *val;
+
+    ht = <span class="fn">hash_table_create</span>(<span class="num">1024</span>);  <span class="cmt">/* créer une table de 1024 cases */</span>
+    <span class="kw">if</span> (!ht)
+        <span class="kw">return</span> (<span class="num">1</span>);
+
+    <span class="fn">hash_table_set</span>(ht, <span class="str">"name"</span>,  <span class="str">"Alice"</span>);
+    <span class="fn">hash_table_set</span>(ht, <span class="str">"age"</span>,   <span class="str">"25"</span>);
+    <span class="fn">hash_table_set</span>(ht, <span class="str">"city"</span>,  <span class="str">"Paris"</span>);
+    <span class="fn">hash_table_set</span>(ht, <span class="str">"name"</span>,  <span class="str">"Bob"</span>);    <span class="cmt">/* mise à jour */</span>
+
+    val = <span class="fn">hash_table_get</span>(ht, <span class="str">"name"</span>);
+    printf(<span class="str">"name = %s\n"</span>, val);    <span class="cmt">/* → "Bob" */</span>
+
+    val = <span class="fn">hash_table_get</span>(ht, <span class="str">"city"</span>);
+    printf(<span class="str">"city = %s\n"</span>, val);    <span class="cmt">/* → "Paris" */</span>
+
+    val = <span class="fn">hash_table_get</span>(ht, <span class="str">"unknown"</span>);
+    printf(<span class="str">"unknown = %p\n"</span>, (void*)val); <span class="cmt">/* → NULL */</span>
+
+    <span class="fn">hash_table_print</span>(ht);
+    <span class="fn">hash_table_delete</span>(ht);
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+  </div>
+
+  <!-- BOSS 2 -->
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> BOSS 2 — ITÉRER SUR TOUS LES ÉLÉMENTS</div>
+    <div class="level-badge">🔥 LVL 2 — INTERMÉDIAIRE</div>
+    <pre><code><span class="cmt">/* Compter le nombre de paires dans la table */</span>
+<span class="type">unsigned long int</span> <span class="fn">hash_table_count</span>(<span class="kw">const</span> <span class="type">hash_table_t</span> *ht)
+{
+    <span class="type">hash_node_t</span>       *node;
+    <span class="type">unsigned long int</span>  i;
+    <span class="type">unsigned long int</span>  count = <span class="num">0</span>;
+
+    <span class="kw">if</span> (!ht)
+        <span class="kw">return</span> (<span class="num">0</span>);
+    i = <span class="num">0</span>;
+    <span class="kw">while</span> (i < ht->size)
+    {
+        node = ht->array[i];
+        <span class="kw">while</span> (node != <span class="kw">NULL</span>)  <span class="cmt">/* parcourir la liste de collision */</span>
+        {
+            count++;
+            node = node->next;
+        }
+        i++;
+    }
+    <span class="kw">return</span> (count);
+}
+<span class="cmt">/* Pattern universel d'itération :
+   for each index i → for each node in list → do something */</span></code></pre>
+  </div>
+
+  <!-- BOSS FINAL -->
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">💀</span> BOSS FINAL — SORTED HASH TABLE (Holberton)</div>
+    <div class="level-badge">💀 LVL 3 — HOLBERTON STYLE</div>
+    <p style="margin-bottom:12px;">Version avancée avec liste doublement chaînée maintenue triée par ordre d'insertion — utilisée dans les projets Holberton pour l'affichage ordonné.</p>
+    <pre><code><span class="cmt">/* Structure nœud pour sorted hash table */</span>
+<span class="kw">typedef struct</span> <span class="type">shash_node_s</span>
+{
+    <span class="type">char</span>               *key;
+    <span class="type">char</span>               *value;
+    <span class="kw">struct</span> <span class="type">shash_node_s</span> *next;   <span class="cmt">/* liste de collision */</span>
+    <span class="kw">struct</span> <span class="type">shash_node_s</span> *sprev;  <span class="cmt">/* liste triée ← prev */</span>
+    <span class="kw">struct</span> <span class="type">shash_node_s</span> *snext;  <span class="cmt">/* liste triée → next */</span>
+} <span class="type">shash_node_t</span>;
+
+<span class="kw">typedef struct</span> <span class="type">shash_table_s</span>
+{
+    <span class="type">unsigned long int</span>  size;
+    <span class="type">shash_node_t</span>     **array;
+    <span class="type">shash_node_t</span>      *shead;  <span class="cmt">/* tête de la liste triée */</span>
+    <span class="type">shash_node_t</span>      *stail;  <span class="cmt">/* queue de la liste triée */</span>
+} <span class="type">shash_table_t</span>;
+
+<span class="cmt">/* À l'impression, on utilise la liste shead→stail
+   pour afficher dans l'ordre alphabétique des clés */</span></code></pre>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ ══════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CARTE MENTALE COMPLÈTE</div>
+    <pre><code><span class="cmt">/*
+ *  LES 2 STRUCTURES
+ *  ─────────────────────────────────────────────────────────
+ *  hash_node_t  → { char *key, char *value, node_t *next }
+ *  hash_table_t → { unsigned long int size, node_t **array }
+ *
+ *  LE FLUX
+ *  ─────────────────────────────────────────────────────────
+ *  SET : key → hash_djb2(key) % size → idx → insert en tête
+ *  GET : key → hash_djb2(key) % size → idx → strcmp dans liste
+ *
+ *  LA FONCTION DJB2
+ *  ─────────────────────────────────────────────────────────
+ *  hash = 5381
+ *  while (c = *str++)
+ *      hash = hash * 33 + c   (ou (hash << 5) + hash + c)
+ *
+ *  LES COLLISIONS
+ *  ─────────────────────────────────────────────────────────
+ *  Gérées par chaining (linked list par case)
+ *  Insertion toujours EN TÊTE → O(1)
+ *
+ *  COMPLEXITÉ
+ *  ─────────────────────────────────────────────────────────
+ *  set / get / delete    → O(1) moyen, O(n) pire cas
+ *  print / delete_table  → O(n + m)  toujours
+ *
+ *  RÈGLES D'OR
+ *  ─────────────────────────────────────────────────────────
+ *  1. strdup() pour key et value — jamais stocker les ptr originaux
+ *  2. Toujours hash % size — jamais utiliser le hash brut comme index
+ *  3. strcmp() pour comparer les clés — jamais == sur char*
+ *  4. Initialiser array à NULL — jamais laisser du garbage
+ *  5. free(key) → free(value) → free(node) → free(array) → free(ht)
+ *  6. Insertion en tête — O(1) garanti
+ */</span></code></pre>
+  </div>
+
+</div>
+
+<footer>
+  <span>KEY HASHED</span> — O(1) ACCESS. NO SEARCH NEEDED.<br><br>
+  <span>Holberton School</span> — C Programming — Hash Tables
+  <br><br><a href="https://github.com/Adamzou-lab" target="_blank" rel="noopener noreferrer" style="color:#4a6050; text-decoration:none; font-size:7px; letter-spacing:2px;">⌥ GITHUB — ADAMZOU-LAB</a>
+</footer>
+
+<a class="hub-btn" href="../index.html">
+  <span class="hub-icon">⌂</span>
+  HUB
+</a>
+</body>
+</html>
