@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doubly Linked Lists — Holberton Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<style>
+  :root {
+    --bg:     #0a080f;
+    --card:   #100d18;
+    --border: #1e1530;
+    --neon:   #b54eff;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --orange: #ff6b00;
+    --text:   #ccc8e0;
+    --muted:  #5a4a70;
+    --white:  #f0eeff;
+    /* bridge vars pour common.css */
+    --bg2:         #100d18;
+    --primary:     #b54eff;
+    --primary-rgb: 181, 78, 255;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(181,78,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(181,78,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; position: relative; z-index: 1; }
+
+  header { text-align: center; padding: 60px 20px 40px; position: relative; z-index: 1; }
+  .tag { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--neon); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; display: block; }
+  header h1 { font-family: 'Press Start 2P', monospace; font-size: clamp(13px, 2.2vw, 20px); color: var(--white); line-height: 1.7; text-shadow: 0 0 20px rgba(181,78,255,0.5), 0 0 40px rgba(181,78,255,0.2); margin-bottom: 20px; }
+  header h1 span { color: var(--neon); }
+  .header-sub { font-size: 18px; color: var(--muted); letter-spacing: 2px; }
+
+  .section-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--neon); letter-spacing: 2px; margin: 50px 0 20px; display: flex; align-items: center; gap: 12px; }
+  .section-title::before { content: '▶'; color: var(--pink); font-size: 10px; animation: blink 1s step-end infinite; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--neon), transparent); }
+  .card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+  .card.pink::before   { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .card-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--neon); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .card.cyan .card-title   { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green .card-title  { color: var(--green); }
+  .card.pink .card-title   { color: var(--pink); }
+  .card.orange .card-title { color: var(--orange); }
+  .card-icon { font-size: 16px; }
+
+  pre, code { font-family: 'Share Tech Mono', monospace; }
+  pre { background: #07050e; border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; font-size: 13px; line-height: 1.8; margin-top: 12px; }
+  code { background: rgba(181,78,255,0.1); color: var(--neon); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  pre code { background: none; color: var(--text); padding: 0; }
+
+  .kw    { color: var(--pink); }
+  .fn    { color: var(--neon); }
+  .type  { color: var(--purple); }
+  .str   { color: var(--cyan); }
+  .num   { color: var(--orange); }
+  .cmt   { color: var(--muted); font-style: italic; }
+  .macro { color: var(--yellow); }
+  .ok    { color: var(--green); }
+  .err   { color: var(--pink); }
+  .hi    { color: var(--yellow); font-weight: bold; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .analogy { background: linear-gradient(135deg, #0d0a15, #0a080f); border: 1px solid var(--yellow); border-left: 4px solid var(--yellow); border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+  .analogy-label { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .analogy p { font-size: 15px; color: var(--text); line-height: 1.7; }
+  .analogy strong { color: var(--yellow); }
+
+  .tip    { background: rgba(57,255,20,0.05);  border: 1px solid rgba(57,255,20,0.3);  border-left: 4px solid var(--green);  border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .warn   { background: rgba(255,45,120,0.05); border: 1px solid rgba(255,45,120,0.3); border-left: 4px solid var(--pink);   border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .clarif { background: rgba(181,78,255,0.07); border: 1px solid rgba(181,78,255,0.35);border-left: 4px solid var(--neon);   border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .tip::before    { content: '✅ '; }
+  .warn::before   { content: '⚠️ '; }
+  .clarif::before { content: '💡 '; }
+
+  .macro-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace; font-size: 13px; margin-top: 12px; }
+  .macro-table th { background: var(--border); color: var(--neon); padding: 10px 14px; text-align: left; font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; }
+  .macro-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  .macro-table tr:hover td { background: rgba(181,78,255,0.04); }
+  .macro-table .macro-name { color: var(--yellow); font-weight: bold; }
+
+  .level-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--border); border: 1px solid var(--purple); border-radius: 4px; padding: 4px 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--purple); margin-bottom: 16px; }
+
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--bg); background: var(--neon); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
+  .step-content h4 { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); margin-bottom: 4px; }
+
+  .skill-tree { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 24px; }
+  .skill-tree::before { content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(to bottom, var(--neon), var(--pink)); }
+  .skill-node { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+  .skill-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--neon); background: var(--bg); flex-shrink: 0; margin-left: -24px; margin-top: 3px; box-shadow: 0 0 8px var(--neon); }
+  .skill-dot.done   { background: var(--neon); }
+  .skill-dot.cyan   { border-color: var(--cyan);   box-shadow: 0 0 8px var(--cyan);   background: var(--cyan); }
+  .skill-dot.green  { border-color: var(--green);  box-shadow: 0 0 8px var(--green);  background: var(--green); }
+  .skill-dot.yellow { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); background: var(--yellow); }
+  .skill-dot.pink   { border-color: var(--pink);   box-shadow: 0 0 8px var(--pink);   background: var(--pink); }
+  .skill-dot.orange { border-color: var(--orange); box-shadow: 0 0 8px var(--orange); background: var(--orange); }
+
+  /* DLL VISUAL */
+  .dll-visual { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 14px 0; overflow-x: auto; padding: 8px 0; }
+  .dll-node { display: flex; flex-direction: column; align-items: center; }
+  .dll-box { display: flex; border-radius: 6px; overflow: hidden; }
+  .dll-box.head-node { border: 2px solid var(--yellow); }
+  .dll-box.mid-node  { border: 2px solid var(--neon); }
+  .dll-box.tail-node { border: 2px solid var(--cyan); }
+  .dll-prev { padding: 8px 10px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--pink); border-right: 1px solid var(--border); min-width: 40px; text-align: center; background: rgba(255,45,120,0.08); }
+  .dll-data { padding: 8px 12px; font-family: 'Share Tech Mono', monospace; font-size: 15px; font-weight: bold; min-width: 40px; text-align: center; }
+  .dll-next { padding: 8px 10px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--neon); border-left: 1px solid var(--border); min-width: 40px; text-align: center; background: rgba(181,78,255,0.08); }
+  .dll-box.head-node .dll-data { color: var(--yellow); }
+  .dll-box.mid-node  .dll-data { color: var(--neon); }
+  .dll-box.tail-node .dll-data { color: var(--cyan); }
+  .dll-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 6px; }
+  .dll-head-label { font-family: 'Press Start 2P', monospace; font-size: 6px; margin-bottom: 6px; }
+
+  .dll-arrows { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 2px; margin-bottom: 16px; }
+  .dll-arrow-next { font-size: 14px; color: var(--neon); }
+  .dll-arrow-prev { font-size: 14px; color: var(--pink); }
+
+  .dll-null { padding: 8px 12px; border: 2px solid var(--pink); border-radius: 6px; font-family: 'Share Tech Mono', monospace; font-size: 13px; color: var(--pink); font-weight: bold; margin-bottom: 16px; }
+
+  /* COMPARE */
+  .compare-label { font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; margin-bottom: 10px; }
+  .compare-label.bad  { color: var(--pink); }
+  .compare-label.good { color: var(--neon); }
+
+  footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--muted); letter-spacing: 2px; position: relative; z-index: 1; }
+  footer span { color: var(--neon); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) { header h1 { font-size: 11px; } .section-title { font-size: 8px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="tag">✦ Holberton School — C Programming ✦</span>
+  <h1>DOUBLY<br><span>LINKED LISTS</span></h1>
+  <p class="header-sub">Deux pointeurs. Deux sens. Zéro limite.</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════════════ SINGLY VS DOUBLY ══════════════ -->
+  <div class="section-title">SINGLY vs DOUBLY — LA DIFFÉRENCE FONDAMENTALE</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔗</span> CE QUI CHANGE PAR RAPPORT À LA SINGLY</div>
+
+    <div class="grid-2">
+      <div style="background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.3); border-radius:8px; padding:16px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--cyan); margin-bottom:10px;">SINGLY LINKED LIST</div>
+        <p style="font-size:14px; color:var(--muted); margin-bottom:10px;">Chaque nœud pointe uniquement vers le <strong style="color:var(--text)">suivant</strong>. Parcours dans <strong style="color:var(--text)">un seul sens</strong>.</p>
+        <pre style="margin-top:0; font-size:12px;"><code><span class="cmt">NULL ← [42|→] → [7|→] → [13|NULL]
+              ↑ next seulement</span></code></pre>
+      </div>
+      <div style="background:rgba(181,78,255,0.05); border:1px solid rgba(181,78,255,0.3); border-radius:8px; padding:16px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--neon); margin-bottom:10px;">DOUBLY LINKED LIST ✅</div>
+        <p style="font-size:14px; color:var(--muted); margin-bottom:10px;">Chaque nœud pointe vers le <strong style="color:var(--text)">suivant ET le précédent</strong>. Parcours dans <strong style="color:var(--text)">les deux sens</strong>.</p>
+        <pre style="margin-top:0; font-size:12px;"><code><span class="cmt">NULL ←[←|42|→]↔[←|7|→]↔[←|13|→]→ NULL
+        ↑ prev ET next</span></code></pre>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>La singly list c'est une <strong>file d'attente à sens unique</strong> — tu avances mais jamais rebrousses chemin. La doubly list c'est un <strong>couloir avec des portes dans les deux sens</strong> — depuis n'importe quel nœud tu peux aller vers l'avant OU vers l'arrière, comme une playlist musicale avec les boutons ⏭️ ET ⏮️.</p>
+    </div>
+
+    <table class="macro-table" style="margin-top:14px;">
+      <thead><tr><th>Critère</th><th style="color:var(--cyan)">Singly</th><th style="color:var(--neon)">Doubly</th></tr></thead>
+      <tbody>
+        <tr><td><span class="macro-name">Pointeurs par nœud</span></td><td>1 (next)</td><td style="color:var(--neon)">2 (prev + next)</td></tr>
+        <tr><td><span class="macro-name">Mémoire par nœud</span></td><td>+8 bytes</td><td style="color:var(--pink)">+16 bytes</td></tr>
+        <tr><td><span class="macro-name">Parcours</span></td><td>→ seulement</td><td style="color:var(--neon)">← et → les deux</td></tr>
+        <tr><td><span class="macro-name">Suppression d'un nœud</span></td><td style="color:var(--pink)">Besoin du précédent (O(n))</td><td style="color:var(--neon)">Direct via prev (O(1))</td></tr>
+        <tr><td><span class="macro-name">Insertion avant un nœud</span></td><td style="color:var(--pink)">Besoin du précédent</td><td style="color:var(--neon)">Direct via prev</td></tr>
+        <tr><td><span class="macro-name">Complexité d'impl.</span></td><td style="color:var(--neon)">Simple</td><td style="color:var(--pink)">Plus de cas à gérer</td></tr>
+        <tr><td><span class="macro-name">Usage typique</span></td><td>Piles, queues simples</td><td style="color:var(--neon)">Éditeurs, historique, LRU cache</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════ VISUALISATION ══════════════ -->
+  <div class="section-title">VISUALISATION — UNE DOUBLY LIST EN MÉMOIRE</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> ANATOMIE D'UNE DOUBLY LINKED LIST</div>
+
+    <p style="margin-bottom:14px; font-size:14px;"><code style="color:var(--yellow)">head</code> pointe sur le premier nœud, <code style="color:var(--cyan)">tail</code> pointe sur le dernier. Les pointeurs <code style="color:var(--pink)">prev</code> et <code style="color:var(--neon)">next</code> forment la chaîne bidirectionnelle.</p>
+
+    <div class="dll-visual">
+      <!-- NULL gauche -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:transparent;margin-bottom:6px;">_</div>
+        <div class="dll-null">NULL</div>
+      </div>
+      <div class="dll-arrows">
+        <div class="dll-arrow-next">←</div>
+        <div style="width:24px; height:1px;"></div>
+      </div>
+      <!-- Node 1 (head) -->
+      <div class="dll-node">
+        <div class="dll-head-label" style="color:var(--yellow);">HEAD ▼</div>
+        <div class="dll-box head-node">
+          <div class="dll-prev">prev<br>NULL</div>
+          <div class="dll-data">42</div>
+          <div class="dll-next">next<br>*</div>
+        </div>
+        <div class="dll-label">node 1</div>
+      </div>
+      <div class="dll-arrows">
+        <div class="dll-arrow-next">→</div>
+        <div class="dll-arrow-prev">←</div>
+      </div>
+      <!-- Node 2 -->
+      <div class="dll-node">
+        <div class="dll-head-label" style="color:transparent;">_</div>
+        <div class="dll-box mid-node">
+          <div class="dll-prev">prev<br>*</div>
+          <div class="dll-data">7</div>
+          <div class="dll-next">next<br>*</div>
+        </div>
+        <div class="dll-label">node 2</div>
+      </div>
+      <div class="dll-arrows">
+        <div class="dll-arrow-next">→</div>
+        <div class="dll-arrow-prev">←</div>
+      </div>
+      <!-- Node 3 (tail) -->
+      <div class="dll-node">
+        <div class="dll-head-label" style="color:var(--cyan);">▼ TAIL</div>
+        <div class="dll-box tail-node">
+          <div class="dll-prev">prev<br>*</div>
+          <div class="dll-data">13</div>
+          <div class="dll-next">next<br>NULL</div>
+        </div>
+        <div class="dll-label">node 3</div>
+      </div>
+      <div class="dll-arrows">
+        <div style="width:24px; height:1px;"></div>
+        <div class="dll-arrow-prev" style="visibility:hidden;">→</div>
+      </div>
+      <!-- NULL droite -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:transparent;margin-bottom:6px;">_</div>
+        <div class="dll-null">NULL</div>
+      </div>
+    </div>
+
+    <pre><code><span class="cmt">Règles fondamentales :
+  head->prev = NULL          ← le premier n'a pas de précédent
+  tail->next = NULL          ← le dernier n'a pas de suivant
+  node->next->prev = node    ← la relation est symétrique
+  node->prev->next = node    ← toujours vérifier ces invariants</span></code></pre>
+
+    <div class="clarif"><strong style="color:var(--neon)">Les invariants de cohérence</strong> sont la clé. Si tu brises la relation symétrique (<code>node->next->prev == node</code>), ta liste est corrompue et les parcours donneront des résultats faux ou crasheront.</div>
+  </div>
+
+  <!-- ══════════════ STRUCTURE ══════════════ -->
+  <div class="section-title">DÉCLARER LA STRUCTURE</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🧱</span> LA STRUCT DLISTINT_T (STYLE HOLBERTON)</div>
+    <pre><code><span class="cmt">/* Convention Holberton pour les doubly linked lists */</span>
+
+<span class="kw">typedef struct</span> <span class="type">dlistint_s</span>
+{
+    <span class="type">int</span>                  n;     <span class="cmt">/* la donnée */</span>
+    <span class="kw">struct</span> <span class="type">dlistint_s</span>  *prev;  <span class="cmt">/* ← pointeur vers le nœud PRÉCÉDENT */</span>
+    <span class="kw">struct</span> <span class="type">dlistint_s</span>  *next;  <span class="cmt">/* → pointeur vers le nœud SUIVANT */</span>
+} <span class="type">dlistint_t</span>;
+
+<span class="cmt">/* Déclaration — toujours initialiser head ET tail à NULL */</span>
+<span class="type">dlistint_t</span> *head = <span class="kw">NULL</span>;
+<span class="type">dlistint_t</span> *tail = <span class="kw">NULL</span>;  <span class="cmt">/* la doubly a souvent un tail aussi */</span></code></pre>
+
+    <div class="warn">Dans une doubly list, si tu modifies <code>next</code>, tu dois <strong>aussi</strong> mettre à jour <code>prev</code> du nœud suivant. Oublier l'un des deux casse la cohérence de la liste.</div>
+  </div>
+
+  <!-- ══════════════ CRÉER UN NŒUD ══════════════ -->
+  <div class="section-title">CRÉER UN NŒUD</div>
+
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🆕</span> CREATE_DLISTINT_NODE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="type">dlistint_t</span> *<span class="fn">create_dlistint_node</span>(<span class="type">int</span> n)
+{
+    <span class="type">dlistint_t</span> *node;
+
+    node = malloc(<span class="kw">sizeof</span>(<span class="type">dlistint_t</span>));
+    <span class="kw">if</span> (node == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+    node->n    = n;
+    node->prev = <span class="kw">NULL</span>;  <span class="cmt">/* ← toujours initialiser prev à NULL */</span>
+    node->next = <span class="kw">NULL</span>;  <span class="cmt">/* ← toujours initialiser next à NULL */</span>
+    <span class="kw">return</span> (node);
+}</code></pre>
+    <div class="tip">Initialiser <strong>les deux</strong> pointeurs à NULL — pas seulement <code>next</code> comme en singly. Un <code>prev</code> non initialisé pointer vers du garbage et corrompt la liste.</div>
+  </div>
+
+  <!-- ══════════════ AJOUT DÉBUT ══════════════ -->
+  <div class="section-title">AJOUTER DES NŒUDS</div>
+
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">➕</span> ADD AU DÉBUT — DLISTINT_ADD_FRONT</div>
+    <p style="margin-bottom:12px;"><strong style="color:var(--green)">O(1)</strong> — le plus rapide. Insère avant le head actuel.</p>
+    <pre><code><span class="type">dlistint_t</span> *<span class="fn">dlistint_add_front</span>(<span class="type">dlistint_t</span> **head, <span class="type">int</span> n)
+{
+    <span class="type">dlistint_t</span> *node = <span class="fn">create_dlistint_node</span>(n);
+
+    <span class="kw">if</span> (node == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+
+    node->next = *head;         <span class="cmt">/* nouveau → ancien head */</span>
+    node->prev = <span class="kw">NULL</span>;         <span class="cmt">/* nouveau est le premier : pas de prev */</span>
+
+    <span class="kw">if</span> (*head != <span class="kw">NULL</span>)
+        (*head)->prev = node;   <span class="cmt">/* ← CRUCIAL : l'ancien head pointe vers le nouveau */</span>
+
+    *head = node;               <span class="cmt">/* head devient le nouveau nœud */</span>
+    <span class="kw">return</span> (node);
+}</code></pre>
+
+    <p style="margin-top:12px; margin-bottom:8px; font-size:14px; color:var(--muted);">Visualisation — ajouter 99 en tête :</p>
+    <pre><code><span class="cmt">Avant :  head → [NULL|42|→] ↔ [←|7|→] ↔ [←|13|NULL]
+
+Étapes :
+  1. node = [NULL|99|NULL]
+  2. node->next = head           → [NULL|99|→]  →  [NULL|42|→] ↔ ...
+  3. head->prev = node           → [NULL|99|→]  ↔  [←|42|→] ↔ ...
+  4. head = node
+
+Après : head → [NULL|99|→] ↔ [←|42|→] ↔ [←|7|→] ↔ [←|13|NULL]</span></code></pre>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">➕</span> ADD EN FIN — DLISTINT_ADD_END</div>
+    <p style="margin-bottom:12px;"><strong style="color:var(--neon)">O(1) avec tail</strong>, O(n) sans. Insère après le dernier nœud.</p>
+    <pre><code><span class="cmt">/* Version avec tail passé en paramètre — O(1) */</span>
+<span class="type">dlistint_t</span> *<span class="fn">dlistint_add_end</span>(<span class="type">dlistint_t</span> **head, <span class="type">dlistint_t</span> **tail, <span class="type">int</span> n)
+{
+    <span class="type">dlistint_t</span> *node = <span class="fn">create_dlistint_node</span>(n);
+
+    <span class="kw">if</span> (node == <span class="kw">NULL</span>)
+        <span class="kw">return</span> (<span class="kw">NULL</span>);
+
+    <span class="kw">if</span> (*head == <span class="kw">NULL</span>)           <span class="cmt">/* liste vide */</span>
+    {
+        *head = node;
+        *tail = node;
+        <span class="kw">return</span> (node);
+    }
+    node->prev  = *tail;         <span class="cmt">/* nouveau ← ancien tail */</span>
+    node->next  = <span class="kw">NULL</span>;          <span class="cmt">/* nouveau est le dernier : pas de next */</span>
+    (*tail)->next = node;         <span class="cmt">/* ← CRUCIAL : ancien tail → nouveau */</span>
+    *tail = node;                 <span class="cmt">/* tail devient le nouveau nœud */</span>
+    <span class="kw">return</span> (node);
+}
+
+<span class="cmt">/* Version sans tail — O(n) */</span>
+<span class="type">dlistint_t</span> *<span class="fn">dlistint_add_end_no_tail</span>(<span class="type">dlistint_t</span> **head, <span class="type">int</span> n)
+{
+    <span class="type">dlistint_t</span> *node = <span class="fn">create_dlistint_node</span>(n);
+    <span class="type">dlistint_t</span> *tmp;
+
+    <span class="kw">if</span> (node == <span class="kw">NULL</span>) <span class="kw">return</span> (<span class="kw">NULL</span>);
+    <span class="kw">if</span> (*head == <span class="kw">NULL</span>) { *head = node; <span class="kw">return</span> (node); }
+    tmp = *head;
+    <span class="kw">while</span> (tmp->next != <span class="kw">NULL</span>)
+        tmp = tmp->next;          <span class="cmt">/* parcourir jusqu'au dernier */</span>
+    tmp->next  = node;
+    node->prev = tmp;             <span class="cmt">/* ← lier le prev aussi ! */</span>
+    <span class="kw">return</span> (node);
+}</code></pre>
+  </div>
+
+  <!-- ══════════════ INSERTION AU MILIEU ══════════════ -->
+  <div class="section-title">INSERTION AU MILIEU — LA NOUVEAUTÉ DES DOUBLY</div>
+
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🎯</span> INSÉRER AVANT UN NŒUD DONNÉ — O(1) !</div>
+    <p style="margin-bottom:12px;">C'est <strong style="color:var(--orange)">l'avantage majeur</strong> de la doubly list. En singly, insérer avant un nœud nécessite de connaître le précédent (O(n) de recherche). En doubly, <code>node->prev</code> te le donne directement → <strong style="color:var(--neon)">O(1)</strong>.</p>
+    <pre><code><span class="cmt">/* Insérer new_node juste avant target */</span>
+<span class="type">void</span> <span class="fn">insert_before</span>(<span class="type">dlistint_t</span> **head, <span class="type">dlistint_t</span> *target, <span class="type">int</span> n)
+{
+    <span class="type">dlistint_t</span> *node = <span class="fn">create_dlistint_node</span>(n);
+
+    <span class="kw">if</span> (!node || !target) <span class="kw">return</span>;
+
+    node->next = target;           <span class="cmt">/* nouveau → target */</span>
+    node->prev = target->prev;     <span class="cmt">/* nouveau ← ce qui était avant target */</span>
+
+    <span class="kw">if</span> (target->prev != <span class="kw">NULL</span>)
+        target->prev->next = node; <span class="cmt">/* l'ancien précédent → nouveau */</span>
+    <span class="kw">else</span>
+        *head = node;              <span class="cmt">/* target était head → nouveau devient head */</span>
+
+    target->prev = node;           <span class="cmt">/* target ← nouveau */</span>
+}
+
+<span class="cmt">/* Visualisation — insérer 99 avant le nœud contenant 7 :
+  Avant : [42] ↔ [7] ↔ [13]
+  Étapes :
+    1. node = [99]
+    2. node->next = target(7)      → [99 →7]
+    3. node->prev = target->prev(42)  → [42← 99 →7]
+    4. target->prev->next = node    → [42 ↔ 99]
+    5. target->prev = node          → [99 ↔ 7]
+  Après : [42] ↔ [99] ↔ [7] ↔ [13] */</span></code></pre>
+  </div>
+
+  <!-- ══════════════ SUPPRIMER ══════════════ -->
+  <div class="section-title">SUPPRIMER DES NŒUDS — LES 4 CAS</div>
+
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🗑️</span> DELETE — GÉRER TOUS LES CAS</div>
+    <p style="margin-bottom:12px;">La suppression en doubly est plus complexe qu'en singly car il faut mettre à jour <strong>les deux</strong> pointeurs voisins. Il y a <strong style="color:var(--pink)">4 cas distincts</strong> à gérer.</p>
+
+    <pre><code><span class="type">void</span> <span class="fn">delete_node</span>(<span class="type">dlistint_t</span> **head, <span class="type">dlistint_t</span> **tail, <span class="type">dlistint_t</span> *node)
+{
+    <span class="kw">if</span> (!node)
+        <span class="kw">return</span>;
+
+    <span class="cmt">/* CAS 1 — Nœud a un précédent : le passer sur le suivant */</span>
+    <span class="kw">if</span> (node->prev != <span class="kw">NULL</span>)
+        node->prev->next = node->next;
+    <span class="kw">else</span>
+        *head = node->next;  <span class="cmt">/* CAS 2 — Pas de précédent = c'était le HEAD */</span>
+
+    <span class="cmt">/* CAS 3 — Nœud a un suivant : le passer sur le précédent */</span>
+    <span class="kw">if</span> (node->next != <span class="kw">NULL</span>)
+        node->next->prev = node->prev;
+    <span class="kw">else</span>
+        *tail = node->prev;  <span class="cmt">/* CAS 4 — Pas de suivant = c'était le TAIL */</span>
+
+    free(node);
+}</code></pre>
+
+    <p style="margin-top:14px; margin-bottom:10px; font-size:14px; color:var(--muted);">Visualisation des 4 cas :</p>
+    <pre><code><span class="cmt">CAS A — Supprimer un nœud du MILIEU
+  Avant : [42] ↔ [7] ↔ [13]
+  Action : 42->next = 13  ET  13->prev = 42
+  Après : [42] ↔ [13]
+
+CAS B — Supprimer le HEAD
+  Avant : [42] ↔ [7] ↔ [13]
+  Action : head = 7  ET  7->prev = NULL
+  Après : [7] ↔ [13]
+
+CAS C — Supprimer le TAIL
+  Avant : [42] ↔ [7] ↔ [13]
+  Action : tail = 7  ET  7->next = NULL
+  Après : [42] ↔ [7]
+
+CAS D — Supprimer le SEUL nœud
+  Avant : [42]
+  Action : head = NULL  ET  tail = NULL
+  Après : liste vide</span></code></pre>
+
+    <div class="warn">Le <strong>CAS D</strong> (nœud unique) est le plus piégeux. Si tu ne testes pas <code>node->prev == NULL && node->next == NULL</code>, tu risques de mettre <code>head</code> à NULL mais pas <code>tail</code> (ou l'inverse) — ta liste devient incohérente.</div>
+  </div>
+
+  <!-- ══════════════ PARCOURIR ══════════════ -->
+  <div class="section-title">PARCOURIR LA LISTE — LES DEUX SENS</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔄</span> TRAVERSÉE AVANT ET ARRIÈRE</div>
+    <pre><code><span class="cmt">/* ── AVANT : head → tail (comme singly) ────────────────────── */</span>
+<span class="type">size_t</span> <span class="fn">print_dlistint</span>(<span class="kw">const</span> <span class="type">dlistint_t</span> *h)
+{
+    <span class="type">size_t</span> count = <span class="num">0</span>;
+
+    <span class="kw">while</span> (h != <span class="kw">NULL</span>)
+    {
+        printf(<span class="str">"%d\n"</span>, h->n);
+        h = h->next;
+        count++;
+    }
+    <span class="kw">return</span> (count);
+}
+
+<span class="cmt">/* ── ARRIÈRE : tail → head (unique à la doubly !) ────────────── */</span>
+<span class="type">size_t</span> <span class="fn">print_dlistint_reverse</span>(<span class="kw">const</span> <span class="type">dlistint_t</span> *tail)
+{
+    <span class="type">size_t</span> count = <span class="num">0</span>;
+
+    <span class="kw">while</span> (tail != <span class="kw">NULL</span>)
+    {
+        printf(<span class="str">"%d\n"</span>, tail->n);
+        tail = tail->prev;   <span class="cmt">/* ← utiliser prev au lieu de next */</span>
+        count++;
+    }
+    <span class="kw">return</span> (count);
+}
+
+<span class="cmt">/* ── COMPTER LES NŒUDS ──────────────────────────────────────── */</span>
+<span class="type">size_t</span> <span class="fn">dlistint_len</span>(<span class="kw">const</span> <span class="type">dlistint_t</span> *h)
+{
+    <span class="type">size_t</span> len = <span class="num">0</span>;
+
+    <span class="kw">while</span> (h != <span class="kw">NULL</span>) { len++; h = h->next; }
+    <span class="kw">return</span> (len);
+}</code></pre>
+  </div>
+
+  <!-- ══════════════ LIBÉRER ══════════════ -->
+  <div class="section-title">LIBÉRER LA LISTE — FREE PROPRE POUR VALGRIND</div>
+
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🧹</span> FREE_DLISTINT — ZÉRO LEAK</div>
+    <pre><code><span class="type">void</span> <span class="fn">free_dlistint</span>(<span class="type">dlistint_t</span> *head)
+{
+    <span class="type">dlistint_t</span> *tmp;
+
+    <span class="kw">while</span> (head != <span class="kw">NULL</span>)
+    {
+        tmp  = head->next;   <span class="cmt">/* sauvegarder next AVANT free */</span>
+        free(head);          <span class="cmt">/* libérer le nœud actuel */</span>
+        head = tmp;          <span class="cmt">/* avancer */</span>
+    }
+    <span class="cmt">/* prev n'a pas besoin d'être utilisé ici — on parcourt dans un sens */</span>
+}
+
+<span class="cmt">/* Version avec remise à NULL de head et tail */</span>
+<span class="type">void</span> <span class="fn">free_dlistint_safe</span>(<span class="type">dlistint_t</span> **head, <span class="type">dlistint_t</span> **tail)
+{
+    <span class="type">dlistint_t</span> *tmp;
+
+    <span class="kw">while</span> (*head != <span class="kw">NULL</span>)
+    {
+        tmp     = (*head)->next;
+        free(*head);
+        *head = tmp;
+    }
+    *tail = <span class="kw">NULL</span>;  <span class="cmt">/* remettre tail à NULL aussi */</span>
+}</code></pre>
+    <div class="tip">Pour libérer une doubly list, tu peux parcourir dans <strong>un seul sens</strong> (forward). Pas besoin d'utiliser <code>prev</code> — on sauvegarde juste <code>next</code> avant chaque <code>free</code> comme pour une singly.</div>
+  </div>
+
+  <!-- ══════════════ ERREURS CLASSIQUES ══════════════ -->
+  <div class="section-title">ERREURS CLASSIQUES — ❌ vs ✅</div>
+
+  <div class="grid-2">
+    <div class="card pink fade-in">
+      <div class="card-title"><span class="card-icon">❌</span> LES ERREURS FRÉQUENTES</div>
+      <pre><code><span class="cmt">/* 1. Oublier de mettre à jour prev */</span>
+node->next = new_node;
+<span class="cmt">/* ❌ new_node->prev toujours NULL */</span>
+<span class="cmt">/* → new_node->prev = node ✅ */</span>
+
+<span class="cmt">/* 2. Mauvais ordre de mise à jour */</span>
+node->prev = new_node;
+<span class="cmt">/* ❌ on perd la référence à l'ancien prev */</span>
+
+<span class="cmt">/* 3. Oublier le cas head lors d'un delete */</span>
+node->prev->next = node->next;
+<span class="cmt">/* ❌ crash si node est le head (prev = NULL) */</span>
+
+<span class="cmt">/* 4. Oublier le cas nœud unique */</span>
+*head = node->next;
+<span class="cmt">/* ❌ tail pointe encore vers le nœud libéré */</span>
+
+<span class="cmt">/* 5. Ne pas init prev à NULL */</span>
+node->next = *head;
+*head = node;
+<span class="cmt">/* ❌ prev de l'ancien head pas mis à jour */</span></code></pre>
+    </div>
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">✅</span> LES BONNES PRATIQUES</div>
+      <pre><code><span class="cmt">/* 1. Toujours mettre à jour les 2 sens */</span>
+node->next           = new_node;
+new_node->prev       = node;    <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* 2. Sauvegarder avant de modifier */</span>
+old_prev       = node->prev;    <span class="cmt">/* ✅ sauvegarder d'abord */</span>
+node->prev     = new_node;
+
+<span class="cmt">/* 3. Toujours tester NULL avant d'accéder */</span>
+<span class="kw">if</span> (node->prev != <span class="kw">NULL</span>)        <span class="cmt">/* ✅ */</span>
+    node->prev->next = node->next;
+<span class="kw">else</span>
+    *head = node->next;
+
+<span class="cmt">/* 4. Mettre à jour tail aussi */</span>
+<span class="kw">if</span> (node->next == <span class="kw">NULL</span>)
+    *tail = node->prev;         <span class="cmt">/* ✅ */</span>
+
+<span class="cmt">/* 5. Toujours init prev à NULL */</span>
+node->prev           = <span class="kw">NULL</span>;
+node->next           = *head;
+<span class="kw">if</span> (*head) (*head)->prev = node; <span class="cmt">/* ✅ */</span>
+*head = node;</code></pre>
+    </div>
+  </div>
+
+  <!-- ══════════════ 3 BOSS ══════════════ -->
+  <div class="section-title">LES 3 BOSS — EXEMPLES PROGRESSIFS</div>
+
+  <!-- BOSS 1 -->
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🐣</span> BOSS 1 — CRÉER ET AFFICHER UNE DOUBLY LIST</div>
+    <div class="level-badge">⚔️ LVL 1 — FACILE</div>
+    <pre><code><span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="macro">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="kw">typedef struct</span> <span class="type">dlistint_s</span> {
+    <span class="type">int</span>               n;
+    <span class="kw">struct</span> <span class="type">dlistint_s</span> *prev;
+    <span class="kw">struct</span> <span class="type">dlistint_s</span> *next;
+} <span class="type">dlistint_t</span>;
+
+<span class="type">dlistint_t</span> *<span class="fn">add_front</span>(<span class="type">dlistint_t</span> **h, <span class="type">int</span> n)
+{
+    <span class="type">dlistint_t</span> *node = malloc(<span class="kw">sizeof</span>(<span class="type">dlistint_t</span>));
+    <span class="kw">if</span> (!node) <span class="kw">return</span> (<span class="kw">NULL</span>);
+    node->n    = n;
+    node->prev = <span class="kw">NULL</span>;
+    node->next = *h;
+    <span class="kw">if</span> (*h) (*h)->prev = node;
+    *h = node;
+    <span class="kw">return</span> (node);
+}
+
+<span class="type">int</span> <span class="fn">main</span>(<span class="type">void</span>)
+{
+    <span class="type">dlistint_t</span> *head = <span class="kw">NULL</span>;
+    <span class="type">dlistint_t</span> *tmp;
+
+    <span class="fn">add_front</span>(&head, <span class="num">13</span>);
+    <span class="fn">add_front</span>(&head, <span class="num">7</span>);
+    <span class="fn">add_front</span>(&head, <span class="num">42</span>);
+
+    <span class="cmt">/* Afficher en avant */</span>
+    tmp = head;
+    <span class="kw">while</span> (tmp) { printf(<span class="str">"%d "</span>, tmp->n); tmp = tmp->next; }
+    printf(<span class="str">"\n"</span>);  <span class="cmt">/* → 42 7 13 */</span>
+
+    <span class="cmt">/* Aller jusqu'au tail puis afficher en arrière */</span>
+    tmp = head;
+    <span class="kw">while</span> (tmp->next) tmp = tmp->next;  <span class="cmt">/* atteindre le tail */</span>
+    <span class="kw">while</span> (tmp) { printf(<span class="str">"%d "</span>, tmp->n); tmp = tmp->prev; }
+    printf(<span class="str">"\n"</span>);  <span class="cmt">/* → 13 7 42 */</span>
+    <span class="kw">return</span> (<span class="num">0</span>);
+}</code></pre>
+  </div>
+
+  <!-- BOSS 2 -->
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> BOSS 2 — TROUVER LE NŒUD AU MILIEU</div>
+    <div class="level-badge">🔥 LVL 2 — INTERMÉDIAIRE</div>
+    <pre><code><span class="cmt">/* Technique des deux pointeurs — slow/fast */</span>
+<span class="type">dlistint_t</span> *<span class="fn">find_middle</span>(<span class="type">dlistint_t</span> *head)
+{
+    <span class="type">dlistint_t</span> *slow = head;
+    <span class="type">dlistint_t</span> *fast = head;
+
+    <span class="kw">while</span> (fast != <span class="kw">NULL</span> && fast->next != <span class="kw">NULL</span>)
+    {
+        slow = slow->next;        <span class="cmt">/* avance de 1 */</span>
+        fast = fast->next->next;  <span class="cmt">/* avance de 2 */</span>
+    }
+    <span class="kw">return</span> (slow);  <span class="cmt">/* quand fast est en fin, slow est au milieu */</span>
+}
+
+<span class="cmt">/* Ou utiliser la bidirectionnalité de la doubly :
+   pointer depuis les deux bouts vers le milieu */</span>
+<span class="type">dlistint_t</span> *<span class="fn">find_middle_bidirectionnal</span>(<span class="type">dlistint_t</span> *head, <span class="type">dlistint_t</span> *tail)
+{
+    <span class="kw">while</span> (head != tail && head->prev != tail)
+    {
+        head = head->next;  <span class="cmt">/* avancer depuis la tête */</span>
+        tail = tail->prev;  <span class="cmt">/* reculer depuis la queue */</span>
+    }
+    <span class="kw">return</span> (head);
+}</code></pre>
+  </div>
+
+  <!-- BOSS FINAL -->
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">💀</span> BOSS FINAL — INVERSER LA LISTE EN PLACE</div>
+    <div class="level-badge">💀 LVL 3 — HOLBERTON STYLE</div>
+    <pre><code><span class="cmt">/* Inverser une doubly list — échanger prev et next de chaque nœud */</span>
+<span class="type">dlistint_t</span> *<span class="fn">reverse_dlistint</span>(<span class="type">dlistint_t</span> **head)
+{
+    <span class="type">dlistint_t</span> *current = *head;
+    <span class="type">dlistint_t</span> *tmp     = <span class="kw">NULL</span>;
+
+    <span class="kw">while</span> (current != <span class="kw">NULL</span>)
+    {
+        <span class="cmt">/* Échanger prev et next de chaque nœud */</span>
+        tmp          = current->prev;
+        current->prev = current->next;
+        current->next = tmp;
+        <span class="cmt">/* Avancer — mais "avancer" = aller vers l'ancien next = prev actuel */</span>
+        current      = current->prev;
+    }
+    <span class="cmt">/* Après la boucle, tmp pointe vers le nouveau head */</span>
+    <span class="kw">if</span> (tmp != <span class="kw">NULL</span>)
+        *head = tmp->prev;
+    <span class="kw">return</span> (*head);
+}
+
+<span class="cmt">/* Visualisation :
+  Avant  : [NULL←42→] ↔ [←7→] ↔ [←13→NULL]   head=42
+  Iter 1 : [→42←NULL] (prev/next échangés)
+  Iter 2 : [→7←]      (prev/next échangés)
+  Iter 3 : [NULL→13←] (prev/next échangés)
+  Après  : [NULL←13→] ↔ [←7→] ↔ [←42→NULL]   head=13 ✅ */</span></code></pre>
+  </div>
+
+  <!-- ══════════════ RÉSUMÉ ══════════════ -->
+  <div class="section-title">RÉSUMÉ — TOUT EN UN COUP D'ŒIL</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> LA CARTE MENTALE COMPLÈTE</div>
+    <pre><code><span class="cmt">/*
+ *  LA STRUCTURE
+ *  ─────────────────────────────────────────────────────────
+ *  typedef struct dlistint_s {
+ *      int               n;
+ *      struct dlistint_s *prev;   ← pointe vers le précédent
+ *      struct dlistint_s *next;   → pointe vers le suivant
+ *  } dlistint_t;
+ *
+ *  head->prev = NULL   (toujours)
+ *  tail->next = NULL   (toujours)
+ *  node->next->prev = node  (invariant de cohérence)
+ *
+ *  LES OPÉRATIONS — COMPLEXITÉS
+ *  ─────────────────────────────────────────────────────────
+ *  add_front          → O(1)    mettre à jour prev de l'ancien head
+ *  add_end (+ tail)   → O(1)    mettre à jour next de l'ancien tail
+ *  add_end (- tail)   → O(n)    parcourir jusqu'au dernier
+ *  insert_before      → O(1)    grace à prev — avantage vs singly !
+ *  delete (any node)  → O(1)    grace à prev — avantage vs singly !
+ *  search             → O(n)    parcourir (peut aller dans les 2 sens)
+ *  print forward      → O(n)    head → tail via next
+ *  print backward     → O(n)    tail → head via prev
+ *  free               → O(n)    libérer chaque nœud
+ *
+ *  LES 4 CAS DU DELETE
+ *  ─────────────────────────────────────────────────────────
+ *  1. node a un prev → prev->next = node->next
+ *  2. node est HEAD  → head = node->next
+ *  3. node a un next → next->prev = node->prev
+ *  4. node est TAIL  → tail = node->prev
+ *
+ *  RÈGLES D'OR
+ *  ─────────────────────────────────────────────────────────
+ *  1. Toujours init prev ET next à NULL
+ *  2. Toute modification de next doit s'accompagner de prev
+ *  3. Tester NULL avant d'accéder à node->prev ou node->next
+ *  4. Gérer le cas nœud unique (head == tail)
+ *  5. Si tu as un tail, le maintenir à jour à chaque opération
+ *  6. free : sauvegarder next AVANT free (même chose qu'en singly)
+ */</span></code></pre>
+  </div>
+
+</div>
+
+<footer>
+  <span>DOUBLY LINKED</span> — FORWARD AND BACKWARD. NO DEAD END.<br><br>
+  <span>Holberton School</span> — C Programming — Doubly Linked Lists
+  <br><br><a href="https://github.com/Adamzou-lab" target="_blank" rel="noopener noreferrer" style="color:#5a4a70; text-decoration:none; font-size:7px; letter-spacing:2px;">⌥ GITHUB — ADAMZOU-LAB</a>
+</footer>
+
+<a class="hub-btn" href="../index.html">
+  <span class="hub-icon">⌂</span>
+  HUB
+</a>
+</body>
+</html>
