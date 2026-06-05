@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL CRUD Operations — Holberton Cheatsheet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/common.css?v=2">
+  <style>
+    :root {
+      --primary:     #4d9fff;
+      --primary-rgb: 77, 159, 255;
+      --bg:          #050a0f;
+      --card:        #080d15;
+      --border:      #0f2035;
+      --text:        #c0d0e0;
+      --muted:       #304050;
+      --white:       #eef5ff;
+      --cyan:        #00f5ff;
+      --green:       #39ff14;
+      --yellow:      #ffe600;
+      --pink:        #ff2d78;
+      --purple:      #b54eff;
+      --orange:      #ff6b00;
+      --pre-bg:      #030810;
+      --pre-lh:      1.8;
+      --code-alpha:  0.1;
+      --h1-size:     clamp(14px, 2.5vw, 20px);
+      --h1-lh:       1.6;
+      --h1-mobile:   12px;
+      --glow1:       0.6;
+      --analogy-bg:  linear-gradient(135deg, rgba(77,159,255,0.05), rgba(255,230,0,0.03));
+    }
+
+    .section-title::before { color: var(--pink); }
+
+    .kw     { color: var(--pink); }
+    .fn     { color: var(--primary); }
+    .type   { color: var(--purple); }
+    .str    { color: var(--cyan); }
+    .num    { color: var(--orange); }
+    .cmt    { color: var(--muted); font-style: italic; }
+    .macro  { color: var(--yellow); }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html">&#8592; HUB</a>
+  <span class="tag">✦ Holberton School — Bases de données ✦</span>
+  <h1>SQL<br><span>CRUD OPERATIONS</span></h1>
+  <p class="header-sub">Créer · Lire · Mettre à jour · Supprimer</p>
+</header>
+
+<div class="container">
+
+  <!-- ══════ DÉFINITION ══════ -->
+  <div class="section-title">QU'EST-CE QUE SQL ?</div>
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗄️</span> LE LANGAGE DES BASES DE DONNÉES</div>
+    <p><strong style="color:var(--primary)">SQL</strong> (Structured Query Language) est le langage utilisé pour communiquer avec une base de données relationnelle. Il te permet de stocker, retrouver, modifier et supprimer des données de façon structurée.</p>
+    <div class="analogy">
+      <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+      <p>Une base de données, c'est ton <strong>fichier de sauvegarde de jeu</strong>. SQL, c'est le menu qui te permet d'y accéder. <strong>CRUD</strong> = les 4 actions fondamentales : créer un personnage, voir ses stats, changer son équipement, le supprimer. Sans SQL, tu ne peux pas toucher à la sauvegarde.</p>
+    </div>
+    <div class="tip">CRUD signifie <strong>C</strong>reate, <strong>R</strong>ead, <strong>U</strong>pdate, <strong>D</strong>elete — les 4 opérations de base sur n'importe quelle donnée.</div>
+  </div>
+
+  <!-- ══════ CONCEPTS CLÉS ══════ -->
+  <div class="section-title">CONCEPTS CLÉS</div>
+  <div class="grid-3">
+
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">📦</span> BASE DE DONNÉES</div>
+      <p>Un ensemble organisé de données stockées sur un serveur. Elle contient plusieurs tables, comme un classeur Excel contient plusieurs feuilles.</p>
+      <div class="clarif">MySQL, PostgreSQL, SQLite sont des systèmes qui gèrent ces bases.</div>
+    </div>
+
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">📋</span> TABLE</div>
+      <p>Une table = un tableau avec des <strong style="color:var(--primary)">colonnes</strong> (les champs) et des <strong style="color:var(--primary)">lignes</strong> (les enregistrements). Chaque table représente un type d'objet : utilisateurs, produits, commandes...</p>
+      <div class="clarif">Comme une feuille Excel : les en-têtes = colonnes, chaque ligne = une entrée.</div>
+    </div>
+
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">🔑</span> CLÉ PRIMAIRE</div>
+      <p>Un identifiant unique pour chaque ligne. Généralement un <code>id</code> qui s'incrémente automatiquement. Il garantit qu'aucune ligne n'est identique.</p>
+      <div class="clarif">C'est l'ID joueur dans un RPG — chaque perso en a un unique, même s'ils ont le même nom.</div>
+    </div>
+
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">🔍</span> REQUÊTE (QUERY)</div>
+      <p>Une instruction SQL envoyée à la base de données. Elle retourne un résultat (SELECT) ou modifie des données (INSERT, UPDATE, DELETE).</p>
+      <div class="clarif">Pense à une requête comme une commande vocale : tu demandes, la BDD répond.</div>
+    </div>
+
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">🎯</span> CONDITION WHERE</div>
+      <p>Un filtre qui précise <strong style="color:var(--primary)">sur quelles lignes</strong> la requête s'applique. Sans WHERE sur un UPDATE ou DELETE, <strong style="color:var(--pink)">toutes les lignes sont affectées</strong>.</p>
+      <div class="clarif">WHERE = le ciblage dans un FPS. Sans lui, tu tires dans toutes les directions.</div>
+    </div>
+
+    <div class="card fade-in">
+      <div class="card-title"><span class="card-icon">⚙️</span> TYPE DE DONNÉE</div>
+      <p>Chaque colonne a un type : <code>INT</code> (entier), <code>VARCHAR(n)</code> (texte limité), <code>TEXT</code> (texte long), <code>BOOLEAN</code>, <code>DATE</code>... Le type définit ce qu'on peut stocker.</p>
+      <div class="clarif">Comme les slots d'inventaire : certains n'acceptent que des armes, d'autres que des potions.</div>
+    </div>
+
+  </div>
+
+  <!-- ══════ CREATE ══════ -->
+  <div class="section-title">CREATE — INSÉRER DES DONNÉES</div>
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">➕</span> INSERT INTO</div>
+    <p>Ajoute une nouvelle ligne dans une table. On crée d'abord la table avec <code>CREATE TABLE</code>, puis on y insère des données.</p>
+    <pre><code><span class="cmt">-- Créer la table d'abord</span>
+<span class="kw">CREATE TABLE</span> <span class="fn">joueurs</span> (
+    id     <span class="type">INT</span> <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,  <span class="cmt">-- id unique auto</span>
+    nom    <span class="type">VARCHAR(50)</span> <span class="kw">NOT NULL</span>,              <span class="cmt">-- texte obligatoire</span>
+    level  <span class="type">INT</span> <span class="kw">DEFAULT</span> <span class="num">1</span>,                    <span class="cmt">-- valeur par défaut</span>
+    classe <span class="type">VARCHAR(30)</span>                        <span class="cmt">-- peut être NULL</span>
+);
+
+<span class="cmt">-- Insérer un joueur</span>
+<span class="kw">INSERT INTO</span> joueurs (nom, level, classe)
+<span class="kw">VALUES</span> (<span class="str">'Arthas'</span>, <span class="num">60</span>, <span class="str">'Paladin'</span>);
+
+<span class="cmt">-- Insérer plusieurs joueurs d'un coup</span>
+<span class="kw">INSERT INTO</span> joueurs (nom, level, classe)
+<span class="kw">VALUES</span>
+    (<span class="str">'Thrall'</span>, <span class="num">60</span>, <span class="str">'Chaman'</span>),
+    (<span class="str">'Sylvanas'</span>, <span class="num">60</span>, <span class="str">'Chasseur'</span>);</code></pre>
+    <div class="tip">Tu n'as pas besoin de préciser <code>id</code> — il se génère automatiquement grâce à <code>AUTO_INCREMENT</code>.</div>
+  </div>
+
+  <!-- ══════ READ ══════ -->
+  <div class="section-title">READ — LIRE DES DONNÉES</div>
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🔎</span> SELECT</div>
+    <p>Récupère des données depuis une table. C'est la requête la plus utilisée en SQL.</p>
+    <pre><code><span class="cmt">-- Tout récupérer (toutes les colonnes, toutes les lignes)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs;
+
+<span class="cmt">-- Colonnes spécifiques seulement</span>
+<span class="kw">SELECT</span> nom, level <span class="kw">FROM</span> joueurs;
+
+<span class="cmt">-- Filtrer avec WHERE</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs <span class="kw">WHERE</span> level = <span class="num">60</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs <span class="kw">WHERE</span> classe = <span class="str">'Paladin'</span>;
+
+<span class="cmt">-- Trier les résultats</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs <span class="kw">ORDER BY</span> level <span class="kw">DESC</span>;  <span class="cmt">-- du plus haut au plus bas</span>
+
+<span class="cmt">-- Limiter le nombre de résultats</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs <span class="kw">LIMIT</span> <span class="num">5</span>;
+
+<span class="cmt">-- Conditions multiples</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs
+<span class="kw">WHERE</span> level >= <span class="num">50</span> <span class="kw">AND</span> classe = <span class="str">'Paladin'</span>;</code></pre>
+    <div class="tip"><code>SELECT *</code> retourne toutes les colonnes. En pratique, précise les colonnes dont tu as besoin — c'est plus rapide et plus lisible.</div>
+  </div>
+
+  <!-- ══════ UPDATE ══════ -->
+  <div class="section-title">UPDATE — MODIFIER DES DONNÉES</div>
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">✏️</span> UPDATE SET</div>
+    <p>Modifie des données existantes dans une table. Le <code>WHERE</code> est <strong style="color:var(--pink)">obligatoire</strong>.</p>
+    <pre><code><span class="cmt">-- Mettre à jour le level d'un joueur spécifique</span>
+<span class="kw">UPDATE</span> joueurs
+<span class="kw">SET</span> level = <span class="num">70</span>
+<span class="kw">WHERE</span> id = <span class="num">1</span>;
+
+<span class="cmt">-- Modifier plusieurs colonnes à la fois</span>
+<span class="kw">UPDATE</span> joueurs
+<span class="kw">SET</span> level = <span class="num">70</span>, classe = <span class="str">'Chevalier de la mort'</span>
+<span class="kw">WHERE</span> nom = <span class="str">'Arthas'</span>;</code></pre>
+    <div class="warn">TOUJOURS mettre un <code>WHERE</code> sur un UPDATE. Sans WHERE, <strong>toutes les lignes</strong> de la table sont modifiées.</div>
+  </div>
+
+  <!-- ══════ DELETE ══════ -->
+  <div class="section-title">DELETE — SUPPRIMER DES DONNÉES</div>
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">🗑️</span> DELETE FROM</div>
+    <p>Supprime des lignes dans une table. Irréversible — à utiliser avec précaution.</p>
+    <pre><code><span class="cmt">-- Supprimer un joueur spécifique</span>
+<span class="kw">DELETE FROM</span> joueurs <span class="kw">WHERE</span> id = <span class="num">2</span>;
+
+<span class="cmt">-- Supprimer tous les joueurs de level 1</span>
+<span class="kw">DELETE FROM</span> joueurs <span class="kw">WHERE</span> level = <span class="num">1</span>;</code></pre>
+    <div class="warn">TOUJOURS mettre un <code>WHERE</code> sur un DELETE. Sans WHERE, <strong>toute la table est vidée</strong> — irréversible.</div>
+    <div class="tip">Pour vider entièrement une table, <code>TRUNCATE TABLE joueurs</code> est plus rapide que <code>DELETE FROM joueurs</code> sans WHERE.</div>
+  </div>
+
+  <!-- ══════ TABLEAU RÉCAP ══════ -->
+  <div class="section-title">TABLEAU RÉCAP CRUD</div>
+  <div class="card fade-in">
+    <table class="macro-table">
+      <thead>
+        <tr>
+          <th>ACTION</th>
+          <th>COMMANDE SQL</th>
+          <th>EXEMPLE MINIMAL</th>
+          <th>RISQUE SANS WHERE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="macro-name">CREATE</span></td>
+          <td><code>INSERT INTO</code></td>
+          <td><code>INSERT INTO t (col) VALUES (val)</code></td>
+          <td style="color:var(--green)">Aucun</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">READ</span></td>
+          <td><code>SELECT</code></td>
+          <td><code>SELECT * FROM t WHERE id = 1</code></td>
+          <td style="color:var(--yellow)">Retourne tout</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">UPDATE</span></td>
+          <td><code>UPDATE SET</code></td>
+          <td><code>UPDATE t SET col = val WHERE id = 1</code></td>
+          <td style="color:var(--pink)">Modifie tout ⚠️</td>
+        </tr>
+        <tr>
+          <td><span class="macro-name">DELETE</span></td>
+          <td><code>DELETE FROM</code></td>
+          <td><code>DELETE FROM t WHERE id = 1</code></td>
+          <td style="color:var(--pink)">Vide la table ⚠️</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════ BOSS FIGHTS ══════ -->
+  <div class="section-title">BOSS FIGHTS</div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">👾</span> BOSS 1 — LVL 1 : CRÉER ET PEUPLER UNE TABLE</div>
+    <div class="level-badge">⭐ LVL 1 — FACILE</div>
+    <p>Crée une table <code>personnages</code> avec les colonnes <code>id</code>, <code>nom</code> et <code>hp</code>. Insère 3 personnages.</p>
+    <pre><code><span class="kw">CREATE TABLE</span> <span class="fn">personnages</span> (
+    id  <span class="type">INT</span> <span class="kw">AUTO_INCREMENT PRIMARY KEY</span>,
+    nom <span class="type">VARCHAR(50)</span> <span class="kw">NOT NULL</span>,
+    hp  <span class="type">INT</span> <span class="kw">DEFAULT</span> <span class="num">100</span>
+);
+
+<span class="kw">INSERT INTO</span> personnages (nom, hp)
+<span class="kw">VALUES</span>
+    (<span class="str">'Guerrier'</span>, <span class="num">200</span>),
+    (<span class="str">'Mage'</span>, <span class="num">80</span>),
+    (<span class="str">'Voleur'</span>, <span class="num">120</span>);</code></pre>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">👹</span> BOSS 2 — LVL 2 : FILTRER ET TRIER</div>
+    <div class="level-badge">⭐⭐ LVL 2 — INTERMÉDIAIRE</div>
+    <p>Récupère tous les personnages avec plus de 100 HP, triés du plus résistant au moins résistant. Affiche uniquement <code>nom</code> et <code>hp</code>.</p>
+    <pre><code><span class="kw">SELECT</span> nom, hp
+<span class="kw">FROM</span> personnages
+<span class="kw">WHERE</span> hp > <span class="num">100</span>
+<span class="kw">ORDER BY</span> hp <span class="kw">DESC</span>;</code></pre>
+    <div class="tip">Résultat attendu : Guerrier (200), Voleur (120) — le Mage à 80 HP est exclu du filtre.</div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">💀</span> BOSS FINAL — LVL 3 : HOLBERTON STYLE</div>
+    <div class="level-badge">⭐⭐⭐ LVL 3 — HOLBERTON</div>
+    <p>Le Mage a été blessé, ses HP tombent à 40. Le Voleur quitte la partie. Affiche l'état final de la table.</p>
+    <pre><code><span class="cmt">-- Le mage prend des dégâts</span>
+<span class="kw">UPDATE</span> personnages
+<span class="kw">SET</span> hp = <span class="num">40</span>
+<span class="kw">WHERE</span> nom = <span class="str">'Mage'</span>;
+
+<span class="cmt">-- Le voleur quitte</span>
+<span class="kw">DELETE FROM</span> personnages
+<span class="kw">WHERE</span> nom = <span class="str">'Voleur'</span>;
+
+<span class="cmt">-- État final de la table</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> personnages <span class="kw">ORDER BY</span> hp <span class="kw">DESC</span>;</code></pre>
+  </div>
+
+  <!-- ══════ ERREURS CLASSIQUES ══════ -->
+  <div class="section-title">ERREURS CLASSIQUES</div>
+  <div class="grid-2">
+
+    <div class="card fade-in">
+      <div class="compare-label bad">❌ MAUVAIS</div>
+      <pre><code><span class="cmt">-- UPDATE sans WHERE = catastrophe</span>
+<span class="kw">UPDATE</span> joueurs
+<span class="kw">SET</span> level = <span class="num">1</span>;
+<span class="cmt">-- Tous les joueurs repassent level 1 !</span></code></pre>
+    </div>
+
+    <div class="card fade-in">
+      <div class="compare-label good">✅ CORRECT</div>
+      <pre><code><span class="cmt">-- Toujours cibler avec WHERE</span>
+<span class="kw">UPDATE</span> joueurs
+<span class="kw">SET</span> level = <span class="num">1</span>
+<span class="kw">WHERE</span> id = <span class="num">3</span>;
+<span class="cmt">-- Seulement le joueur id=3 est affecté</span></code></pre>
+    </div>
+
+    <div class="card fade-in">
+      <div class="compare-label bad">❌ MAUVAIS</div>
+      <pre><code><span class="cmt">-- Comparer NULL avec =</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs
+<span class="kw">WHERE</span> classe = <span class="kw">NULL</span>;
+<span class="cmt">-- Retourne toujours 0 résultat !</span></code></pre>
+    </div>
+
+    <div class="card fade-in">
+      <div class="compare-label good">✅ CORRECT</div>
+      <pre><code><span class="cmt">-- NULL se teste avec IS NULL</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs
+<span class="kw">WHERE</span> classe <span class="kw">IS NULL</span>;
+<span class="cmt">-- IS NOT NULL pour l'inverse</span></code></pre>
+    </div>
+
+    <div class="card fade-in">
+      <div class="compare-label bad">❌ MAUVAIS</div>
+      <pre><code><span class="cmt">-- Chaîne avec mauvaise casse</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs
+<span class="kw">WHERE</span> nom = <span class="str">'arthas'</span>;
+<span class="cmt">-- Peut retourner 0 résultat si la BDD</span>
+<span class="cmt">-- est sensible à la casse</span></code></pre>
+    </div>
+
+    <div class="card fade-in">
+      <div class="compare-label good">✅ CORRECT</div>
+      <pre><code><span class="cmt">-- Respecter la casse ou utiliser LOWER()</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> joueurs
+<span class="kw">WHERE</span> <span class="fn">LOWER</span>(nom) = <span class="str">'arthas'</span>;
+<span class="cmt">-- Fonctionne quelle que soit la casse</span></code></pre>
+    </div>
+
+  </div>
+
+  <!-- ══════ SKILL TREE ══════ -->
+  <div class="section-title">SKILL TREE SQL</div>
+  <div class="card fade-in">
+    <div class="skill-tree">
+      <div class="skill-node">
+        <div class="skill-dot done"></div>
+        <div><strong style="color:var(--primary)">CREATE TABLE</strong> — Définir la structure de tes données</div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot cyan"></div>
+        <div><strong style="color:var(--cyan)">INSERT INTO</strong> — Ajouter des lignes dans la table</div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot green"></div>
+        <div><strong style="color:var(--green)">SELECT *</strong> — Lire toutes les données d'une table</div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot yellow"></div>
+        <div><strong style="color:var(--yellow)">SELECT + WHERE</strong> — Filtrer précisément les résultats</div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot orange"></div>
+        <div><strong style="color:var(--orange)">ORDER BY / LIMIT</strong> — Trier et paginer les résultats</div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot pink"></div>
+        <div><strong style="color:var(--pink)">UPDATE + WHERE</strong> — Modifier des données en sécurité</div>
+      </div>
+      <div class="skill-node">
+        <div class="skill-dot purple"></div>
+        <div><strong style="color:var(--purple)">DELETE + WHERE</strong> — Supprimer sans tout effacer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ RÉSUMÉ ══════ -->
+  <div class="section-title">RÉSUMÉ</div>
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">📜</span> LES 4 RÈGLES D'OR</div>
+    <pre><code><span class="cmt">-- ══════════════════════════════════════════════════
+--  SQL CRUD — Règles à ne jamais oublier
+-- ══════════════════════════════════════════════════</span>
+
+<span class="cmt">-- 1. TOUJOURS un WHERE sur UPDATE et DELETE</span>
+<span class="kw">UPDATE</span> table <span class="kw">SET</span> col = val <span class="kw">WHERE</span> id = <span class="num">X</span>;   <span class="cmt">-- ✅</span>
+<span class="kw">DELETE FROM</span> table <span class="kw">WHERE</span> id = <span class="num">X</span>;            <span class="cmt">-- ✅</span>
+
+<span class="cmt">-- 2. NULL ne se compare pas avec =</span>
+<span class="kw">WHERE</span> col <span class="kw">IS NULL</span>     <span class="cmt">-- ✅ correct</span>
+<span class="kw">WHERE</span> col = <span class="kw">NULL</span>      <span class="cmt">-- ❌ retourne toujours rien</span>
+
+<span class="cmt">-- 3. SELECT * c'est bien pour déboguer, pas en production</span>
+<span class="kw">SELECT</span> nom, level <span class="kw">FROM</span> table;   <span class="cmt">-- ✅ précis et rapide</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> table;            <span class="cmt">-- OK pour explorer</span>
+
+<span class="cmt">-- 4. AUTO_INCREMENT gère l'id — ne jamais l'insérer manuellement</span>
+<span class="kw">INSERT INTO</span> t (nom) <span class="kw">VALUES</span> (<span class="str">'X'</span>);  <span class="cmt">-- ✅ id généré auto</span></code></pre>
+  </div>
+
+</div>
+
+<footer>
+  <span>QUERY ACCEPTED</span> — La base de données attend tes ordres<br><br>
+  <span>Holberton School</span> — Bases de données — SQL CRUD Operations
+</footer>
+
+</body>
+</html>
