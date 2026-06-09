@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python ORM — MySQLdb & SQLAlchemy Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css?v=2">
+<style>
+  :root {
+    --bg:     #0f080a;
+    --card:   #180d10;
+    --border: #2e1520;
+    --neon:   #ff2d78;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text:   #e0c8ce;
+    --muted:  #704050;
+    --white:  #fff0f3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,45,120,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,120,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 60px 24px 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .back-link {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--neon); }
+
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 20px;
+  }
+
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(14px, 2.5vw, 22px);
+    color: var(--white);
+    line-height: 1.6;
+    text-shadow: 0 0 20px var(--neon), 0 0 40px rgba(255,45,120,0.4);
+    margin-bottom: 16px;
+  }
+
+  header h1 span { color: var(--neon); }
+
+  .header-sub {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--neon);
+    margin: 48px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::before {
+    content: '▶';
+    color: var(--pink);
+    animation: blink 1s step-end infinite;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--border), transparent);
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--neon), transparent);
+  }
+
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+
+  .card.cyan::before  { background: linear-gradient(to right, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(to right, var(--yellow), transparent); }
+  .card.green::before { background: linear-gradient(to right, var(--green), transparent); }
+  .card.pink::before  { background: linear-gradient(to right, var(--pink), transparent); }
+  .card.orange::before { background: linear-gradient(to right, var(--orange), transparent); }
+  .card.purple::before { background: linear-gradient(to right, var(--purple), transparent); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--neon);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card.cyan   .card-title { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green  .card-title { color: var(--green); }
+  .card.pink   .card-title { color: var(--pink); }
+  .card.orange .card-title { color: var(--orange); }
+  .card.purple .card-title { color: var(--purple); }
+
+  .card-icon { font-size: 16px; }
+
+  /* GRIDS */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* CODE BLOCKS */
+  pre {
+    background: #0a040a;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+
+  code {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    background: rgba(255,45,120,0.08);
+    color: var(--neon);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .kw   { color: var(--pink); }
+  .fn   { color: var(--neon); }
+  .type { color: var(--purple); }
+  .str  { color: var(--cyan); }
+  .num  { color: var(--orange); }
+  .cmt  { color: var(--muted); font-style: italic; }
+  .macro { color: var(--yellow); }
+
+  /* BOITES CONTEXTUELLES */
+  .analogy {
+    background: rgba(255,230,0,0.04);
+    border-left: 4px solid var(--yellow);
+    padding: 14px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+  }
+
+  .analogy-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--yellow);
+    margin-bottom: 8px;
+  }
+
+  .tip {
+    background: rgba(57,255,20,0.04);
+    border-left: 4px solid var(--green);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+  }
+  .tip::before { content: '✅ '; }
+
+  .warn {
+    background: rgba(255,45,120,0.05);
+    border-left: 4px solid var(--pink);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+  }
+  .warn::before { content: '⚠️ '; }
+
+  .clarif {
+    background: rgba(181,78,255,0.05);
+    border-left: 4px solid var(--purple);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+  }
+  .clarif::before { content: '💡 '; }
+
+  /* TABLEAUX */
+  .macro-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin: 12px 0;
+  }
+
+  .macro-table th {
+    background: var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--neon);
+    padding: 10px 12px;
+    text-align: left;
+  }
+
+  .macro-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .macro-table tr:hover td { background: rgba(255,45,120,0.04); }
+  .macro-name { color: var(--yellow); font-weight: bold; }
+
+  /* STEPS */
+  .steps { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .step-num {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    background: var(--neon);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    border-radius: 4px;
+  }
+
+  /* SKILL TREE */
+  .skill-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-left: 16px;
+    border-left: 2px solid;
+    border-image: linear-gradient(to bottom, var(--neon), var(--purple)) 1;
+    margin: 12px 0;
+  }
+
+  .skill-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    position: relative;
+  }
+
+  .skill-dot {
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    border-radius: 50%;
+    margin-top: 4px;
+    margin-left: -22px;
+  }
+
+  .skill-dot.pink   { background: var(--pink); box-shadow: 0 0 8px var(--pink); }
+  .skill-dot.cyan   { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+  .skill-dot.green  { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .skill-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .skill-dot.purple { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+  .skill-dot.orange { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+
+  /* LEVEL BADGE */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--purple);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--purple);
+    margin-left: 8px;
+  }
+
+  /* BOSS CARD */
+  .boss-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 12px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .boss-card.lvl1::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--green); }
+  .boss-card.lvl2::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--yellow); }
+  .boss-card.lvl3::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--pink); }
+
+  .boss-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    margin-bottom: 12px;
+  }
+  .boss-card.lvl1 .boss-title { color: var(--green); }
+  .boss-card.lvl2 .boss-title { color: var(--yellow); }
+  .boss-card.lvl3 .boss-title { color: var(--pink); }
+
+  /* COMPARISON */
+  .vs-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .vs-bad { color: var(--pink); border: 1px solid var(--pink); }
+  .vs-good { color: var(--green); border: 1px solid var(--green); }
+
+  /* FADE IN */
+  @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+  .fade-in { animation: fadeIn 0.6s ease both; }
+  .fade-in:nth-child(2) { animation-delay: 0.1s; }
+  .fade-in:nth-child(3) { animation-delay: 0.2s; }
+  .fade-in:nth-child(4) { animation-delay: 0.3s; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 48px 24px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    position: relative;
+    z-index: 1;
+    line-height: 2;
+  }
+  footer span { color: var(--neon); }
+
+  p { margin-bottom: 10px; }
+  p:last-child { margin-bottom: 0; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin-bottom: 4px; }
+  strong { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<header>
+  <a class="back-link" href="../index.html">&#8592; HUB</a>
+  <span class="tag">✦ Holberton School — Python ✦</span>
+  <h1>PYTHON ORM<br><span>MySQLdb & SQLAlchemy</span></h1>
+  <p class="header-sub">Finis les requêtes SQL à la main — parle Python, laisse l'ORM traduire.</p>
+</header>
+
+<div class="container">
+
+<!-- ══════ DÉFINITION ══════ -->
+<div class="section-title">QU'EST-CE QUE C'EST ?</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">🎯</span> ORM — OBJECT RELATIONAL MAPPER</div>
+  <p>Un ORM est une couche d'abstraction entre ton code Python et ta base de données. Tu manipules des <strong style="color:var(--neon)">objets Python</strong> — l'ORM les traduit en SQL tout seul.</p>
+  <p>Ce projet couvre deux approches : <strong style="color:var(--cyan)">MySQLdb</strong> (bas niveau, SQL direct) et <strong style="color:var(--purple)">SQLAlchemy</strong> (ORM complet, zéro SQL).</p>
+  <div class="analogy">
+    <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+    <p>MySQLdb c'est comme jouer sans HUD : tu gères tout manuellement, tu vois les requêtes brutes. SQLAlchemy c'est l'interface du jeu : tu cliques sur "attaquer un ennemi", le jeu traduit en mécanique interne. Même résultat, niveau d'abstraction très différent.</p>
+  </div>
+  <div class="tip">Sans ORM tu écris du SQL. Avec ORM tu écris du Python. Ton code devient indépendant du type de base de données.</div>
+</div>
+
+<!-- ══════ CONCEPTS CLÉS ══════ -->
+<div class="section-title">CONCEPTS CLÉS</div>
+<div class="grid-3">
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🔌</span> CONNEXION MYSQLDB</div>
+    <p>MySQLdb ouvre une connexion directe au serveur MySQL. Tu obtiens un <strong style="color:var(--cyan)">cursor</strong> pour exécuter des requêtes SQL sous forme de chaînes de caractères.</p>
+    <div class="clarif">C'est du SQL classique en Python — utile pour comprendre les bases avant d'utiliser un ORM.</div>
+  </div>
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">⚙️</span> ENGINE SQLALCHEMY</div>
+    <p>L'<strong style="color:var(--purple)">Engine</strong> est le point d'entrée de SQLAlchemy. Il contient les infos de connexion (hôte, port, user, db) et gère le pool de connexions.</p>
+    <div class="clarif">Crée-le une seule fois avec <code>create_engine()</code> — c'est la porte vers ta base de données.</div>
+  </div>
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">📦</span> SESSION</div>
+    <p>La <strong style="color:var(--orange)">Session</strong> est ton espace de travail. Elle suit les objets que tu crées, modifies ou supprimes, puis les synchronise avec la base via <code>commit()</code>.</p>
+    <div class="clarif">Pense à la Session comme un panier d'achat : tu ajoutes des objets, et à la caisse (commit) tout est enregistré.</div>
+  </div>
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🗺️</span> BASE ET MODÈLE</div>
+    <p><strong style="color:var(--green)">Base</strong> est la classe parente de tous tes modèles. Chaque modèle est une classe Python qui <strong>mappe</strong> une table SQL — chaque attribut de classe = une colonne.</p>
+    <div class="clarif">Un modèle = une table. Une instance = une ligne. C'est le cœur de l'ORM.</div>
+  </div>
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">🔍</span> QUERY API</div>
+    <p>Au lieu d'écrire <code>SELECT * FROM</code>, tu utilises <code>session.query(Model)</code>. Tu peux chaîner des filtres, tris et limites directement en Python.</p>
+    <div class="clarif">SQLAlchemy traduit tes appels Python en SQL optimisé — tu n'as plus à connaître la syntaxe SQL par cœur.</div>
+  </div>
+  <div class="card pink fade-in">
+    <div class="card-title"><span class="card-icon">🔗</span> POOL DE CONNEXIONS</div>
+    <p>L'option <code>pool_pre_ping=True</code> teste la connexion avant chaque utilisation. Indispensable pour éviter les erreurs "connexion perdue" sur un serveur idle.</p>
+    <div class="clarif">Sans ça, si MySQL ferme une connexion inactive, ton code crashe. Toujours activer cette option en production.</div>
+  </div>
+</div>
+
+<!-- ══════ SYNTAXE MYSQLDB ══════ -->
+<div class="section-title">MYSQLDB — CONNEXION DIRECTE</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">🔌</span> PATTERN COMPLET</div>
+  <p>Structure standard d'un script MySQLdb — connexion, curseur, requête, fermeture.</p>
+  <pre><span class="kw">import</span> MySQLdb
+<span class="kw">import</span> sys
+
+<span class="kw">if</span> <span class="macro">__name__</span> == <span class="str">"__main__"</span>:
+    <span class="cmt"># Récupère les arguments : user, password, db_name</span>
+    username = sys.argv[<span class="num">1</span>]
+    password = sys.argv[<span class="num">2</span>]
+    db_name  = sys.argv[<span class="num">3</span>]
+
+    <span class="cmt"># Ouvre la connexion au serveur MySQL local</span>
+    conn = MySQLdb.<span class="fn">connect</span>(
+        host=<span class="str">"localhost"</span>,
+        port=<span class="num">3306</span>,
+        user=username,
+        passwd=password,
+        db=db_name,
+        charset=<span class="str">"utf8"</span>
+    )
+
+    <span class="cmt"># Crée un curseur pour exécuter des requêtes</span>
+    cur = conn.<span class="fn">cursor</span>()
+
+    <span class="cmt"># Exécute la requête SQL (ici en chaîne de caractères)</span>
+    cur.<span class="fn">execute</span>(<span class="str">"SELECT * FROM states ORDER BY id ASC"</span>)
+
+    <span class="cmt"># Récupère toutes les lignes sous forme de tuples</span>
+    rows = cur.<span class="fn">fetchall</span>()
+    <span class="kw">for</span> row <span class="kw">in</span> rows:
+        <span class="fn">print</span>(row)
+
+    <span class="cmt"># Ferme curseur ET connexion — toujours dans cet ordre</span>
+    cur.<span class="fn">close</span>()
+    conn.<span class="fn">close</span>()</pre>
+  <div class="warn">Ne jamais concaténer des variables dans la requête SQL — risque d'injection SQL. Utiliser les paramètres : <code>cur.execute("SELECT * FROM states WHERE name = %s", (name,))</code></div>
+  <div class="tip">MySQLdb retourne des tuples : <code>(1, 'California')</code>. Pour avoir des dicts, utiliser <code>MySQLdb.cursors.DictCursor</code>.</div>
+</div>
+
+<!-- ══════ SYNTAXE SQLALCHEMY ══════ -->
+<div class="section-title">SQLALCHEMY — DÉFINIR UN MODÈLE</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">🗺️</span> MAPPER UNE CLASSE SUR UNE TABLE</div>
+  <p>Chaque modèle hérite de <code>Base</code> et déclare ses colonnes comme attributs de classe.</p>
+  <pre><span class="cmt">#!/usr/bin/python3</span>
+<span class="str">"""Module définissant le modèle State pour SQLAlchemy."""</span>
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> Column, Integer, String
+<span class="kw">from</span> sqlalchemy.ext.declarative <span class="kw">import</span> declarative_base
+
+<span class="cmt"># Base est la classe parente de tous les modèles</span>
+<span class="type">Base</span> = <span class="fn">declarative_base</span>()
+
+
+<span class="kw">class</span> <span class="type">State</span>(<span class="type">Base</span>):
+    <span class="str">"""Modèle représentant la table 'states' en base de données."""</span>
+
+    <span class="cmt"># Nom de la table en base</span>
+    <span class="macro">__tablename__</span> = <span class="str">'states'</span>
+
+    <span class="cmt"># Colonnes : id auto-incrémenté, clé primaire</span>
+    id = <span class="fn">Column</span>(<span class="type">Integer</span>, primary_key=<span class="kw">True</span>, nullable=<span class="kw">False</span>)
+
+    <span class="cmt"># name : chaîne de 128 chars, obligatoire</span>
+    name = <span class="fn">Column</span>(<span class="type">String</span>(<span class="num">128</span>), nullable=<span class="kw">False</span>)</pre>
+  <div class="clarif">Un attribut de classe <code>Column(...)</code> définit une colonne. L'ORM s'occupe de la correspondance — tu n'écris jamais le CREATE TABLE.</div>
+</div>
+
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">⚡</span> ENGINE + SESSION — REQUÊTER SANS SQL</div>
+  <pre><span class="cmt">#!/usr/bin/python3</span>
+<span class="str">"""Script listant tous les states via SQLAlchemy ORM."""</span>
+<span class="kw">import</span> sys
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> create_engine
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> Session
+<span class="kw">from</span> model_state <span class="kw">import</span> Base, State
+
+<span class="kw">if</span> <span class="macro">__name__</span> == <span class="str">"__main__"</span>:
+    <span class="cmt"># Crée le moteur de connexion — format : dialect+driver://user:pass@host/db</span>
+    engine = <span class="fn">create_engine</span>(
+        <span class="str">'mysql+mysqldb://{}:{}@localhost/{}'</span>.<span class="fn">format</span>(
+            sys.argv[<span class="num">1</span>], sys.argv[<span class="num">2</span>], sys.argv[<span class="num">3</span>]
+        ),
+        pool_pre_ping=<span class="kw">True</span>  <span class="cmt"># teste la connexion avant usage</span>
+    )
+
+    <span class="cmt"># Crée les tables si elles n'existent pas encore</span>
+    Base.metadata.<span class="fn">create_all</span>(engine)
+
+    <span class="cmt"># Ouvre une session de travail</span>
+    <span class="kw">with</span> <span class="type">Session</span>(engine) <span class="kw">as</span> session:
+        <span class="cmt"># Requête Python — pas une seule ligne de SQL !</span>
+        states = session.<span class="fn">query</span>(<span class="type">State</span>).<span class="fn">order_by</span>(<span class="type">State</span>.id).<span class="fn">all</span>()
+        <span class="kw">for</span> state <span class="kw">in</span> states:
+            <span class="fn">print</span>(<span class="str">"{}: {}"</span>.<span class="fn">format</span>(state.id, state.name))</pre>
+  <div class="tip">Utiliser <code>with Session(engine) as session:</code> — la session se ferme automatiquement à la fin du bloc.</div>
+  <div class="warn">Interdit d'utiliser <code>.execute()</code> avec SQLAlchemy dans ce projet. Toujours passer par la Query API.</div>
+</div>
+
+<!-- ══════ TABLEAU RÉCAP ══════ -->
+<div class="section-title">TABLEAU RÉCAP — MÉTHODES CLÉS</div>
+<div class="card fade-in">
+  <table class="macro-table">
+    <thead>
+      <tr>
+        <th>Méthode / Attribut</th>
+        <th>Module</th>
+        <th>Rôle</th>
+        <th>Retourne</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="macro-name">MySQLdb.connect()</span></td>
+        <td><span style="color:var(--cyan)">MySQLdb</span></td>
+        <td>Ouvre une connexion MySQL</td>
+        <td>Objet connexion</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">conn.cursor()</span></td>
+        <td><span style="color:var(--cyan)">MySQLdb</span></td>
+        <td>Crée un curseur pour exécuter du SQL</td>
+        <td>Curseur</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">cur.execute(query)</span></td>
+        <td><span style="color:var(--cyan)">MySQLdb</span></td>
+        <td>Exécute une requête SQL</td>
+        <td>Nombre de lignes affectées</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">cur.fetchall()</span></td>
+        <td><span style="color:var(--cyan)">MySQLdb</span></td>
+        <td>Récupère toutes les lignes du résultat</td>
+        <td>Liste de tuples</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">create_engine(url)</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Crée le moteur de connexion</td>
+        <td>Engine</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">Base.metadata.create_all(engine)</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Crée les tables si inexistantes</td>
+        <td>None</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">session.query(Model)</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Démarre une requête sur un modèle</td>
+        <td>Query object (chaînable)</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">.filter(condition)</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Filtre les résultats (= WHERE)</td>
+        <td>Query object</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">.filter_by(attr=val)</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Filtre simple sur un attribut</td>
+        <td>Query object</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">.order_by(Model.col)</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Trie les résultats (= ORDER BY)</td>
+        <td>Query object</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">.all()</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Exécute et retourne toutes les lignes</td>
+        <td>Liste d'instances</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">.first()</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Retourne le premier résultat ou None</td>
+        <td>Instance ou None</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">.count()</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Compte les lignes (= COUNT)</td>
+        <td>int</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">session.add(obj)</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Prépare un objet pour insertion</td>
+        <td>None</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">session.commit()</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Valide les changements en base</td>
+        <td>None</td>
+      </tr>
+      <tr>
+        <td><span class="macro-name">session.delete(obj)</span></td>
+        <td><span style="color:var(--purple)">SQLAlchemy</span></td>
+        <td>Marque un objet pour suppression</td>
+        <td>None</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════ BOSS FIGHTS ══════ -->
+<div class="section-title">BOSS FIGHTS — PROGRESSION</div>
+
+<div class="boss-card lvl1 fade-in">
+  <div class="boss-title">⚔️ BOSS 1 — LVL 1 FACILE : LISTER LES STATES</div>
+  <p>Objectif : lister tous les states d'une table triés par id avec MySQLdb.</p>
+  <pre><span class="cmt">#!/usr/bin/python3</span>
+<span class="str">"""Liste tous les states depuis la DB — utilise MySQLdb."""</span>
+<span class="kw">import</span> MySQLdb
+<span class="kw">import</span> sys
+
+<span class="kw">if</span> <span class="macro">__name__</span> == <span class="str">"__main__"</span>:
+    conn = MySQLdb.<span class="fn">connect</span>(host=<span class="str">"localhost"</span>, port=<span class="num">3306</span>,
+                            user=sys.argv[<span class="num">1</span>], passwd=sys.argv[<span class="num">2</span>],
+                            db=sys.argv[<span class="num">3</span>], charset=<span class="str">"utf8"</span>)
+    cur = conn.<span class="fn">cursor</span>()
+    cur.<span class="fn">execute</span>(<span class="str">"SELECT * FROM states ORDER BY id ASC"</span>)
+    <span class="kw">for</span> row <span class="kw">in</span> cur.<span class="fn">fetchall</span>():
+        <span class="fn">print</span>(row)
+    cur.<span class="fn">close</span>()
+    conn.<span class="fn">close</span>()</pre>
+  <div class="tip">Résultat : <code>(1, 'California')</code> — chaque ligne est un tuple <code>(id, name)</code>.</div>
+</div>
+
+<div class="boss-card lvl2 fade-in">
+  <div class="boss-title">⚔️ BOSS 2 — LVL 2 INTERMÉDIAIRE : FILTRER PAR NOM</div>
+  <p>Objectif : avec SQLAlchemy, trouver un state par son nom (insensible à la casse).</p>
+  <pre><span class="cmt">#!/usr/bin/python3</span>
+<span class="str">"""Cherche un state par nom exact via SQLAlchemy ORM."""</span>
+<span class="kw">import</span> sys
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> create_engine
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> Session
+<span class="kw">from</span> model_state <span class="kw">import</span> Base, State
+
+<span class="kw">if</span> <span class="macro">__name__</span> == <span class="str">"__main__"</span>:
+    engine = <span class="fn">create_engine</span>(
+        <span class="str">'mysql+mysqldb://{}:{}@localhost/{}'</span>.<span class="fn">format</span>(*sys.argv[<span class="num">1</span>:<span class="num">4</span>]),
+        pool_pre_ping=<span class="kw">True</span>
+    )
+    Base.metadata.<span class="fn">create_all</span>(engine)
+
+    <span class="kw">with</span> <span class="type">Session</span>(engine) <span class="kw">as</span> session:
+        <span class="cmt"># Filtre sur le nom exact — pas de SQL, juste Python</span>
+        result = session.<span class="fn">query</span>(<span class="type">State</span>).<span class="fn">filter</span>(
+            <span class="type">State</span>.name == sys.argv[<span class="num">4</span>]
+        ).<span class="fn">all</span>()
+
+        <span class="kw">if</span> result:
+            <span class="kw">for</span> state <span class="kw">in</span> result:
+                <span class="fn">print</span>(<span class="str">"{}: {}"</span>.<span class="fn">format</span>(state.id, state.name))
+        <span class="kw">else</span>:
+            <span class="fn">print</span>(<span class="str">"Not found"</span>)</pre>
+</div>
+
+<div class="boss-card lvl3 fade-in">
+  <div class="boss-title">💀 BOSS FINAL — LVL 3 HOLBERTON STYLE : INSERT, UPDATE, DELETE</div>
+  <p>Objectif : créer un nouveau state, le modifier, puis le supprimer — tout sans SQL.</p>
+  <pre><span class="cmt">#!/usr/bin/python3</span>
+<span class="str">"""CRUD complet sur un State avec SQLAlchemy ORM."""</span>
+<span class="kw">import</span> sys
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> create_engine
+<span class="kw">from</span> sqlalchemy.orm <span class="kw">import</span> Session
+<span class="kw">from</span> model_state <span class="kw">import</span> Base, State
+
+<span class="kw">if</span> <span class="macro">__name__</span> == <span class="str">"__main__"</span>:
+    engine = <span class="fn">create_engine</span>(
+        <span class="str">'mysql+mysqldb://{}:{}@localhost/{}'</span>.<span class="fn">format</span>(*sys.argv[<span class="num">1</span>:<span class="num">4</span>]),
+        pool_pre_ping=<span class="kw">True</span>
+    )
+    Base.metadata.<span class="fn">create_all</span>(engine)
+
+    <span class="kw">with</span> <span class="type">Session</span>(engine) <span class="kw">as</span> session:
+        <span class="cmt"># INSERT — crée un objet Python et l'ajoute à la session</span>
+        new_state = <span class="type">State</span>(name=<span class="str">"Louisiana"</span>)
+        session.<span class="fn">add</span>(new_state)
+        session.<span class="fn">commit</span>()
+        <span class="fn">print</span>(<span class="str">"Nouveau state id: {}"</span>.<span class="fn">format</span>(new_state.id))
+
+        <span class="cmt"># UPDATE — modifie l'attribut directement, commit enregistre</span>
+        state = session.<span class="fn">query</span>(<span class="type">State</span>).<span class="fn">filter_by</span>(name=<span class="str">"Louisiana"</span>).<span class="fn">first</span>()
+        <span class="kw">if</span> state:
+            state.name = <span class="str">"New Louisiana"</span>
+            session.<span class="fn">commit</span>()
+            <span class="fn">print</span>(<span class="str">"Modifié : {}"</span>.<span class="fn">format</span>(state.name))
+
+        <span class="cmt"># DELETE — marque pour suppression, commit confirme</span>
+        to_delete = session.<span class="fn">query</span>(<span class="type">State</span>).<span class="fn">filter_by</span>(name=<span class="str">"New Louisiana"</span>).<span class="fn">first</span>()
+        <span class="kw">if</span> to_delete:
+            session.<span class="fn">delete</span>(to_delete)
+            session.<span class="fn">commit</span>()
+            <span class="fn">print</span>(<span class="str">"Supprimé."</span>)</pre>
+  <div class="warn">Après un <code>add()</code> et <code>commit()</code>, l'objet est "détaché" par défaut. Accéder à <code>new_state.id</code> fonctionne car SQLAlchemy le recharge automatiquement.</div>
+</div>
+
+<!-- ══════ ERREURS CLASSIQUES ══════ -->
+<div class="section-title">ERREURS CLASSIQUES</div>
+<div class="grid-2">
+  <div class="card pink fade-in">
+    <div class="vs-label vs-bad">✗ MAUVAIS</div>
+    <div class="card-title"><span class="card-icon">💀</span> INJECTION SQL</div>
+    <pre><span class="cmt"># NE JAMAIS FAIRE — injection SQL possible !</span>
+name = sys.argv[<span class="num">1</span>]
+cur.<span class="fn">execute</span>(<span class="str">"SELECT * FROM states WHERE name = '"</span>
+           + name + <span class="str">"'"</span>)</pre>
+    <div class="warn">Si l'utilisateur tape <code>' OR '1'='1</code>, il lit toute la table. Catastrophique.</div>
+  </div>
+  <div class="card green fade-in">
+    <div class="vs-label vs-good">✓ CORRECT</div>
+    <div class="card-title"><span class="card-icon">✅</span> PARAMÈTRE SÉCURISÉ</div>
+    <pre><span class="cmt"># Utilise les paramètres — MySQLdb échappe automatiquement</span>
+name = sys.argv[<span class="num">1</span>]
+cur.<span class="fn">execute</span>(
+    <span class="str">"SELECT * FROM states WHERE name = %s"</span>,
+    (name,)  <span class="cmt"># tuple obligatoire, même pour 1 param</span>
+)</pre>
+    <div class="tip">MySQLdb échappe les caractères dangereux. Ta requête est blindée.</div>
+  </div>
+
+  <div class="card pink fade-in">
+    <div class="vs-label vs-bad">✗ MAUVAIS</div>
+    <div class="card-title"><span class="card-icon">💀</span> OUBLIER DE FERMER</div>
+    <pre><span class="cmt"># Connexion qui ne se ferme jamais</span>
+conn = MySQLdb.<span class="fn">connect</span>(...)
+cur = conn.<span class="fn">cursor</span>()
+cur.<span class="fn">execute</span>(<span class="str">"SELECT * FROM states"</span>)
+<span class="fn">print</span>(cur.<span class="fn">fetchall</span>())
+<span class="cmt"># ← manque cur.close() et conn.close()</span></pre>
+    <div class="warn">Les connexions ouvertes épuisent le pool. Le serveur finit par refuser les nouvelles connexions.</div>
+  </div>
+  <div class="card green fade-in">
+    <div class="vs-label vs-good">✓ CORRECT</div>
+    <div class="card-title"><span class="card-icon">✅</span> TOUJOURS FERMER</div>
+    <pre><span class="cmt"># Ferme dans l'ordre inverse d'ouverture</span>
+conn = MySQLdb.<span class="fn">connect</span>(...)
+cur = conn.<span class="fn">cursor</span>()
+cur.<span class="fn">execute</span>(<span class="str">"SELECT * FROM states"</span>)
+<span class="fn">print</span>(cur.<span class="fn">fetchall</span>())
+cur.<span class="fn">close</span>()    <span class="cmt"># curseur d'abord</span>
+conn.<span class="fn">close</span>()   <span class="cmt"># connexion ensuite</span></pre>
+    <div class="tip">Ou utilise un context manager <code>with</code> pour automatiser la fermeture.</div>
+  </div>
+
+  <div class="card pink fade-in">
+    <div class="vs-label vs-bad">✗ MAUVAIS</div>
+    <div class="card-title"><span class="card-icon">💀</span> .execute() AVEC SQLALCHEMY</div>
+    <pre><span class="cmt"># Interdit dans ce projet !</span>
+session.<span class="fn">execute</span>(<span class="str">"SELECT * FROM states"</span>)</pre>
+    <div class="warn">Le projet Holberton interdit explicitement <code>execute()</code> avec SQLAlchemy. Toujours utiliser la Query API.</div>
+  </div>
+  <div class="card green fade-in">
+    <div class="vs-label vs-good">✓ CORRECT</div>
+    <div class="card-title"><span class="card-icon">✅</span> QUERY API PROPRE</div>
+    <pre><span class="cmt"># Requête via l'ORM — zéro SQL brut</span>
+states = session.<span class="fn">query</span>(<span class="type">State</span>)\
+    .<span class="fn">order_by</span>(<span class="type">State</span>.id)\
+    .<span class="fn">all</span>()
+<span class="kw">for</span> state <span class="kw">in</span> states:
+    <span class="fn">print</span>(<span class="str">"{}: {}"</span>.<span class="fn">format</span>(state.id, state.name))</pre>
+    <div class="tip">Chaîne les méthodes : <code>.filter()</code>, <code>.order_by()</code>, <code>.limit()</code>, <code>.all()</code>.</div>
+  </div>
+
+  <div class="card pink fade-in">
+    <div class="vs-label vs-bad">✗ MAUVAIS</div>
+    <div class="card-title"><span class="card-icon">💀</span> DOCSTRING MANQUANTE</div>
+    <pre><span class="kw">class</span> <span class="type">State</span>(<span class="type">Base</span>):
+    <span class="macro">__tablename__</span> = <span class="str">'states'</span>
+    id = <span class="fn">Column</span>(<span class="type">Integer</span>, primary_key=<span class="kw">True</span>)
+    name = <span class="fn">Column</span>(<span class="type">String</span>(<span class="num">128</span>))</pre>
+    <div class="warn">Holberton vérifie les docstrings avec <code>python3 -c 'print(State.__doc__)'</code>. Sans docstring = 0 points.</div>
+  </div>
+  <div class="card green fade-in">
+    <div class="vs-label vs-good">✓ CORRECT</div>
+    <div class="card-title"><span class="card-icon">✅</span> DOCSTRINGS PARTOUT</div>
+    <pre><span class="kw">class</span> <span class="type">State</span>(<span class="type">Base</span>):
+    <span class="str">"""Modèle représentant la table states."""</span>
+    <span class="macro">__tablename__</span> = <span class="str">'states'</span>
+    id = <span class="fn">Column</span>(<span class="type">Integer</span>, primary_key=<span class="kw">True</span>,
+                nullable=<span class="kw">False</span>)
+    name = <span class="fn">Column</span>(<span class="type">String</span>(<span class="num">128</span>), nullable=<span class="kw">False</span>)</pre>
+    <div class="tip">Module, classe, et chaque fonction doivent avoir une docstring — phrase complète expliquant le but.</div>
+  </div>
+</div>
+
+<!-- ══════ SKILL TREE ══════ -->
+<div class="section-title">RÈGLES CRITIQUES — SKILL TREE</div>
+<div class="card fade-in">
+  <div class="skill-tree">
+    <div class="skill-item">
+      <div class="skill-dot pink"></div>
+      <div>
+        <strong style="color:var(--pink)">Shebang + docstrings obligatoires</strong>
+        <p>Première ligne : <code>#!/usr/bin/python3</code>. Module, classe, fonction : chacun a sa docstring. Vérifié automatiquement par Holberton.</p>
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot cyan"></div>
+      <div>
+        <strong style="color:var(--cyan)">Paramètres SQL, jamais de concat</strong>
+        <p>Avec MySQLdb, toujours <code>cur.execute("... WHERE x = %s", (val,))</code>. Le tuple en deuxième argument est obligatoire — même pour un seul paramètre.</p>
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot green"></div>
+      <div>
+        <strong style="color:var(--green)">if __name__ == "__main__": toujours</strong>
+        <p>Le code ne doit pas s'exécuter à l'import. Tout le code principal va dans ce bloc. Testé avec <code>import</code> dans les scripts de validation.</p>
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot yellow"></div>
+      <div>
+        <strong style="color:var(--yellow)">pool_pre_ping=True sur l'engine</strong>
+        <p>Évite les erreurs "MySQL server has gone away" sur les connexions idle. Toujours l'activer quand l'engine est créé.</p>
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot purple"></div>
+      <div>
+        <strong style="color:var(--purple)">Zéro .execute() avec SQLAlchemy</strong>
+        <p>Le projet interdit explicitement <code>session.execute()</code>. Passe toujours par <code>session.query(Model).filter(...).all()</code> et ses dérivés.</p>
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot orange"></div>
+      <div>
+        <strong style="color:var(--orange)">pycodestyle — style obligatoire</strong>
+        <p>Vérifie ton code avec <code>pycodestyle *.py</code>. Maximum 79 chars par ligne, espaces autour des opérateurs, ligne vide en fin de fichier.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ RÉSUMÉ ══════ -->
+<div class="section-title">RÉSUMÉ — CARTE MENTALE</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">🗺️</span> DEUX APPROCHES EN UN COUP D'ŒIL</div>
+  <pre><span class="cmt">╔══════════════════════════════════════════════════════════════╗</span>
+<span class="cmt">║                    PYTHON ORM — RÉSUMÉ                       ║</span>
+<span class="cmt">╠══════════════════════════════════════════════════════════════╣</span>
+<span class="cmt">║  MYSQLDB (bas niveau)         SQLALCHEMY (ORM complet)       ║</span>
+<span class="cmt">║  ──────────────────────       ──────────────────────────     ║</span>
+<span class="cmt">║  1. MySQLdb.connect(...)      create_engine(url, ...)        ║</span>
+<span class="cmt">║  2. conn.cursor()             Base.metadata.create_all()     ║</span>
+<span class="cmt">║  3. cur.execute("SQL", args)  session.query(Model)           ║</span>
+<span class="cmt">║  4. cur.fetchall()              .filter(Model.col == val)    ║</span>
+<span class="cmt">║  5. print(row)                  .order_by(Model.col)         ║</span>
+<span class="cmt">║  6. cur.close()                 .all() / .first() / .count() ║</span>
+<span class="cmt">║  7. conn.close()              session.add(obj) → commit()    ║</span>
+<span class="cmt">║                               session.delete(obj) → commit() ║</span>
+<span class="cmt">╠══════════════════════════════════════════════════════════════╣</span>
+<span class="cmt">║  MODÈLE SQLALCHEMY                                           ║</span>
+<span class="cmt">║  ─────────────────                                           ║</span>
+<span class="cmt">║  Base = declarative_base()                                   ║</span>
+<span class="cmt">║  class Model(Base):                                          ║</span>
+<span class="cmt">║      __tablename__ = 'table_name'                            ║</span>
+<span class="cmt">║      id   = Column(Integer, primary_key=True)                ║</span>
+<span class="cmt">║      name = Column(String(128), nullable=False)              ║</span>
+<span class="cmt">╠══════════════════════════════════════════════════════════════╣</span>
+<span class="cmt">║  RÈGLES HOLBERTON                                            ║</span>
+<span class="cmt">║  ────────────────                                            ║</span>
+<span class="cmt">║  ✓ #!/usr/bin/python3 en ligne 1                             ║</span>
+<span class="cmt">║  ✓ Docstrings : module + classe + chaque fonction            ║</span>
+<span class="cmt">║  ✓ if __name__ == "__main__": pour tout code exécutable      ║</span>
+<span class="cmt">║  ✓ Paramètres %s pour MySQLdb — jamais de concat SQL         ║</span>
+<span class="cmt">║  ✗ .execute() interdit avec SQLAlchemy                       ║</span>
+<span class="cmt">║  ✓ pycodestyle (2.7.*) sans erreurs                          ║</span>
+<span class="cmt">╚══════════════════════════════════════════════════════════════╝</span></pre>
+</div>
+
+</div>
+
+<!-- ══════ FOOTER ══════ -->
+<footer>
+  <span>LESS SQL, MORE PYTHON</span> — mappe tes classes, libère ton code<br><br>
+  <span>Holberton School</span> — Python — ORM MySQLdb &amp; SQLAlchemy
+</footer>
+
+</body>
+</html>
