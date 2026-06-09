@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RESTful API — Cheatsheet Holberton</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css?v=2">
+<style>
+  :root {
+    --bg:     #050a0f;
+    --card:   #080d15;
+    --border: #0f2035;
+    --neon:   #4d9fff;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text:   #c0d0e0;
+    --muted:  #304050;
+    --white:  #eef5ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(77,159,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(77,159,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .back-link {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--neon); }
+
+  header {
+    text-align: center;
+    padding: 48px 24px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 14px;
+    opacity: 0.8;
+  }
+
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(14px, 2.5vw, 22px);
+    color: var(--white);
+    line-height: 1.6;
+    text-shadow: 0 0 20px rgba(77,159,255,0.5), 0 0 50px rgba(77,159,255,0.2);
+    margin-bottom: 14px;
+  }
+  header h1 span { color: var(--neon); }
+
+  .header-sub {
+    font-size: 18px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--neon);
+    letter-spacing: 2px;
+    margin: 48px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .section-title::before {
+    content: '▶';
+    color: var(--pink);
+    animation: blink 1s step-end infinite;
+    flex-shrink: 0;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--neon), transparent);
+  }
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+  .card.cyan::before   { background: linear-gradient(to right, var(--cyan), transparent); }
+  .card.cyan:hover     { border-color: var(--cyan); }
+  .card.yellow::before { background: linear-gradient(to right, var(--yellow), transparent); }
+  .card.yellow:hover   { border-color: var(--yellow); }
+  .card.green::before  { background: linear-gradient(to right, var(--green), transparent); }
+  .card.green:hover    { border-color: var(--green); }
+  .card.pink::before   { background: linear-gradient(to right, var(--pink), transparent); }
+  .card.pink:hover     { border-color: var(--pink); }
+  .card.orange::before { background: linear-gradient(to right, var(--orange), transparent); }
+  .card.orange:hover   { border-color: var(--orange); }
+  .card.purple::before { background: linear-gradient(to right, var(--purple), transparent); }
+  .card.purple:hover   { border-color: var(--purple); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--neon);
+    margin-bottom: 14px;
+    line-height: 1.7;
+  }
+  .card.cyan   .card-title { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green  .card-title { color: var(--green); }
+  .card.pink   .card-title { color: var(--pink); }
+  .card.orange .card-title { color: var(--orange); }
+  .card.purple .card-title { color: var(--purple); }
+
+  .card-icon { margin-right: 8px; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 700px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  pre {
+    background: #020810;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+  code {
+    font-family: 'Share Tech Mono', monospace;
+    background: rgba(77,159,255,0.08);
+    color: var(--neon);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  pre code { background: none; padding: 0; color: var(--text); }
+
+  .kw   { color: var(--pink); }
+  .fn   { color: var(--neon); }
+  .type { color: var(--purple); }
+  .str  { color: var(--cyan); }
+  .num  { color: var(--orange); }
+  .cmt  { color: var(--muted); font-style: italic; }
+  .url  { color: var(--green); }
+  .met  { color: var(--yellow); }
+
+  .analogy {
+    border-left: 4px solid var(--yellow);
+    background: rgba(255,230,0,0.04);
+    padding: 14px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 14px 0;
+  }
+  .analogy-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--yellow);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .tip, .warn, .clarif {
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+    font-size: 15px;
+  }
+  .tip   { border-left: 4px solid var(--green); background: rgba(57,255,20,0.04); }
+  .warn  { border-left: 4px solid var(--pink);  background: rgba(255,45,120,0.04); }
+  .clarif{ border-left: 4px solid var(--purple);background: rgba(181,78,255,0.04); }
+  .tip::before    { content: '✅ '; }
+  .warn::before   { content: '⚠️ '; }
+  .clarif::before { content: '💡 '; }
+
+  .macro-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin: 12px 0;
+  }
+  .macro-table th {
+    background: var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--neon);
+    padding: 10px 14px;
+    text-align: left;
+    letter-spacing: 1px;
+  }
+  .macro-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .macro-table tr:last-child td { border-bottom: none; }
+  .macro-name { color: var(--yellow); font-weight: bold; }
+  .method-get    { color: var(--green); font-weight: bold; }
+  .method-post   { color: var(--neon); font-weight: bold; }
+  .method-put    { color: var(--yellow); font-weight: bold; }
+  .method-delete { color: var(--pink); font-weight: bold; }
+  .method-patch  { color: var(--orange); font-weight: bold; }
+
+  .steps { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; }
+  .step { display: flex; align-items: flex-start; gap: 14px; }
+  .step-num {
+    width: 30px; height: 30px;
+    background: var(--neon);
+    color: var(--bg);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    border-radius: 4px;
+  }
+  .step-content { flex: 1; padding-top: 4px; }
+
+  .skill-tree { display: flex; flex-direction: column; gap: 0; margin: 12px 0; position: relative; }
+  .skill-tree::before {
+    content: '';
+    position: absolute;
+    left: 14px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--neon), var(--purple));
+  }
+  .skill-item { display: flex; align-items: flex-start; gap: 14px; padding: 10px 0; position: relative; z-index: 1; }
+  .skill-dot {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--neon);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .skill-dot.cyan   { border-color: var(--cyan); }
+  .skill-dot.yellow { border-color: var(--yellow); }
+  .skill-dot.green  { border-color: var(--green); }
+  .skill-dot.pink   { border-color: var(--pink); }
+  .skill-dot.orange { border-color: var(--orange); }
+
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--purple);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--purple);
+    margin-bottom: 12px;
+  }
+
+  .fade-in { animation: fadeIn 0.6s ease forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in:nth-child(2) { animation-delay: 0.1s; }
+  .fade-in:nth-child(3) { animation-delay: 0.2s; }
+  .fade-in:nth-child(4) { animation-delay: 0.3s; }
+  .fade-in:nth-child(5) { animation-delay: 0.4s; }
+  .fade-in:nth-child(6) { animation-delay: 0.5s; }
+
+  .status-1xx { color: var(--muted); }
+  .status-2xx { color: var(--green); }
+  .status-3xx { color: var(--cyan); }
+  .status-4xx { color: var(--yellow); }
+  .status-5xx { color: var(--pink); }
+
+  footer {
+    text-align: center;
+    padding: 32px 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+  }
+  footer span { color: var(--neon); }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 12px; }
+    pre { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<header>
+  <a class="back-link" href="../index.html">&#8592; HUB</a>
+  <span class="tag">✦ Holberton School — CS / Web ✦</span>
+  <h1>RESTFUL<br><span>API</span></h1>
+  <p class="header-sub">HTTP, méthodes, status codes, Flask et sécurité — le protocole du web maîtrisé.</p>
+</header>
+
+<div class="container">
+
+<!-- ══════ DÉFINITION ══════ -->
+<div class="section-title">QU'EST-CE QU'UNE API REST ?</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">🌐</span> DÉFINITION</div>
+  <p>Une <strong style="color:var(--neon)">API REST</strong> (Representational State Transfer) est une interface qui permet à deux systèmes de communiquer via <strong style="color:var(--cyan)">HTTP</strong>. Le client envoie une requête, le serveur renvoie une réponse — généralement en <strong style="color:var(--yellow)">JSON</strong>.</p>
+  <p style="margin-top:10px">REST n'est pas un protocole mais un <strong style="color:var(--purple)">style d'architecture</strong> basé sur 6 contraintes : stateless, client-serveur, cacheable, interface uniforme, système en couches, code on demand (optionnel).</p>
+  <div class="analogy">
+    <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+    <p>Imagine un jeu MMO. Ton personnage (client) envoie une action au serveur de jeu (serveur API). Le serveur traite la requête, met à jour le monde, et te renvoie l'état actuel. Chaque requête est indépendante — le serveur ne se souvient pas de ta session précédente (<strong style="color:var(--yellow)">stateless</strong>). Comme un système de matchmaking : tu envoies ta requête, tu reçois ton lobby.</p>
+  </div>
+  <div class="tip">REST est stateless : chaque requête doit contenir TOUTES les infos nécessaires (auth token inclus).</div>
+  <div class="clarif">API = Application Programming Interface. REST = style archi. HTTP = protocole de transport. JSON = format de données. Ces 4 concepts sont distincts mais travaillent ensemble.</div>
+</div>
+
+<!-- ══════ CONCEPTS CLÉS ══════ -->
+<div class="section-title">CONCEPTS CLÉS</div>
+<div class="grid-3">
+
+  <div class="card fade-in cyan">
+    <div class="card-title"><span class="card-icon">📡</span> HTTP / HTTPS</div>
+    <p><strong style="color:var(--cyan)">HTTP</strong> (HyperText Transfer Protocol) est le protocole de communication du web. <strong style="color:var(--neon)">HTTPS</strong> = HTTP + chiffrement TLS/SSL.</p>
+    <p style="margin-top:8px">Structure d'une requête : méthode + URL + headers + body (optionnel).</p>
+    <div class="clarif">HTTPS chiffre les données en transit — sans lui, n'importe qui sur le réseau peut lire tes tokens et passwords.</div>
+  </div>
+
+  <div class="card fade-in yellow">
+    <div class="card-title"><span class="card-icon">🎯</span> MÉTHODES HTTP</div>
+    <p>Les méthodes définissent l'<strong style="color:var(--yellow)">action</strong> à effectuer sur une ressource :</p>
+    <p style="margin-top:8px"><span class="method-get">GET</span> lire · <span class="method-post">POST</span> créer · <span class="method-put">PUT</span> remplacer · <span class="method-patch" style="color:var(--orange)">PATCH</span> modifier · <span class="method-delete">DELETE</span> supprimer</p>
+    <div class="tip">GET et DELETE n'ont pas de body. POST, PUT et PATCH si.</div>
+  </div>
+
+  <div class="card fade-in green">
+    <div class="card-title"><span class="card-icon">📊</span> STATUS CODES</div>
+    <p>Le serveur répond avec un code à 3 chiffres :</p>
+    <p style="margin-top:8px"><span class="status-2xx">2xx</span> succès · <span class="status-3xx">3xx</span> redirection · <span class="status-4xx">4xx</span> erreur client · <span class="status-5xx">5xx</span> erreur serveur</p>
+    <div class="warn">Un 200 OK ne veut pas dire que la logique métier a réussi — vérifie toujours le body de la réponse.</div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">📝</span> JSON</div>
+    <p><strong style="color:var(--neon)">JSON</strong> (JavaScript Object Notation) est le format d'échange standard des APIs REST. C'est du texte lisible par les humains et parsable par les machines.</p>
+    <pre><code><span class="cmt">// Structure JSON type</span>
+{
+  <span class="str">"id"</span>: <span class="num">42</span>,
+  <span class="str">"name"</span>: <span class="str">"Adam"</span>,
+  <span class="str">"tags"</span>: [<span class="str">"dev"</span>, <span class="str">"holberton"</span>]
+}</code></pre>
+  </div>
+
+  <div class="card fade-in orange">
+    <div class="card-title"><span class="card-icon">🔐</span> AUTHENTIFICATION</div>
+    <p>Trois mécanismes principaux pour sécuriser une API :</p>
+    <p style="margin-top:8px"><strong style="color:var(--orange)">API Key</strong> — clé secrète dans le header · <strong style="color:var(--neon)">JWT</strong> — token signé · <strong style="color:var(--purple)">OAuth 2.0</strong> — délégation d'accès</p>
+    <div class="tip">Toujours mettre l'auth dans le header <code>Authorization</code>, jamais dans l'URL.</div>
+  </div>
+
+  <div class="card fade-in purple">
+    <div class="card-title"><span class="card-icon">📖</span> ENDPOINTS & RESSOURCES</div>
+    <p>Un <strong style="color:var(--purple)">endpoint</strong> est une URL qui représente une ressource. Convention REST :</p>
+    <p style="margin-top:8px"><code>/users</code> — collection · <code>/users/42</code> — ressource unique · <code>/users/42/posts</code> — sous-ressource</p>
+    <div class="clarif">Les endpoints REST sont des noms (nouns), jamais des verbes. Pas <code>/getUser</code> mais <code>/users/42</code> avec GET.</div>
+  </div>
+
+</div>
+
+<!-- ══════ SYNTAXE DE BASE ══════ -->
+<div class="section-title">CONSOMMER UNE API</div>
+
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">💻</span> AVEC CURL (TERMINAL)</div>
+  <p>La façon la plus directe de tester une API depuis le terminal.</p>
+<pre><code><span class="cmt"># GET — récupérer une ressource</span>
+<span class="fn">curl</span> <span class="url">https://jsonplaceholder.typicode.com/users/1</span>
+
+<span class="cmt"># GET avec headers et pretty print</span>
+<span class="fn">curl</span> -s -H <span class="str">"Accept: application/json"</span> \
+     <span class="url">https://jsonplaceholder.typicode.com/posts</span> | python3 -m json.tool
+
+<span class="cmt"># POST — créer une ressource</span>
+<span class="fn">curl</span> -X POST \
+     -H <span class="str">"Content-Type: application/json"</span> \
+     -d <span class="str">'{"title": "Boss Fight", "userId": 1}'</span> \
+     <span class="url">https://jsonplaceholder.typicode.com/posts</span>
+
+<span class="cmt"># DELETE — supprimer</span>
+<span class="fn">curl</span> -X DELETE <span class="url">https://jsonplaceholder.typicode.com/posts/1</span>
+
+<span class="cmt"># Avec API Key dans le header</span>
+<span class="fn">curl</span> -H <span class="str">"Authorization: Bearer TON_TOKEN"</span> \
+     <span class="url">https://api.exemple.com/protected</span></code></pre>
+  <div class="tip">Utilise <code>-v</code> pour voir les headers complets (verbose). <code>-i</code> inclut les headers de réponse.</div>
+</div>
+
+<div class="card fade-in cyan" style="margin-top:16px">
+  <div class="card-title"><span class="card-icon">🐍</span> AVEC PYTHON — MODULE requests</div>
+  <p>La bibliothèque <code>requests</code> rend la consommation d'API élégante en Python.</p>
+<pre><code><span class="kw">import</span> requests
+
+<span class="cmt"># GET simple</span>
+response = requests.<span class="fn">get</span>(<span class="str">"https://jsonplaceholder.typicode.com/users/1"</span>)
+<span class="kw">print</span>(response.status_code)    <span class="cmt"># 200</span>
+<span class="kw">print</span>(response.json())          <span class="cmt"># dict Python</span>
+
+<span class="cmt"># GET avec paramètres de query</span>
+params = {<span class="str">"userId"</span>: <span class="num">1</span>, <span class="str">"_limit"</span>: <span class="num">3</span>}
+r = requests.<span class="fn">get</span>(<span class="str">"https://jsonplaceholder.typicode.com/posts"</span>,
+                params=params)
+
+<span class="cmt"># POST avec JSON body</span>
+data = {<span class="str">"title"</span>: <span class="str">"New Quest"</span>, <span class="str">"body"</span>: <span class="str">"Kill the dragon"</span>, <span class="str">"userId"</span>: <span class="num">1</span>}
+r = requests.<span class="fn">post</span>(<span class="str">"https://jsonplaceholder.typicode.com/posts"</span>,
+                  json=data)   <span class="cmt"># json= encode auto en JSON</span>
+
+<span class="cmt"># Avec headers d'auth</span>
+headers = {<span class="str">"Authorization"</span>: <span class="str">"Bearer MON_TOKEN"</span>}
+r = requests.<span class="fn">get</span>(<span class="str">"https://api.exemple.com/me"</span>, headers=headers)
+
+<span class="cmt"># Gestion d'erreur robuste</span>
+<span class="kw">if</span> r.status_code == <span class="num">200</span>:
+    <span class="kw">print</span>(r.json())
+<span class="kw">else</span>:
+    <span class="kw">print</span>(<span class="str">f"Erreur {r.status_code}: {r.text}"</span>)</code></pre>
+  <div class="warn">Ne jamais hardcoder un token ou une clé API dans le code. Utilise des variables d'environnement.</div>
+</div>
+
+<!-- ══════ DÉVELOPPER UNE API ══════ -->
+<div class="section-title">DÉVELOPPER UNE API</div>
+
+<div class="card fade-in green">
+  <div class="card-title"><span class="card-icon">🔧</span> AVEC http.server (PYTHON BUILT-IN)</div>
+  <p>Pour un serveur HTTP minimal sans dépendances externes — idéal pour comprendre les bases.</p>
+<pre><code><span class="kw">from</span> http.server <span class="kw">import</span> BaseHTTPRequestHandler, HTTPServer
+<span class="kw">import</span> json
+
+<span class="kw">class</span> <span class="type">SimpleAPI</span>(BaseHTTPRequestHandler):
+
+    <span class="kw">def</span> <span class="fn">do_GET</span>(self):
+        <span class="kw">if</span> self.path == <span class="str">'/users'</span>:
+            data = [{<span class="str">"id"</span>: <span class="num">1</span>, <span class="str">"name"</span>: <span class="str">"Adam"</span>}]
+            self.<span class="fn">send_response</span>(<span class="num">200</span>)
+            self.<span class="fn">send_header</span>(<span class="str">'Content-Type'</span>, <span class="str">'application/json'</span>)
+            self.<span class="fn">end_headers</span>()
+            self.wfile.<span class="fn">write</span>(json.<span class="fn">dumps</span>(data).<span class="fn">encode</span>())
+        <span class="kw">else</span>:
+            self.<span class="fn">send_response</span>(<span class="num">404</span>)
+            self.<span class="fn">end_headers</span>()
+
+    <span class="kw">def</span> <span class="fn">do_POST</span>(self):
+        length = <span class="fn">int</span>(self.headers[<span class="str">'Content-Length'</span>])
+        body = json.<span class="fn">loads</span>(self.rfile.<span class="fn">read</span>(length))
+        self.<span class="fn">send_response</span>(<span class="num">201</span>)  <span class="cmt"># 201 Created</span>
+        self.<span class="fn">end_headers</span>()
+
+<span class="fn">HTTPServer</span>((<span class="str">''</span>, <span class="num">8080</span>), SimpleAPI).<span class="fn">serve_forever</span>()</code></pre>
+</div>
+
+<div class="card fade-in" style="margin-top:16px">
+  <div class="card-title"><span class="card-icon">⚡</span> AVEC FLASK</div>
+  <p>Flask rend le développement d'API REST simple et lisible avec un système de routing élégant.</p>
+<pre><code><span class="kw">from</span> flask <span class="kw">import</span> Flask, jsonify, request, abort
+
+app = <span class="fn">Flask</span>(__name__)
+
+<span class="cmt"># Données en mémoire (remplacer par DB en prod)</span>
+users = [{<span class="str">"id"</span>: <span class="num">1</span>, <span class="str">"name"</span>: <span class="str">"Adam"</span>}]
+
+<span class="cmt"># GET /api/users — liste tous les users</span>
+@app.<span class="fn">route</span>(<span class="str">'/api/users'</span>, methods=[<span class="str">'GET'</span>])
+<span class="kw">def</span> <span class="fn">get_users</span>():
+    <span class="kw">return</span> <span class="fn">jsonify</span>(users), <span class="num">200</span>
+
+<span class="cmt"># GET /api/users/&lt;id&gt; — un seul user</span>
+@app.<span class="fn">route</span>(<span class="str">'/api/users/&lt;int:user_id&gt;'</span>, methods=[<span class="str">'GET'</span>])
+<span class="kw">def</span> <span class="fn">get_user</span>(user_id):
+    user = next((u <span class="kw">for</span> u <span class="kw">in</span> users <span class="kw">if</span> u[<span class="str">"id"</span>] == user_id), <span class="kw">None</span>)
+    <span class="kw">if not</span> user:
+        <span class="fn">abort</span>(<span class="num">404</span>)
+    <span class="kw">return</span> <span class="fn">jsonify</span>(user), <span class="num">200</span>
+
+<span class="cmt"># POST /api/users — créer un user</span>
+@app.<span class="fn">route</span>(<span class="str">'/api/users'</span>, methods=[<span class="str">'POST'</span>])
+<span class="kw">def</span> <span class="fn">create_user</span>():
+    data = request.<span class="fn">get_json</span>()
+    <span class="kw">if not</span> data <span class="kw">or</span> <span class="str">'name'</span> <span class="kw">not in</span> data:
+        <span class="fn">abort</span>(<span class="num">400</span>)   <span class="cmt"># Bad Request</span>
+    new_user = {<span class="str">"id"</span>: <span class="fn">len</span>(users) + <span class="num">1</span>, <span class="str">"name"</span>: data[<span class="str">"name"</span>]}
+    users.<span class="fn">append</span>(new_user)
+    <span class="kw">return</span> <span class="fn">jsonify</span>(new_user), <span class="num">201</span>  <span class="cmt"># 201 Created</span>
+
+<span class="cmt"># DELETE /api/users/&lt;id&gt;</span>
+@app.<span class="fn">route</span>(<span class="str">'/api/users/&lt;int:user_id&gt;'</span>, methods=[<span class="str">'DELETE'</span>])
+<span class="kw">def</span> <span class="fn">delete_user</span>(user_id):
+    global users
+    users = [u <span class="kw">for</span> u <span class="kw">in</span> users <span class="kw">if</span> u[<span class="str">"id"</span>] != user_id]
+    <span class="kw">return</span> <span class="str">''</span>, <span class="num">204</span>  <span class="cmt"># 204 No Content</span>
+
+<span class="kw">if</span> __name__ == <span class="str">'__main__'</span>:
+    app.<span class="fn">run</span>(debug=<span class="kw">True</span>, port=<span class="num">5000</span>)</code></pre>
+  <div class="tip">Utilise <code>flask run</code> en dev. En prod, passe par <strong style="color:var(--neon)">gunicorn</strong> ou <strong style="color:var(--neon)">uWSGI</strong>.</div>
+</div>
+
+<!-- ══════ TABLEAUX RÉCAP ══════ -->
+<div class="section-title">RÉFÉRENCE RAPIDE</div>
+<div class="grid-2">
+
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">⚡</span> MÉTHODES HTTP</div>
+    <table class="macro-table">
+      <tr><th>MÉTHODE</th><th>ACTION</th><th>BODY</th><th>IDEMPOTENT</th></tr>
+      <tr><td><span class="method-get">GET</span></td><td>Lire</td><td>Non</td><td>Oui</td></tr>
+      <tr><td><span class="method-post">POST</span></td><td>Créer</td><td>Oui</td><td>Non</td></tr>
+      <tr><td><span class="method-put">PUT</span></td><td>Remplacer</td><td>Oui</td><td>Oui</td></tr>
+      <tr><td><span class="method-patch">PATCH</span></td><td>Modifier</td><td>Oui</td><td>Non</td></tr>
+      <tr><td><span class="method-delete">DELETE</span></td><td>Supprimer</td><td>Non</td><td>Oui</td></tr>
+    </table>
+  </div>
+
+  <div class="card fade-in cyan">
+    <div class="card-title"><span class="card-icon">📊</span> STATUS CODES ESSENTIELS</div>
+    <table class="macro-table">
+      <tr><th>CODE</th><th>SIGNIFICATION</th></tr>
+      <tr><td><span class="status-2xx macro-name">200</span></td><td>OK — succès</td></tr>
+      <tr><td><span class="status-2xx macro-name">201</span></td><td>Created — ressource créée</td></tr>
+      <tr><td><span class="status-2xx macro-name">204</span></td><td>No Content — succès sans body</td></tr>
+      <tr><td><span class="status-3xx macro-name">301</span></td><td>Moved Permanently</td></tr>
+      <tr><td><span class="status-4xx macro-name">400</span></td><td>Bad Request — données invalides</td></tr>
+      <tr><td><span class="status-4xx macro-name">401</span></td><td>Unauthorized — non authentifié</td></tr>
+      <tr><td><span class="status-4xx macro-name">403</span></td><td>Forbidden — pas les droits</td></tr>
+      <tr><td><span class="status-4xx macro-name">404</span></td><td>Not Found — ressource absente</td></tr>
+      <tr><td><span class="status-4xx macro-name">429</span></td><td>Too Many Requests — rate limit</td></tr>
+      <tr><td><span class="status-5xx macro-name">500</span></td><td>Internal Server Error</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- ══════ BOSS FIGHTS ══════ -->
+<div class="section-title">BOSS FIGHTS — EXERCICES PROGRESSIFS</div>
+
+<div class="card fade-in green">
+  <div class="level-badge">⭐ BOSS 1 — LVL 1 FACILE</div>
+  <div class="card-title"><span class="card-icon">🗡️</span> EXPLORER UNE API PUBLIQUE</div>
+  <p>Utilise <code>curl</code> pour interroger l'API JSONPlaceholder et affiche le résultat formaté.</p>
+<pre><code><span class="cmt"># 1. Récupère tous les posts de l'user 1</span>
+<span class="fn">curl</span> -s <span class="url">"https://jsonplaceholder.typicode.com/posts?userId=1"</span> \
+     | python3 -m json.tool
+
+<span class="cmt"># 2. Affiche seulement les titres avec Python</span>
+python3 -c <span class="str">"
+import requests
+posts = requests.get('https://jsonplaceholder.typicode.com/posts', params={'userId': 1}).json()
+for p in posts:
+    print(f\"  {p['id']}. {p['title']}\")
+"</span></code></pre>
+  <div class="tip">JSONPlaceholder est une API publique gratuite pour s'entraîner — aucune clé nécessaire.</div>
+</div>
+
+<div class="card fade-in yellow" style="margin-top:16px">
+  <div class="level-badge">⭐⭐ BOSS 2 — LVL 2 INTERMÉDIAIRE</div>
+  <div class="card-title"><span class="card-icon">⚔️</span> CRÉER UN SERVEUR FLASK CRUD</div>
+  <p>Implémente une API Flask complète avec GET, POST et DELETE sur une liste de joueurs.</p>
+<pre><code><span class="kw">from</span> flask <span class="kw">import</span> Flask, jsonify, request, abort
+app = <span class="fn">Flask</span>(__name__)
+players = []
+
+@app.<span class="fn">route</span>(<span class="str">'/players'</span>, methods=[<span class="str">'GET'</span>])
+<span class="kw">def</span> <span class="fn">list_players</span>():
+    <span class="kw">return</span> <span class="fn">jsonify</span>(players)
+
+@app.<span class="fn">route</span>(<span class="str">'/players'</span>, methods=[<span class="str">'POST'</span>])
+<span class="kw">def</span> <span class="fn">add_player</span>():
+    body = request.<span class="fn">get_json</span>() <span class="kw">or</span> {}
+    <span class="kw">if</span> <span class="str">'name'</span> <span class="kw">not in</span> body:
+        <span class="fn">abort</span>(<span class="num">400</span>)
+    player = {<span class="str">"id"</span>: <span class="fn">len</span>(players) + <span class="num">1</span>, <span class="str">"name"</span>: body[<span class="str">"name"</span>], <span class="str">"score"</span>: <span class="num">0</span>}
+    players.<span class="fn">append</span>(player)
+    <span class="kw">return</span> <span class="fn">jsonify</span>(player), <span class="num">201</span>
+
+<span class="cmt"># Test avec curl :</span>
+<span class="cmt"># curl -X POST -H "Content-Type: application/json"</span>
+<span class="cmt">#      -d '{"name": "Adam"}' http://localhost:5000/players</span></code></pre>
+</div>
+
+<div class="card fade-in pink" style="margin-top:16px">
+  <div class="level-badge">⭐⭐⭐ BOSS FINAL — LVL 3 HOLBERTON STYLE</div>
+  <div class="card-title"><span class="card-icon">🏆</span> API SÉCURISÉE AVEC AUTH TOKEN</div>
+  <p>Ajoute une authentification par API key à ton serveur Flask — accès refusé sans token valide.</p>
+<pre><code><span class="kw">from</span> flask <span class="kw">import</span> Flask, jsonify, request, abort
+<span class="kw">import</span> os
+
+app = <span class="fn">Flask</span>(__name__)
+API_KEY = os.environ.<span class="fn">get</span>(<span class="str">"API_KEY"</span>, <span class="str">"dev-secret-key"</span>)
+
+<span class="kw">def</span> <span class="fn">require_auth</span>():
+    <span class="str">"""Vérifie le Bearer token dans le header Authorization."""</span>
+    auth = request.headers.<span class="fn">get</span>(<span class="str">"Authorization"</span>, <span class="str">""</span>)
+    <span class="kw">if not</span> auth.<span class="fn">startswith</span>(<span class="str">"Bearer "</span>):
+        <span class="fn">abort</span>(<span class="num">401</span>)   <span class="cmt"># Unauthorized</span>
+    token = auth[<span class="num">7</span>:]       <span class="cmt"># retire "Bearer "</span>
+    <span class="kw">if</span> token != API_KEY:
+        <span class="fn">abort</span>(<span class="num">403</span>)   <span class="cmt"># Forbidden</span>
+
+@app.<span class="fn">route</span>(<span class="str">'/api/secret'</span>)
+<span class="kw">def</span> <span class="fn">secret_endpoint</span>():
+    <span class="fn">require_auth</span>()
+    <span class="kw">return</span> <span class="fn">jsonify</span>({<span class="str">"message"</span>: <span class="str">"Access granted. Welcome, elite player."</span>})
+
+<span class="cmt"># Tester :</span>
+<span class="cmt"># API_KEY=mykey flask run</span>
+<span class="cmt"># curl -H "Authorization: Bearer mykey" http://localhost:5000/api/secret</span>
+
+<span class="cmt"># Tester sans token (doit retourner 401) :</span>
+<span class="cmt"># curl http://localhost:5000/api/secret</span></code></pre>
+  <div class="tip">En prod, utilise <strong style="color:var(--neon)">python-dotenv</strong> pour charger <code>API_KEY</code> depuis un fichier <code>.env</code> — ne committe jamais les secrets.</div>
+</div>
+
+<!-- ══════ ERREURS CLASSIQUES ══════ -->
+<div class="section-title">ERREURS CLASSIQUES</div>
+<div class="grid-2">
+
+  <div class="card fade-in pink">
+    <div class="card-title"><span class="card-icon">💀</span> MAUVAISES PRATIQUES</div>
+    <pre><code><span class="cmt"># ❌ Verbes dans les endpoints</span>
+GET /getUsers
+POST /createUser
+DELETE /deleteUser/1
+
+<span class="cmt"># ❌ Token hardcodé dans le code</span>
+API_KEY = <span class="str">"sk-123abc-secret"</span>
+
+<span class="cmt"># ❌ Pas de gestion d'erreur</span>
+r = requests.get(url)
+data = r.json()  <span class="cmt"># crash si 404 !</span>
+
+<span class="cmt"># ❌ Mauvais status code</span>
+<span class="kw">return</span> jsonify({<span class="str">"error"</span>: <span class="str">"not found"</span>}), <span class="num">200</span>
+<span class="cmt"># → doit être 404</span></code></pre>
+  </div>
+
+  <div class="card fade-in green">
+    <div class="card-title"><span class="card-icon">✅</span> BONNES PRATIQUES</div>
+    <pre><code><span class="cmt"># ✅ Noms de ressources (nouns)</span>
+GET /users
+POST /users
+DELETE /users/1
+
+<span class="cmt"># ✅ Variable d'environnement</span>
+<span class="kw">import</span> os
+API_KEY = os.environ.get(<span class="str">"API_KEY"</span>)
+
+<span class="cmt"># ✅ Gestion d'erreur propre</span>
+r = requests.get(url)
+r.raise_for_status()  <span class="cmt"># lève si 4xx/5xx</span>
+data = r.json()
+
+<span class="cmt"># ✅ Status code sémantique</span>
+<span class="kw">return</span> jsonify({<span class="str">"error"</span>: <span class="str">"not found"</span>}), <span class="num">404</span></code></pre>
+  </div>
+
+  <div class="card fade-in yellow">
+    <div class="card-title"><span class="card-icon">💀</span> ERREURS CURL FRÉQUENTES</div>
+    <pre><code><span class="cmt"># ❌ Oublier Content-Type sur POST</span>
+curl -X POST -d <span class="str">'{"name":"test"}'</span> /api/users
+<span class="cmt"># → Flask reçoit None dans get_json()</span>
+
+<span class="cmt"># ❌ Confondre -d et --data-binary</span>
+<span class="cmt"># -d encode le body comme form data</span>
+<span class="cmt"># --data-binary envoie les données telles quelles</span>
+
+<span class="cmt"># ❌ Guillemets simples sur Windows</span>
+<span class="cmt"># Windows CMD ne supporte pas ' dans -d</span>
+<span class="cmt"># → utiliser PowerShell ou fichier JSON</span></code></pre>
+  </div>
+
+  <div class="card fade-in cyan">
+    <div class="card-title"><span class="card-icon">✅</span> CURL CORRECT</div>
+    <pre><code><span class="cmt"># ✅ Header Content-Type obligatoire</span>
+curl -X POST \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"name": "test"}'</span> \
+  http://localhost:5000/api/users
+
+<span class="cmt"># ✅ Fichier JSON pour éviter les issues</span>
+curl -X POST \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d @data.json \
+  http://localhost:5000/api/users
+
+<span class="cmt"># ✅ -v pour déboguer les headers</span>
+curl -v http://localhost:5000/api/users</code></pre>
+  </div>
+
+</div>
+
+<!-- ══════ SKILL TREE ══════ -->
+<div class="section-title">SKILL TREE — RÈGLES CRITIQUES</div>
+<div class="card fade-in">
+  <div class="skill-tree">
+    <div class="skill-item">
+      <div class="skill-dot">🔑</div>
+      <div>
+        <strong style="color:var(--neon)">Stateless obligatoire</strong> — Chaque requête REST doit être autonome. Le serveur ne stocke pas l'état du client entre deux requêtes. L'auth token doit être renvoyé à chaque appel.
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot cyan">📝</div>
+      <div>
+        <strong style="color:var(--cyan)">Content-Type dans CHAQUE POST/PUT/PATCH</strong> — Sans <code>Content-Type: application/json</code>, Flask ne parse pas le body. C'est l'erreur #1 des débutants.
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot yellow">🔢</div>
+      <div>
+        <strong style="color:var(--yellow)">Status code sémantique</strong> — Toujours retourner le bon code : 201 pour une création, 204 pour un delete réussi, 404 si la ressource n'existe pas. Jamais 200 pour tout.
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot orange">🔐</div>
+      <div>
+        <strong style="color:var(--orange)">Secrets dans les variables d'env</strong> — API keys, tokens, passwords → <code>os.environ.get()</code> ou <code>python-dotenv</code>. Jamais dans le code, jamais dans les URLs.
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot green">📖</div>
+      <div>
+        <strong style="color:var(--green)">Noms de ressources au pluriel</strong> — Convention REST : <code>/users</code>, <code>/posts</code>, <code>/orders</code>. Jamais de verbes comme <code>/getUsers</code> ou <code>/deletePost</code>.
+      </div>
+    </div>
+    <div class="skill-item">
+      <div class="skill-dot pink" style="border-color:var(--pink)">🛡️</div>
+      <div>
+        <strong style="color:var(--pink)">Valider les inputs côté serveur</strong> — Ne jamais faire confiance aux données du client. Vérifie que les champs requis existent et ont le bon type avant de traiter.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ RÉSUMÉ ══════ -->
+<div class="section-title">RÉSUMÉ — CARTE MENTALE</div>
+<div class="card fade-in">
+<pre><code><span class="cmt">══════════════════════════════════════════════════════════════
+                    RESTFUL API — CARTE MENTALE
+══════════════════════════════════════════════════════════════
+
+CLIENT ──────── HTTP REQUEST ────────► SERVER
+  │                                      │
+  │  Méthodes :                          │  Logique :
+  │  GET    → lire une ressource         │  Valide le body
+  │  POST   → créer                      │  Authentifie
+  │  PUT    → remplacer                  │  Interroge la DB
+  │  PATCH  → modifier partiellement     │  Retourne JSON
+  │  DELETE → supprimer                  │
+  │                                      │
+  ◄─────────── HTTP RESPONSE ───────────┘
+       Status code + JSON body
+
+──────────────────────────────────────────────────────────────
+STATUS CODES (à retenir absolument) :
+  200 OK       ← GET/PUT réussi
+  201 Created  ← POST réussi (nouvelle ressource créée)
+  204 No Content ← DELETE réussi
+  400 Bad Request ← body invalide ou champ manquant
+  401 Unauthorized ← pas de token
+  403 Forbidden ← token valide mais pas les droits
+  404 Not Found ← ressource inexistante
+  500 Server Error ← bug côté serveur
+
+──────────────────────────────────────────────────────────────
+CONSOMMER (Python requests) :
+  r = requests.get(url, headers={"Authorization": "Bearer ..."})
+  r.raise_for_status()    # lève si 4xx ou 5xx
+  data = r.json()         # parse le JSON en dict Python
+
+──────────────────────────────────────────────────────────────
+CRÉER (Flask) :
+  @app.route('/resource', methods=['GET', 'POST'])
+  def handle():
+      if request.method == 'GET':
+          return jsonify(data), 200
+      body = request.get_json() or abort(400)
+      # créer + return jsonify(new), 201
+
+══════════════════════════════════════════════════════════════</span></code></pre>
+</div>
+
+</div>
+
+<footer>
+  <span>THE WEB IS YOUR DUNGEON</span> — MASTER THE PROTOCOL<br><br>
+  <span>Holberton School</span> — CS / Web — RESTful API
+</footer>
+
+</body>
+</html>
