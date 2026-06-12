@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Async — asyncio Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css?v=2">
+<style>
+  :root {
+    --bg:     #0f080a;
+    --card:   #180d10;
+    --border: #2e1520;
+    --neon:   #ff2d78;
+    --cyan:   #00f5ff;
+    --green:  #39ff14;
+    --yellow: #ffe600;
+    --pink:   #ff2d78;
+    --purple: #b54eff;
+    --orange: #ff6b00;
+    --text:   #e0c8ce;
+    --muted:  #704050;
+    --white:  #fff0f3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,45,120,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,120,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 60px 24px 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .back-link {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--neon); }
+
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 20px;
+  }
+
+  header h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(14px, 2.5vw, 22px);
+    color: var(--white);
+    line-height: 1.6;
+    text-shadow: 0 0 20px var(--neon), 0 0 40px rgba(255,45,120,0.4);
+    margin-bottom: 16px;
+  }
+
+  header h1 span { color: var(--neon); }
+
+  .header-sub {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--neon);
+    margin: 48px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::before {
+    content: '▶';
+    color: var(--pink);
+    animation: blink 1s step-end infinite;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--border), transparent);
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--neon), transparent);
+  }
+
+  .card:hover { border-color: var(--neon); transform: translateY(-2px); }
+
+  .card.cyan::before  { background: linear-gradient(to right, var(--cyan), transparent); }
+  .card.yellow::before { background: linear-gradient(to right, var(--yellow), transparent); }
+  .card.green::before { background: linear-gradient(to right, var(--green), transparent); }
+  .card.pink::before  { background: linear-gradient(to right, var(--pink), transparent); }
+  .card.orange::before { background: linear-gradient(to right, var(--orange), transparent); }
+  .card.purple::before { background: linear-gradient(to right, var(--purple), transparent); }
+
+  .card-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--neon);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card.cyan   .card-title { color: var(--cyan); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.green  .card-title { color: var(--green); }
+  .card.pink   .card-title { color: var(--pink); }
+  .card.orange .card-title { color: var(--orange); }
+  .card.purple .card-title { color: var(--purple); }
+
+  .card-icon { font-size: 16px; }
+
+  /* GRIDS */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* CODE BLOCKS */
+  pre {
+    background: #0a040a;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+
+  code {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    background: rgba(255,45,120,0.08);
+    color: var(--neon);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .kw   { color: var(--pink); }
+  .fn   { color: var(--neon); }
+  .type { color: var(--purple); }
+  .str  { color: var(--cyan); }
+  .num  { color: var(--orange); }
+  .cmt  { color: var(--muted); font-style: italic; }
+  .macro { color: var(--yellow); }
+
+  /* BOITES CONTEXTUELLES */
+  .analogy {
+    background: rgba(255,230,0,0.04);
+    border-left: 4px solid var(--yellow);
+    padding: 14px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+  }
+
+  .analogy-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--yellow);
+    margin-bottom: 8px;
+  }
+
+  .tip {
+    background: rgba(57,255,20,0.04);
+    border-left: 4px solid var(--green);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+  }
+  .tip::before { content: '✅ '; }
+
+  .warn {
+    background: rgba(255,45,120,0.05);
+    border-left: 4px solid var(--pink);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+  }
+  .warn::before { content: '⚠️ '; }
+
+  .clarif {
+    background: rgba(181,78,255,0.05);
+    border-left: 4px solid var(--purple);
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+  }
+  .clarif::before { content: '💡 '; }
+
+  /* TABLEAUX */
+  .macro-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin: 12px 0;
+  }
+
+  .macro-table th {
+    background: var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--neon);
+    padding: 10px 12px;
+    text-align: left;
+  }
+
+  .macro-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .macro-table tr:hover td { background: rgba(255,45,120,0.04); }
+  .macro-name { color: var(--yellow); font-weight: bold; }
+
+  /* STEPS */
+  .steps { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .step-num {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    background: var(--neon);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    border-radius: 4px;
+  }
+
+  /* SKILL TREE */
+  .skill-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-left: 16px;
+    border-left: 2px solid;
+    border-image: linear-gradient(to bottom, var(--neon), var(--purple)) 1;
+    margin: 12px 0;
+  }
+
+  .skill-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    position: relative;
+  }
+
+  .skill-dot {
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    border-radius: 50%;
+    margin-top: 4px;
+    margin-left: -22px;
+  }
+
+  .skill-dot.pink   { background: var(--pink); box-shadow: 0 0 8px var(--pink); }
+  .skill-dot.cyan   { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+  .skill-dot.green  { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .skill-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .skill-dot.purple { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+  .skill-dot.orange { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+
+  /* LEVEL BADGE */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--purple);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--purple);
+    margin-left: 8px;
+  }
+
+  /* BOSS CARD */
+  .boss-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 12px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .boss-card.lvl1::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--green); }
+  .boss-card.lvl2::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--yellow); }
+  .boss-card.lvl3::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--pink); }
+
+  .boss-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    margin-bottom: 12px;
+  }
+  .boss-card.lvl1 .boss-title { color: var(--green); }
+  .boss-card.lvl2 .boss-title { color: var(--yellow); }
+  .boss-card.lvl3 .boss-title { color: var(--pink); }
+
+  /* COMPARISON */
+  .vs-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .vs-bad { color: var(--pink); border: 1px solid var(--pink); }
+  .vs-good { color: var(--green); border: 1px solid var(--green); }
+
+  /* FADE IN */
+  @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+  .fade-in { animation: fadeIn 0.6s ease both; }
+  .fade-in:nth-child(2) { animation-delay: 0.1s; }
+  .fade-in:nth-child(3) { animation-delay: 0.2s; }
+  .fade-in:nth-child(4) { animation-delay: 0.3s; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 48px 24px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    position: relative;
+    z-index: 1;
+    line-height: 2;
+  }
+  footer span { color: var(--neon); }
+
+  p { margin-bottom: 10px; }
+  p:last-child { margin-bottom: 0; }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin-bottom: 4px; }
+  strong { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<header>
+  <a class="back-link" href="../index.html">&#8592; HUB</a>
+  <span class="tag">✦ Holberton School — Python ✦</span>
+  <h1>PYTHON ASYNC<br><span>asyncio &amp; coroutines</span></h1>
+  <p class="header-sub">Lance plusieurs quêtes en même temps sans attendre bêtement — un seul thread, zéro temps mort.</p>
+</header>
+
+<div class="container">
+
+<!-- ══════ C'EST QUOI L'ASYNC ══════ -->
+<div class="section-title">C'EST QUOI L'ASYNC ?</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">🎯</span> DÉFINITION</div>
+  <p>La programmation <strong style="color:var(--neon)">asynchrone</strong> permet à ton programme de <strong style="color:var(--cyan)">faire autre chose pendant qu'il attend</strong> (réseau, fichier, timer) au lieu de rester bloqué. En Python, c'est le module <code>asyncio</code> qui gère ça : un seul thread, une <strong style="color:var(--purple)">event loop</strong>, et des <strong style="color:var(--yellow)">coroutines</strong> qui se passent la main aux moments d'attente.</p>
+  <p>Pourquoi ? Parce que dans un programme classique, <code>requests.get()</code> ou <code>time.sleep()</code> gèlent TOUT. Si tu dois faire 100 requêtes API, tu les fais une par une. Avec async, tu les lances toutes et tu récupères les résultats au fur et à mesure.</p>
+  <div class="analogy">
+    <div class="analogy-label">🕹️ ANALOGIE GAMING</div>
+    <p>Dans un MMO, tu ne restes pas planté devant le PNJ pendant que ta quête de craft de 10 minutes tourne. Tu lances le craft, tu pars faire un donjon, et tu reviens quand c'est prêt. Le code synchrone, c'est le joueur qui fixe la barre de progression sans bouger. <strong style="color:var(--neon)">async, c'est jouer pendant les temps de chargement.</strong></p>
+  </div>
+  <div class="clarif">Async ≠ plus rapide pour calculer. Si ta tâche brûle du CPU (calculs, boucles lourdes), async n'apporte rien. C'est utile uniquement pour les <strong style="color:var(--purple)">attentes I/O</strong> : réseau, disque, base de données, timers.</div>
+</div>
+
+<!-- ══════ CONCEPTS CLÉS ══════ -->
+<div class="section-title">CONCEPTS CLÉS</div>
+<div class="grid-3">
+  <div class="card fade-in">
+    <div class="card-title"><span class="card-icon">📌</span> COROUTINE</div>
+    <p>Une fonction déclarée avec <code>async def</code>. L'appeler ne l'exécute PAS : ça crée un <strong style="color:var(--neon)">objet coroutine</strong>, une quête acceptée mais pas encore lancée. Il faut <code>await</code> pour l'exécuter.</p>
+    <div class="clarif">Ne pas confondre avec une fonction normale : <code>ma_coro()</code> seul ne fait rien et lève un warning "never awaited".</div>
+  </div>
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🔄</span> EVENT LOOP</div>
+    <p>Le chef d'orchestre. Une boucle qui exécute les coroutines à tour de rôle : dès qu'une coroutine attend (<code>await</code>), la loop donne la main à une autre. C'est <code>asyncio.run()</code> qui la démarre.</p>
+    <div class="clarif">Un seul thread, une seule loop : ce n'est pas du parallélisme, c'est de la concurrence coopérative.</div>
+  </div>
+  <div class="card yellow fade-in">
+    <div class="card-title"><span class="card-icon">⏸️</span> AWAIT</div>
+    <p>Le mot-clé qui dit : "exécute ça, et si ça doit attendre, <strong style="color:var(--yellow)">rends la main</strong> à la loop pendant ce temps". Utilisable uniquement à l'intérieur d'une fonction <code>async def</code>.</p>
+    <div class="clarif">await ne bloque pas le programme — il bloque seulement la coroutine courante.</div>
+  </div>
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">🚀</span> TASK</div>
+    <p>Une coroutine <strong style="color:var(--green)">planifiée</strong> dans la loop via <code>asyncio.create_task()</code>. Contrairement à un simple await, la Task démarre tout de suite en arrière-plan, sans attendre que tu l'await.</p>
+    <div class="clarif">await ma_coro() = séquentiel. create_task(ma_coro()) = lancé en fond dès maintenant.</div>
+  </div>
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">⚔️</span> CONCURRENCE ≠ PARALLÉLISME</div>
+    <p><strong style="color:var(--purple)">Concurrence</strong> : un cuisinier qui jongle entre plusieurs plats (asyncio). <strong style="color:var(--purple)">Parallélisme</strong> : plusieurs cuisiniers en même temps (multiprocessing). Async = un seul thread qui ne perd jamais de temps.</p>
+    <div class="clarif">Pour du calcul pur CPU, regarde multiprocessing, pas asyncio.</div>
+  </div>
+  <div class="card orange fade-in">
+    <div class="card-title"><span class="card-icon">🚧</span> BLOQUANT VS NON-BLOQUANT</div>
+    <p>Un appel <strong style="color:var(--orange)">bloquant</strong> (<code>time.sleep</code>, <code>requests.get</code>) gèle toute la loop. Sa version <strong style="color:var(--orange)">non-bloquante</strong> (<code>asyncio.sleep</code>, <code>aiohttp</code>) rend la main pendant l'attente.</p>
+    <div class="clarif">Une seule fonction bloquante dans ton code async, et tout l'avantage disparaît.</div>
+  </div>
+</div>
+
+<!-- ══════ SYNTAXE DE BASE ══════ -->
+<div class="section-title">SYNTAXE DE BASE</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">⌨️</span> TON PREMIER PROGRAMME ASYNC</div>
+<pre><code><span class="kw">import</span> asyncio                          <span class="cmt"># le module standard, rien à installer</span>
+
+
+<span class="kw">async def</span> <span class="fn">charger_niveau</span>(nom: <span class="type">str</span>, duree: <span class="type">float</span>) -&gt; <span class="type">str</span>:
+    <span class="cmt"># async def → cette fonction est une coroutine</span>
+    <span class="fn">print</span>(<span class="str">f"Chargement de {nom}..."</span>)
+    <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(duree)          <span class="cmt"># attente NON bloquante : la loop fait autre chose</span>
+    <span class="fn">print</span>(<span class="str">f"{nom} prêt !"</span>)
+    <span class="kw">return</span> nom                           <span class="cmt"># une coroutine peut retourner une valeur</span>
+
+
+<span class="kw">async def</span> <span class="fn">main</span>() -&gt; <span class="type">None</span>:
+    <span class="cmt"># await seul = séquentiel (1.0s + 0.5s = 1.5s au total)</span>
+    <span class="kw">await</span> <span class="fn">charger_niveau</span>(<span class="str">"Map"</span>, <span class="num">1.0</span>)
+    <span class="kw">await</span> <span class="fn">charger_niveau</span>(<span class="str">"Sons"</span>, <span class="num">0.5</span>)
+
+    <span class="cmt"># gather = concurrent (max(1.0, 0.5) = 1.0s au total !)</span>
+    resultats = <span class="kw">await</span> asyncio.<span class="fn">gather</span>(
+        <span class="fn">charger_niveau</span>(<span class="str">"Map"</span>, <span class="num">1.0</span>),
+        <span class="fn">charger_niveau</span>(<span class="str">"Sons"</span>, <span class="num">0.5</span>),
+    )
+    <span class="fn">print</span>(resultats)                     <span class="cmt"># ['Map', 'Sons'] — ordre des arguments conservé</span>
+
+
+asyncio.<span class="fn">run</span>(<span class="fn">main</span>())                      <span class="cmt"># démarre la event loop — UN SEUL run par programme</span></code></pre>
+  <div class="tip">Retiens le trio : <code>async def</code> pour déclarer, <code>await</code> pour exécuter en attendant poliment, <code>asyncio.run()</code> pour tout démarrer depuis le code synchrone.</div>
+  <div class="warn"><code>asyncio.run()</code> s'appelle UNE fois, tout en bas du programme. Jamais à l'intérieur d'une coroutine — la loop tourne déjà.</div>
+</div>
+
+<!-- ══════ TABLEAU RÉCAP ══════ -->
+<div class="section-title">ARSENAL ASYNCIO</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">📋</span> FONCTIONS CLÉS</div>
+  <table class="macro-table">
+    <tr><th>FONCTION</th><th>RÔLE</th><th>EXEMPLE</th></tr>
+    <tr><td class="macro-name">asyncio.run(coro)</td><td>Démarre la event loop et exécute la coroutine principale</td><td>asyncio.run(main())</td></tr>
+    <tr><td class="macro-name">await coro</td><td>Exécute la coroutine et attend son résultat (rend la main pendant l'attente)</td><td>res = await fetch()</td></tr>
+    <tr><td class="macro-name">asyncio.sleep(s)</td><td>Pause non bloquante — le remplaçant async de time.sleep</td><td>await asyncio.sleep(1)</td></tr>
+    <tr><td class="macro-name">asyncio.gather(*coros)</td><td>Lance plusieurs coroutines en concurrence, retourne la liste des résultats dans l'ordre</td><td>await gather(a(), b())</td></tr>
+    <tr><td class="macro-name">asyncio.create_task(coro)</td><td>Planifie la coroutine immédiatement en arrière-plan, retourne une Task</td><td>t = create_task(coro())</td></tr>
+    <tr><td class="macro-name">asyncio.wait_for(coro, timeout)</td><td>Comme await, mais lève TimeoutError si trop long</td><td>await wait_for(f(), 5)</td></tr>
+    <tr><td class="macro-name">asyncio.as_completed(coros)</td><td>Itère sur les résultats dans l'ordre où ils FINISSENT</td><td>for f in as_completed(...)</td></tr>
+    <tr><td class="macro-name">task.cancel()</td><td>Annule une Task en cours (lève CancelledError dedans)</td><td>t.cancel()</td></tr>
+  </table>
+  <div class="clarif"><code>gather</code> retourne les résultats dans l'ordre des <strong style="color:var(--purple)">arguments</strong>, même si les coroutines finissent dans le désordre. Pour traiter au fil de l'eau, utilise <code>as_completed</code>.</div>
+</div>
+
+<!-- ══════ BOSS FIGHTS ══════ -->
+<div class="section-title">BOSS FIGHTS</div>
+
+<div class="boss-card lvl1 fade-in">
+  <div class="boss-title">👾 BOSS 1 — LVL 1 FACILE : LE TIMER QUI NE GÈLE PAS</div>
+  <p>Deux compteurs qui tournent <strong style="color:var(--green)">en même temps</strong> dans un seul thread. La preuve visuelle que la loop jongle entre les coroutines.</p>
+<pre><code><span class="kw">import</span> asyncio
+
+
+<span class="kw">async def</span> <span class="fn">compteur</span>(nom: <span class="type">str</span>, intervalle: <span class="type">float</span>) -&gt; <span class="type">None</span>:
+    <span class="cmt"># Chaque tour : affiche, puis rend la main pendant l'attente</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>):
+        <span class="fn">print</span>(<span class="str">f"[{nom}] tick {i}"</span>)
+        <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(intervalle)
+
+
+<span class="kw">async def</span> <span class="fn">main</span>() -&gt; <span class="type">None</span>:
+    <span class="kw">await</span> asyncio.<span class="fn">gather</span>(
+        <span class="fn">compteur</span>(<span class="str">"rapide"</span>, <span class="num">0.5</span>),
+        <span class="fn">compteur</span>(<span class="str">"lent"</span>, <span class="num">1.0</span>),
+    )
+
+asyncio.<span class="fn">run</span>(<span class="fn">main</span>())
+<span class="cmt"># Les ticks s'entremêlent : rapide, lent, rapide, rapide, lent...</span></code></pre>
+  <div class="tip">Remplace <code>asyncio.sleep</code> par <code>time.sleep</code> et observe : les compteurs deviennent séquentiels. C'est LA démo de la différence bloquant / non-bloquant.</div>
+</div>
+
+<div class="boss-card lvl2 fade-in">
+  <div class="boss-title">👹 BOSS 2 — LVL 2 INTERMÉDIAIRE : TASKS &amp; TIMEOUT</div>
+  <p>Cas réel : lancer des téléchargements en arrière-plan avec <code>create_task</code>, mesurer le temps gagné, et couper ce qui traîne avec <code>wait_for</code>.</p>
+<pre><code><span class="kw">import</span> asyncio
+<span class="kw">import</span> time
+<span class="kw">import</span> random
+
+
+<span class="kw">async def</span> <span class="fn">telecharger</span>(fichier: <span class="type">str</span>) -&gt; <span class="type">str</span>:
+    duree = random.<span class="fn">uniform</span>(<span class="num">0.5</span>, <span class="num">2.0</span>)     <span class="cmt"># simule une latence réseau aléatoire</span>
+    <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(duree)
+    <span class="kw">return</span> <span class="str">f"{fichier} ({duree:.2f}s)"</span>
+
+
+<span class="kw">async def</span> <span class="fn">main</span>() -&gt; <span class="type">None</span>:
+    debut = time.<span class="fn">perf_counter</span>()
+
+    <span class="cmt"># create_task : les 3 téléchargements démarrent ICI, tout de suite</span>
+    tasks = [asyncio.<span class="fn">create_task</span>(<span class="fn">telecharger</span>(f)) <span class="kw">for</span> f <span class="kw">in</span> (<span class="str">"map.pak"</span>, <span class="str">"skins.pak"</span>, <span class="str">"sons.pak"</span>)]
+
+    <span class="cmt"># wait_for : on refuse d'attendre plus de 3 secondes au total</span>
+    <span class="kw">try</span>:
+        resultats = <span class="kw">await</span> asyncio.<span class="fn">wait_for</span>(asyncio.<span class="fn">gather</span>(*tasks), timeout=<span class="num">3.0</span>)
+        <span class="fn">print</span>(*resultats, sep=<span class="str">"\n"</span>)
+    <span class="kw">except</span> asyncio.<span class="type">TimeoutError</span>:
+        <span class="fn">print</span>(<span class="str">"Serveur trop lent, abandon !"</span>)
+
+    <span class="fn">print</span>(<span class="str">f"Total : {time.perf_counter() - debut:.2f}s"</span>)  <span class="cmt"># ≈ le PLUS LENT, pas la somme</span>
+
+asyncio.<span class="fn">run</span>(<span class="fn">main</span>())</code></pre>
+  <div class="warn">Garde une référence sur tes Tasks (liste, variable). Une Task sans référence peut être ramassée par le garbage collector en plein vol.</div>
+</div>
+
+<div class="boss-card lvl3 fade-in">
+  <div class="boss-title">💀 BOSS FINAL — LVL 3 HOLBERTON STYLE : wait_n</div>
+  <p>Le classique du projet <strong style="color:var(--pink)">0x01. Python - Async</strong> : lancer <code>n</code> coroutines à délai aléatoire et retourner les délais <strong style="color:var(--pink)">dans l'ordre d'arrivée</strong>, sans utiliser <code>sort()</code>.</p>
+<pre><code><span class="cmt">#!/usr/bin/env python3</span>
+<span class="str">"""Lance n wait_random en concurrence et collecte les délais."""</span>
+<span class="kw">import</span> asyncio
+<span class="kw">import</span> random
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="type">List</span>
+
+
+<span class="kw">async def</span> <span class="fn">wait_random</span>(max_delay: <span class="type">int</span> = <span class="num">10</span>) -&gt; <span class="type">float</span>:
+    <span class="str">"""Attend un délai aléatoire entre 0 et max_delay, puis le retourne."""</span>
+    delay: <span class="type">float</span> = random.<span class="fn">uniform</span>(<span class="num">0</span>, max_delay)
+    <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(delay)
+    <span class="kw">return</span> delay
+
+
+<span class="kw">async def</span> <span class="fn">wait_n</span>(n: <span class="type">int</span>, max_delay: <span class="type">int</span>) -&gt; <span class="type">List</span>[<span class="type">float</span>]:
+    <span class="str">"""Retourne les n délais dans l'ordre où ils se terminent."""</span>
+    tasks = [asyncio.<span class="fn">create_task</span>(<span class="fn">wait_random</span>(max_delay)) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]
+    <span class="cmt"># as_completed livre chaque task dès qu'elle finit → liste triée "gratuitement"</span>
+    <span class="kw">return</span> [<span class="kw">await</span> task <span class="kw">for</span> task <span class="kw">in</span> asyncio.<span class="fn">as_completed</span>(tasks)]
+
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    <span class="fn">print</span>(asyncio.<span class="fn">run</span>(<span class="fn">wait_n</span>(<span class="num">5</span>, <span class="num">7</span>)))
+    <span class="cmt"># [0.83, 2.15, 3.40, 5.62, 6.91] — croissant sans sort() !</span></code></pre>
+  <div class="tip">Style Holberton : shebang <code>#!/usr/bin/env python3</code>, docstrings partout, <strong style="color:var(--green)">annotations de type obligatoires</strong> (<code>typing.List</code>), et pycodestyle qui passe.</div>
+  <div class="clarif">La liste sort triée parce que <code>as_completed</code> rend les résultats par ordre de FIN, et qu'ici le résultat de chaque coroutine EST sa durée. Deux concepts pour le prix d'un.</div>
+</div>
+
+<!-- ══════ ERREURS CLASSIQUES ══════ -->
+<div class="section-title">ERREURS CLASSIQUES</div>
+
+<div class="grid-2">
+  <div class="card pink fade-in">
+    <div class="vs-label vs-bad">❌ GAME OVER</div>
+    <div class="card-title"><span class="card-icon">🚫</span> COROUTINE JAMAIS AWAITED</div>
+<pre><code><span class="kw">async def</span> <span class="fn">main</span>():
+    <span class="fn">charger_niveau</span>(<span class="str">"Map"</span>, <span class="num">1.0</span>)  <span class="cmt"># oups, pas de await</span>
+    <span class="cmt"># RuntimeWarning: coroutine 'charger_niveau'</span>
+    <span class="cmt"># was never awaited — rien ne s'exécute !</span></code></pre>
+    <p>Appeler une coroutine crée juste l'objet. Sans <code>await</code> (ou <code>create_task</code>), le code dedans ne tourne <strong style="color:var(--pink)">jamais</strong>.</p>
+  </div>
+  <div class="card green fade-in">
+    <div class="vs-label vs-good">✅ VICTORY</div>
+    <div class="card-title"><span class="card-icon">🛡️</span> TOUJOURS AWAIT</div>
+<pre><code><span class="kw">async def</span> <span class="fn">main</span>():
+    <span class="kw">await</span> <span class="fn">charger_niveau</span>(<span class="str">"Map"</span>, <span class="num">1.0</span>)
+    <span class="cmt"># ou en arrière-plan :</span>
+    task = asyncio.<span class="fn">create_task</span>(<span class="fn">charger_niveau</span>(<span class="str">"Sons"</span>, <span class="num">0.5</span>))
+    <span class="kw">await</span> task</code></pre>
+    <p>Le warning "never awaited" dans tes logs = un bug garanti à corriger immédiatement.</p>
+  </div>
+
+  <div class="card pink fade-in">
+    <div class="vs-label vs-bad">❌ GAME OVER</div>
+    <div class="card-title"><span class="card-icon">🚫</span> time.sleep DANS DE L'ASYNC</div>
+<pre><code><span class="kw">import</span> time
+
+<span class="kw">async def</span> <span class="fn">tache</span>():
+    time.<span class="fn">sleep</span>(<span class="num">2</span>)  <span class="cmt"># BLOQUANT : gèle TOUTE la loop</span>
+    <span class="cmt"># toutes les autres coroutines sont figées 2s</span></code></pre>
+    <p><code>time.sleep</code> bloque le thread entier. Toute la concurrence est perdue — pire qu'un programme synchrone.</p>
+  </div>
+  <div class="card green fade-in">
+    <div class="vs-label vs-good">✅ VICTORY</div>
+    <div class="card-title"><span class="card-icon">🛡️</span> asyncio.sleep</div>
+<pre><code><span class="kw">import</span> asyncio
+
+<span class="kw">async def</span> <span class="fn">tache</span>():
+    <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(<span class="num">2</span>)  <span class="cmt"># rend la main 2s</span>
+    <span class="cmt"># les autres coroutines continuent de tourner</span></code></pre>
+    <p>Règle générale : dans une coroutine, chaque attente doit être une version <strong style="color:var(--green)">async</strong> (asyncio.sleep, aiohttp, aiofiles...).</p>
+  </div>
+
+  <div class="card pink fade-in">
+    <div class="vs-label vs-bad">❌ GAME OVER</div>
+    <div class="card-title"><span class="card-icon">🚫</span> AWAIT EN SÉRIE SANS RAISON</div>
+<pre><code><span class="cmt"># 3 requêtes indépendantes... exécutées une par une</span>
+a = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"/users"</span>)    <span class="cmt"># 1s</span>
+b = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"/items"</span>)    <span class="cmt"># 1s</span>
+c = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"/stats"</span>)    <span class="cmt"># 1s → total 3s</span></code></pre>
+    <p>Awaiter chaque coroutine l'une après l'autre = code async qui se comporte comme du synchrone. Aucun gain.</p>
+  </div>
+  <div class="card green fade-in">
+    <div class="vs-label vs-good">✅ VICTORY</div>
+    <div class="card-title"><span class="card-icon">🛡️</span> GATHER LES INDÉPENDANTS</div>
+<pre><code><span class="cmt"># les 3 partent ensemble → total ≈ 1s</span>
+a, b, c = <span class="kw">await</span> asyncio.<span class="fn">gather</span>(
+    <span class="fn">fetch</span>(<span class="str">"/users"</span>),
+    <span class="fn">fetch</span>(<span class="str">"/items"</span>),
+    <span class="fn">fetch</span>(<span class="str">"/stats"</span>),
+)</code></pre>
+    <p>Si les tâches ne dépendent pas l'une de l'autre, <code>gather</code> (ou <code>create_task</code>). Await en série uniquement quand B a besoin du résultat de A.</p>
+  </div>
+</div>
+
+<!-- ══════ RÈGLES CRITIQUES ══════ -->
+<div class="section-title">RÈGLES CRITIQUES</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">🌳</span> SKILL TREE ASYNC</div>
+  <div class="skill-tree">
+    <div class="skill-item"><span class="skill-dot pink"></span><p><strong style="color:var(--pink)">async def déclare, await exécute.</strong> Une coroutine appelée sans await ne tourne jamais — surveille les warnings "never awaited".</p></div>
+    <div class="skill-item"><span class="skill-dot cyan"></span><p><strong style="color:var(--cyan)">await uniquement dans async def.</strong> Dans une fonction normale, c'est SyntaxError. Le pont entre les deux mondes, c'est asyncio.run().</p></div>
+    <div class="skill-item"><span class="skill-dot yellow"></span><p><strong style="color:var(--yellow)">Jamais de bloquant dans la loop.</strong> time.sleep, requests, input() gèlent tout. Cherche l'équivalent async (asyncio.sleep, aiohttp).</p></div>
+    <div class="skill-item"><span class="skill-dot green"></span><p><strong style="color:var(--green)">gather pour l'indépendant, await pour le dépendant.</strong> La concurrence ne vaut que si les tâches n'ont pas besoin l'une de l'autre.</p></div>
+    <div class="skill-item"><span class="skill-dot purple"></span><p><strong style="color:var(--purple)">asyncio.run() une seule fois,</strong> au point d'entrée. À l'intérieur d'une coroutine, la loop existe déjà : create_task ou await directement.</p></div>
+    <div class="skill-item"><span class="skill-dot orange"></span><p><strong style="color:var(--orange)">Async = I/O, pas CPU.</strong> Pour du calcul lourd, asyncio n'aide pas — c'est multiprocessing qu'il te faut.</p></div>
+  </div>
+</div>
+
+<!-- ══════ RÉSUMÉ ══════ -->
+<div class="section-title">RÉSUMÉ — CARTE MENTALE</div>
+<div class="card fade-in">
+  <div class="card-title"><span class="card-icon">🧠</span> TOUT ASYNCIO EN UN ÉCRAN</div>
+<pre><code><span class="cmt"># ── DÉCLARER ────────────────────────────────────────────</span>
+<span class="kw">async def</span> <span class="fn">quete</span>() -&gt; <span class="type">str</span>: ...      <span class="cmt"># coroutine (ne tourne pas toute seule)</span>
+
+<span class="cmt"># ── EXÉCUTER ────────────────────────────────────────────</span>
+asyncio.<span class="fn">run</span>(<span class="fn">main</span>())                <span class="cmt"># point d'entrée : démarre la event loop</span>
+<span class="kw">await</span> <span class="fn">quete</span>()                      <span class="cmt"># exécute et attend (rend la main pendant)</span>
+
+<span class="cmt"># ── CONCURRENCE ─────────────────────────────────────────</span>
+<span class="kw">await</span> asyncio.<span class="fn">gather</span>(a(), b())     <span class="cmt"># tout en même temps, résultats dans l'ordre</span>
+t = asyncio.<span class="fn">create_task</span>(c())       <span class="cmt"># démarre en fond MAINTENANT</span>
+<span class="kw">await</span> t                            <span class="cmt"># récupère le résultat plus tard</span>
+asyncio.<span class="fn">as_completed</span>(tasks)        <span class="cmt"># itère par ordre de FIN</span>
+
+<span class="cmt"># ── ATTENTES ────────────────────────────────────────────</span>
+<span class="kw">await</span> asyncio.<span class="fn">sleep</span>(<span class="num">1</span>)             <span class="cmt"># pause non bloquante (PAS time.sleep !)</span>
+<span class="kw">await</span> asyncio.<span class="fn">wait_for</span>(f(), <span class="num">5</span>)     <span class="cmt"># timeout → asyncio.TimeoutError</span>
+
+<span class="cmt"># ── LA RÈGLE D'OR ───────────────────────────────────────</span>
+<span class="cmt"># I/O (réseau, disque, timer)  → asyncio</span>
+<span class="cmt"># Calcul CPU                   → multiprocessing</span>
+<span class="cmt"># Code simple sans attente     → reste synchrone !</span></code></pre>
+</div>
+
+</div>
+
+<!-- ══════ FOOTER ══════ -->
+<footer>
+  <span>NO LOADING SCREEN</span> — JOUE PENDANT QUE ÇA CHARGE<br><br>
+  <span>Holberton School</span> — Python — Async / asyncio
+</footer>
+
+</body>
+</html>
