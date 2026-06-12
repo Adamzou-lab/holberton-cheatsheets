@@ -549,6 +549,59 @@ asyncio.<span class="fn">run</span>(<span class="fn">main</span>())             
   <div class="clarif"><code>gather</code> retourne les résultats dans l'ordre des <strong style="color:var(--purple)">arguments</strong>, même si les coroutines finissent dans le désordre. Pour traiter au fil de l'eau, utilise <code>as_completed</code>.</div>
 </div>
 
+<!-- ══════ ASYNC COMPREHENSIONS ══════ -->
+<div class="section-title">ASYNC COMPREHENSIONS &amp; GÉNÉRATEURS</div>
+<div class="grid-3">
+  <div class="card purple fade-in">
+    <div class="card-title"><span class="card-icon">🌀</span> GÉNÉRATEUR ASYNC</div>
+    <p>Un <code>async def</code> qui contient <code>yield</code>. Il produit des valeurs <strong style="color:var(--purple)">au fil de l'eau</strong>, avec la possibilité d'await entre chaque yield (attendre une API, un timer...).</p>
+    <div class="clarif">Pas de return avec valeur dedans — un générateur async yield, c'est tout.</div>
+  </div>
+  <div class="card cyan fade-in">
+    <div class="card-title"><span class="card-icon">🔁</span> ASYNC FOR</div>
+    <p>La boucle qui consomme un générateur async : <code>async for x in gen()</code>. À chaque tour, elle <strong style="color:var(--cyan)">await la prochaine valeur</strong> — la loop reste libre pendant l'attente.</p>
+    <div class="clarif">Un for classique sur un générateur async = TypeError. L'inverse aussi.</div>
+  </div>
+  <div class="card green fade-in">
+    <div class="card-title"><span class="card-icon">📦</span> COMPRÉHENSION ASYNC</div>
+    <p>La version compacte : <code>[x async for x in gen()]</code> collecte tout en une ligne. Fonctionne aussi en set, dict, et avec un filtre <code>if</code>.</p>
+    <div class="clarif">Utilisable uniquement dans une fonction async def, comme await.</div>
+  </div>
+</div>
+
+<div class="card fade-in" style="margin-top:16px;">
+  <div class="card-title"><span class="card-icon">⚗️</span> LE TRIO HOLBERTON — 0x02 ASYNC COMPREHENSION</div>
+  <p>Le projet type : un générateur qui yield 10 nombres aléatoires, une compréhension qui les collecte, et la mesure de runtime qui prouve la concurrence.</p>
+<pre><code><span class="cmt">#!/usr/bin/env python3</span>
+<span class="str">"""Générateur async, compréhension async et mesure de runtime."""</span>
+<span class="kw">import</span> asyncio
+<span class="kw">import</span> random
+<span class="kw">import</span> time
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="type">AsyncGenerator</span>, <span class="type">List</span>
+
+
+<span class="kw">async def</span> <span class="fn">async_generator</span>() -&gt; <span class="type">AsyncGenerator</span>[<span class="type">float</span>, <span class="type">None</span>]:
+    <span class="str">"""Yield 10 nombres aléatoires, en attendant 1s entre chaque."""</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10</span>):
+        <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(<span class="num">1</span>)          <span class="cmt"># await possible ENTRE les yields</span>
+        <span class="kw">yield</span> random.<span class="fn">uniform</span>(<span class="num">0</span>, <span class="num">10</span>)     <span class="cmt"># yield → générateur async</span>
+
+
+<span class="kw">async def</span> <span class="fn">async_comprehension</span>() -&gt; <span class="type">List</span>[<span class="type">float</span>]:
+    <span class="str">"""Collecte les 10 nombres via une compréhension async."""</span>
+    <span class="kw">return</span> [n <span class="kw">async for</span> n <span class="kw">in</span> <span class="fn">async_generator</span>()]   <span class="cmt"># ≈ 10 secondes</span>
+
+
+<span class="kw">async def</span> <span class="fn">measure_runtime</span>() -&gt; <span class="type">float</span>:
+    <span class="str">"""Lance 4 compréhensions EN PARALLÈLE et mesure le temps total."""</span>
+    debut = time.<span class="fn">perf_counter</span>()
+    <span class="kw">await</span> asyncio.<span class="fn">gather</span>(*(<span class="fn">async_comprehension</span>() <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>)))
+    <span class="kw">return</span> time.<span class="fn">perf_counter</span>() - debut    <span class="cmt"># ≈ 10s, PAS 40s !</span></code></pre>
+  <div class="tip">La question piège du projet : pourquoi <code>measure_runtime</code> dure ~10s et pas 40s ? Parce que <code>gather</code> lance les 4 compréhensions en concurrence — chacune passe son temps à attendre <code>asyncio.sleep(1)</code>, et ces attentes se superposent.</div>
+  <div class="warn">Le type de retour d'un générateur async s'annote <code>AsyncGenerator[YieldType, SendType]</code> (depuis <code>typing</code>). Oublier l'annotation = points en moins au checker Holberton.</div>
+  <div class="clarif">Filtre possible dans la compréhension : <code>[n async for n in async_generator() if n &gt; 5]</code> — même logique qu'une compréhension classique.</div>
+</div>
+
 <!-- ══════ BOSS FIGHTS ══════ -->
 <div class="section-title">BOSS FIGHTS</div>
 
@@ -737,6 +790,11 @@ asyncio.<span class="fn">run</span>(<span class="fn">main</span>())             
 t = asyncio.<span class="fn">create_task</span>(c())       <span class="cmt"># démarre en fond MAINTENANT</span>
 <span class="kw">await</span> t                            <span class="cmt"># récupère le résultat plus tard</span>
 asyncio.<span class="fn">as_completed</span>(tasks)        <span class="cmt"># itère par ordre de FIN</span>
+
+<span class="cmt"># ── GÉNÉRATEURS &amp; COMPRÉHENSIONS ────────────────────────</span>
+<span class="kw">async def</span> <span class="fn">gen</span>(): <span class="kw">yield</span> x            <span class="cmt"># générateur async (await possible entre yields)</span>
+<span class="kw">async for</span> x <span class="kw">in</span> <span class="fn">gen</span>(): ...          <span class="cmt"># consomme sans bloquer la loop</span>
+[x <span class="kw">async for</span> x <span class="kw">in</span> <span class="fn">gen</span>()]           <span class="cmt"># compréhension async (dans un async def)</span>
 
 <span class="cmt"># ── ATTENTES ────────────────────────────────────────────</span>
 <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(<span class="num">1</span>)             <span class="cmt"># pause non bloquante (PAS time.sleep !)</span>
